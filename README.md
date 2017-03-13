@@ -20,6 +20,7 @@ Give examples
 
 * SQL Injection
 * Local & Remote File Inclusion
+* Open Redirect
 * Cross Site Scripting
 * Command Injection
 * External Entity Injection
