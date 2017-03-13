@@ -18,9 +18,12 @@ Give examples
 
 ## Authors
 
-* **Billie Thompson** - *Initial work* - [PurpleBooth](https://github.com/PurpleBooth)
+* **Jason Haddix** - *Initial work* 
+* **JP Villanueva** - *Initial work* 
+* **Ryan Black** - *Initial work* 
+* **Fatih Egbatan** - *Initial work*
+* **Vishal Shah** - *Initial work*
 
-See also the list of [contributors](https://github.com/your/project/contributors) who participated in this project.
 
 ## License
 
