@@ -16,6 +16,17 @@ Give examples
 ### Installing
 
 
+### Vulnerability Classes
+
+SQL Injection
+Local & Remote File Inclusion
+Cross Site Scripting
+Command Injection
+External Entity Injection
+Malicious File Upload
+*Insecure Deirect Object Reference* ?
+
+
 ## Authors
 
 * **Jason Haddix** - *Initial work* 
