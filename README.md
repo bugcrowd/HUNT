@@ -24,7 +24,7 @@ Give examples
 * Command Injection
 * External Entity Injection
 * Malicious File Upload
-* *Insecure Deirect Object Reference* ?
+* *Insecure Direct Object Reference* ?
 
 
 ## Authors
