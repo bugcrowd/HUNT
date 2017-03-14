@@ -24,7 +24,28 @@
         }
       },
       "level": "Information",
-      "detail": "There is probably SQL Injection on the id parameter"
+      "detail": "There is probably SQL Injection on the <b>$param$</b> parameter"
+    },
+    "open_redirect": {
+      "name": "Possible Open Redirect",
+      "payload": {
+        "dest": {
+          "location": [
+            "query_string"
+          ],
+          "regex": "dest="
+        }
+      },
+      "level": "Information",
+      "detail": "There is probably an Open Redirect on the <b>$param$</b> parameter"
+    },
+    "rfi": {
+      "name": "Possible Remote File Inclusion",
+      "payload": {
+      },
+      "level": "Information",
+      "detail": "There is probably a Remote File Inclusion on the <b>$param$</b> parameter"
     }
+
   }
 }
