@@ -1,0 +1,16 @@
+"issues": {
+  "sql_injection_id_get": {
+    "name": "Possible SQL Injection on GET",
+    "location": "query_string",
+    "regex": "id=",
+    "level": "Information",
+    "detail": "There is probably SQL Injection on the id parameter"
+  },
+  "sql_injection_id_get": {
+    "name": "Possible SQL Injection on POST",
+    "location": "post_body",
+    "regex": "id=",
+    "level": "Information",
+    "detail": "There is probably SQL Injection on the id parameter"
+  }
+}
