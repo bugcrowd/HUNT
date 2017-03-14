@@ -2,50 +2,58 @@
   "issues": {
     "sql_injection": {
       "name": "Possible SQL Injection",
-      "payload":  {
-        "query": {
-          "location": [
-            "query_string"
-          ],
-          "regex": "query="
-        },
-        "id": {
-          "location": [
-            "query_string"
-          ],
-          "regex": "id="
-        },
-        "ids": {
-          "location": [
-            "query_string",
-            "response_body"
-          ],
-          "regex": "id="
-        }
-      },
+      "check_location": [
+        "query_string",
+        "post_body"
+      ],
+      "params": [
+        "id",
+        "ids",
+        "query",
+        "userid"
+      ],
       "level": "Information",
       "detail": "There is probably SQL Injection on the <b>$param$</b> parameter"
     },
     "open_redirect": {
       "name": "Possible Open Redirect",
-      "payload": {
-        "dest": {
-          "location": [
-            "query_string"
-          ],
-          "regex": "dest="
-        }
-      },
+      "check_location": [
+        "query_string",
+        "post_body"
+      ],
+      "params": [
+          "dest",
+          "continue",
+          "redirect",
+          "url",
+          "uri",
+          "window",
+          "next"
+      ],
       "level": "Information",
       "detail": "There is probably an Open Redirect on the <b>$param$</b> parameter"
     },
     "rfi": {
       "name": "Possible Remote File Inclusion",
-      "payload": {
-      },
+      "check_location": [
+        "query_string",
+        "post_body"
+      ],
+      "params": [
+        "file",
+				"document",
+				"folder",
+				"root",
+				"path",
+				"pg",
+				"style",
+				"pdf",
+				"template",
+				"php_path",
+				"doc"
+      ],
       "level": "Information",
       "detail": "There is probably a Remote File Inclusion on the <b>$param$</b> parameter"
     }
-
   }
 }
