@@ -1,6 +1,6 @@
 # Burp Suite Bug Hunter Plugin
 
-The Burp Suite Bug Hunter Plugin (working title) is a Burp extension to identify common parameters vulnerable to certain vulnerability classes. This identification does not test these parameters but rather alerts on them so that a bug hunter can test them manually (thoroughly). For each class of vulnerability, Bugcrowd has identified common parameters or functions associated with that vulnerability class. We also provide the best resources in the scanner issue to do thorough manual testing of these vulnerability classes.
+The Burp Suite Bug Hunter Plugin (working title) is a Burp extension to identify common parameters vulnerable to certain vulnerability classes. This extention does not test these parameters but rather alerts on them so that a bug hunter can test them manually (thoroughly). For each class of vulnerability, Bugcrowd has identified common parameters or functions associated with that vulnerability class. We also provide curated resources in the issue description to do thorough manual testing of these vulnerability classes.
 
 ## Getting Started
 
