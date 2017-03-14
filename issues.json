@@ -41,16 +41,16 @@
       ],
       "params": [
         "file",
-				"document",
-				"folder",
-				"root",
-				"path",
-				"pg",
-				"style",
-				"pdf",
-				"template",
-				"php_path",
-				"doc"
+        "document",
+        "folder",
+        "root",
+        "path",
+        "pg",
+        "style",
+        "pdf",
+        "template",
+        "php_path",
+        "doc"
       ],
       "level": "Information",
       "detail": "There is probably a Remote File Inclusion on the <b>$param$</b> parameter"
