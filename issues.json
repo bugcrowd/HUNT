@@ -41,4 +41,32 @@
     "level": "Information",
     "detail": "There is probably SQL Injection on the ids parameter"    
   },
+  "sql_injection_id_get": {
+    "name": "Possible SQL Injection on POST",
+    "location": "post_body",
+    "regex": "userid=",
+    "level": "Information",
+    "detail": "There is probably SQL Injection on the userid parameter"    
+  },
+  "sql_injection_id_get": {
+    "name": "Possible SQL Injection on POST",
+    "location": "post_body",
+    "regex": "userid=",
+    "level": "Information",
+    "detail": "There is probably SQL Injection on the userid parameter"    
+  },
+  "sql_injection_id_get": {
+    "name": "Possible SQL Injection on POST",
+    "location": "post_body",
+    "regex": "ids=",
+    "level": "Information",
+    "detail": "There is probably SQL Injection on the ids parameter"    
+  },
+  "sql_injection_id_get": {
+    "name": "Possible SQL Injection on POST",
+    "location": "post_body",
+    "regex": "ids=",
+    "level": "Information",
+    "detail": "There is probably SQL Injection on the ids parameter"    
+  },
 }
