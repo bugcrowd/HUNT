@@ -7,13 +7,16 @@ from javax.swing import BoxLayout
 from javax.swing import JLabel
 from javax.swing import JPanel
 from javax.swing import JSplitPane
+from javax.swing import JScrollPane
+from javax.swing import JTree
 from javax.swing import SwingConstants
+from javax.swing.tree import DefaultMutableTreeNode
 
 class BurpExtender(IBurpExtender, ITab):
     EXTENSION_NAME = "Bug Catcher"
 
     def registerExtenderCallbacks(self, callbacks):
-        self.checklist()
+        self.init()
         self._helpers = callbacks.getHelpers()
         self._callbacks = callbacks
         self._callbacks.setExtensionName(self.EXTENSION_NAME)
@@ -21,51 +24,64 @@ class BurpExtender(IBurpExtender, ITab):
 
         return
 
-    def checklist(self):
+    def init(self):
         self._jPanel = JPanel()
         self._jPanel.setLayout(swing.BoxLayout(self._jPanel, swing.BoxLayout.X_AXIS))
 
         # Create panes
-        methodology_pane = self.methodology()
-        subtabs_pane = self.subtabs()
-        draw_panes(methodology_pane, subtabs_pane)
+        self.checklist_pane = self.checklist()
+        self.tabs_pane = self.tabs()
+        self.draw_panes()
 
         return
 
-    def methodology(self):
+    def checklist(self):
         box_vertical = swing.Box.createVerticalBox()
-        box_horizontal = swing.Box.createHorizontalBox()
-        box_horizontal.add(swing.JLabel("Checklist", SwingConstants.RIGHT))
-        box_vertical.add(box_horizontal)
-        box_horizontal = swing.Box.createHorizontalBox()
-        self._results_textarea = swing.JTextArea()
-        results_output = swing.JScrollPane(self._results_textarea)
-        box_horizontal.add(results_output)
-        box_vertical.add(box_horizontal)
 
-        #self._jPanel.add(box_vertical)
+        checklist_tree = self.create_checklist_tree()
+        tree = JTree(checklist_tree)
+        scroll = JScrollPane(tree)
+
+        box_vertical.add(scroll)
 
         return box_vertical
 
-    def subtabs(self):
+    def create_checklist_tree(self):
+        root = DefaultMutableTreeNode("TODO Checklist")
+
+        account = DefaultMutableTreeNode("Account")
+        account.add(DefaultMutableTreeNode("Cross Site Scripting"))
+        account.add(DefaultMutableTreeNode("Cross Site Request Forgery"))
+        account.add(DefaultMutableTreeNode("SQL Injection"))
+
+        search = DefaultMutableTreeNode("Search")
+        search.add(DefaultMutableTreeNode("Cross Site Scripting"))
+        search.add(DefaultMutableTreeNode("SQL Injection"))
+
+        root.add(account)
+        root.add(search)
+
+        return root
+
+    def tabs(self):
         box_vertical2 = swing.Box.createVerticalBox()
         box_horizontal2 = swing.Box.createHorizontalBox()
         box_horizontal2.add(swing.JLabel("Tabs"))
         box_vertical2.add(box_horizontal2)
         box_horizontal2 = swing.Box.createHorizontalBox()
+
         self._results_textarea = swing.JTextArea()
         results_output2 = swing.JScrollPane(self._results_textarea)
+
         box_horizontal2.add(results_output2)
         box_vertical2.add(box_horizontal2)
 
-        #self._jPanel.add(box_vertical2)
-
         return box_vertical2
 
-    def draw_panes(methodology_pane, subtabs_pane, self):
+    def draw_panes(self):
         self._jSplitPane = JSplitPane()
-        self._jSplitPane.setLeftComponent(methodology_pane)
-        self._jSplitPane.setRightComponent(subtabs_pane)
+        self._jSplitPane.setLeftComponent(self.checklist_pane)
+        self._jSplitPane.setRightComponent(self.tabs_pane)
         self._jPanel.add(self._jSplitPane)
 
         return
