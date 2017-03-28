@@ -28,11 +28,7 @@ class BurpExtender(IBurpExtender, ITab):
         # Create panes
         methodology_pane = self.methodology()
         subtabs_pane = self.subtabs()
-
-        self._jSplitPane = JSplitPane()
-        self._jSplitPane.setLeftComponent(methodology_pane)
-        self._jSplitPane.setRightComponent(subtabs_pane)
-        self._jPanel.add(self._jSplitPane)
+        draw_panes(methodology_pane, subtabs_pane)
 
         return
 
@@ -65,6 +61,14 @@ class BurpExtender(IBurpExtender, ITab):
         #self._jPanel.add(box_vertical2)
 
         return box_vertical2
+
+    def draw_panes(methodology_pane, subtabs_pane, self):
+        self._jSplitPane = JSplitPane()
+        self._jSplitPane.setLeftComponent(methodology_pane)
+        self._jSplitPane.setRightComponent(subtabs_pane)
+        self._jPanel.add(self._jSplitPane)
+
+        return
 
     def getTabCaption(self):
         return self.EXTENSION_NAME
