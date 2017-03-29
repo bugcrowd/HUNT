@@ -1,13 +1,12 @@
 import json
 from burp import IBurpExtender
 from burp import ITab
-from java.awt import Dimension
 from javax import swing
-from javax.swing import BoxLayout
 from javax.swing import JLabel
 from javax.swing import JPanel
 from javax.swing import JSplitPane
 from javax.swing import JScrollPane
+from javax.swing import JTabbedPane
 from javax.swing import JTree
 from javax.swing import SwingConstants
 from javax.swing.tree import DefaultMutableTreeNode
@@ -29,25 +28,21 @@ class BurpExtender(IBurpExtender, ITab):
         self._jPanel.setLayout(swing.BoxLayout(self._jPanel, swing.BoxLayout.X_AXIS))
 
         # Create panes
-        self.checklist_pane = self.checklist()
-        self.tabs_pane = self.tabs()
+        self.checklist_pane = self.create_checklist_pane()
+        self.tabs_pane = self.create_tabs_pane()
         self.draw_panes()
 
         return
 
-    def checklist(self):
-        box_vertical = swing.Box.createVerticalBox()
-
+    def create_checklist_pane(self):
         checklist_tree = self.create_checklist_tree()
         tree = JTree(checklist_tree)
         scroll = JScrollPane(tree)
 
-        box_vertical.add(scroll)
-
-        return box_vertical
+        return scroll
 
     def create_checklist_tree(self):
-        root = DefaultMutableTreeNode("TODO Checklist")
+        root = DefaultMutableTreeNode("Bug Catcher Checklist")
 
         account = DefaultMutableTreeNode("Account")
         account.add(DefaultMutableTreeNode("Cross Site Scripting"))
@@ -63,20 +58,16 @@ class BurpExtender(IBurpExtender, ITab):
 
         return root
 
-    def tabs(self):
-        box_vertical2 = swing.Box.createVerticalBox()
-        box_horizontal2 = swing.Box.createHorizontalBox()
-        box_horizontal2.add(swing.JLabel("Tabs"))
-        box_vertical2.add(box_horizontal2)
-        box_horizontal2 = swing.Box.createHorizontalBox()
+    def create_tabs_pane(self):
+        tabbed_pane = JTabbedPane()
 
-        self._results_textarea = swing.JTextArea()
-        results_output2 = swing.JScrollPane(self._results_textarea)
+        description_panel = JScrollPane()
+        sources_panel = JScrollPane()
 
-        box_horizontal2.add(results_output2)
-        box_vertical2.add(box_horizontal2)
+        tabbed_pane.add("Description", description_panel)
+        tabbed_pane.add("References", sources_panel)
 
-        return box_vertical2
+        return tabbed_pane
 
     def draw_panes(self):
         self._jSplitPane = JSplitPane()
