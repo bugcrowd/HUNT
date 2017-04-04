@@ -2,6 +2,7 @@ import json
 from burp import IBurpExtender
 from burp import ITab
 from javax import swing
+from javax.swing import JCheckBox
 from javax.swing import JLabel
 from javax.swing import JPanel
 from javax.swing import JSplitPane
@@ -9,37 +10,40 @@ from javax.swing import JScrollPane
 from javax.swing import JTabbedPane
 from javax.swing import JTree
 from javax.swing import SwingConstants
+from javax.swing.event import TreeSelectionEvent
+from javax.swing.event import TreeSelectionListener
 from javax.swing.tree import DefaultMutableTreeNode
+from javax.swing.tree import TreeSelectionModel
+from java.io import PrintWriter
 
 class BurpExtender(IBurpExtender, ITab):
     EXTENSION_NAME = "Bug Catcher"
 
     def registerExtenderCallbacks(self, callbacks):
-        self.init()
-        self._helpers = callbacks.getHelpers()
-        self._callbacks = callbacks
-        self._callbacks.setExtensionName(self.EXTENSION_NAME)
-        self._callbacks.addSuiteTab(self)
+        self.callbacks = callbacks
+        self.pane = self.create_pane()
+        self.helpers = callbacks.getHelpers()
+        self.callbacks.setExtensionName(self.EXTENSION_NAME)
+        self.callbacks.addSuiteTab(self)
 
         return
 
-    def init(self):
-        self._jPanel = JPanel()
-        self._jPanel.setLayout(swing.BoxLayout(self._jPanel, swing.BoxLayout.X_AXIS))
+    def create_pane(self):
+        self.status = JLabel('Nothing selected')
 
-        # Create panes
-        self.checklist_pane = self.create_checklist_pane()
-        self.tabs_pane = self.create_tabs_pane()
-        self.draw_panes()
-
-        return
-
-    def create_checklist_pane(self):
         checklist_tree = self.create_checklist_tree()
         tree = JTree(checklist_tree)
-        scroll = JScrollPane(tree)
+        tree.getSelectionModel().setSelectionMode(
+            TreeSelectionModel.SINGLE_TREE_SELECTION
+        )
 
-        return scroll
+        pane = JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
+                JScrollPane(tree),
+                JScrollPane(self.status))
+
+        tree.addTreeSelectionListener(TSL(tree, pane))
+
+        return pane
 
     def create_checklist_tree(self):
         root = DefaultMutableTreeNode("Bug Catcher Checklist")
@@ -58,27 +62,38 @@ class BurpExtender(IBurpExtender, ITab):
 
         return root
 
-    def create_tabs_pane(self):
-        tabbed_pane = JTabbedPane()
-
-        description_panel = JScrollPane()
-        sources_panel = JScrollPane()
-
-        tabbed_pane.add("Description", description_panel)
-        tabbed_pane.add("References", sources_panel)
-
-        return tabbed_pane
-
-    def draw_panes(self):
-        self._jSplitPane = JSplitPane()
-        self._jSplitPane.setLeftComponent(self.checklist_pane)
-        self._jSplitPane.setRightComponent(self.tabs_pane)
-        self._jPanel.add(self._jSplitPane)
-
-        return
-
     def getTabCaption(self):
         return self.EXTENSION_NAME
 
     def getUiComponent(self):
-        return self._jPanel
+        return self.pane
+
+class TSL(TreeSelectionListener):
+    def __init__(self, tree, pane):
+        self.tree = tree
+        self.pane = pane
+
+    def valueChanged(self, tse):
+        pane = self.pane
+        node = self.tree.getLastSelectedPathComponent()
+
+        description_panel = JScrollPane(
+            JLabel(node.toString())
+        )
+
+        resources_panel = JScrollPane(
+            JLabel(node.toString())
+        )
+
+        tabbed_pane = JTabbedPane()
+        tabbed_pane.add("Description", description_panel)
+        tabbed_pane.add("Resources", resources_panel)
+
+        if node:
+            if node.isLeaf():
+                pane.setRightComponent(tabbed_pane)
+            else:
+                pane.setRightComponent(tabbed_pane)
+        else:
+            pane.setRightComponent(tabbed_pane)
+
