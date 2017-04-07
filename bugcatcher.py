@@ -60,13 +60,15 @@ class BurpExtender(IBurpExtender, ITab):
 
         return pane
 
-    # TODO: Create nodes for Program Brief and Targets
+    # TODO: Use Bugcrowd API to grab the Program Brief and Targets
     # Creates the tree dynamically using the JSON file
     def create_checklist_tree(self):
         data = self.data
         functionality = data["functionality"]
 
-        root = DefaultMutableTreeNode("Functionality")
+        root = DefaultMutableTreeNode("Bug Catcher Check List")
+        root.add(DefaultMutableTreeNode("Program Brief"))
+        root.add(DefaultMutableTreeNode("Targets"))
 
         # TODO: Sort the functionality by name
         for functionality_name in functionality:
@@ -102,9 +104,26 @@ class TSL(TreeSelectionListener):
         node = self.tree.getLastSelectedPathComponent()
         parent = node.getParent().toString()
 
+        is_leaf = node.isLeaf()
+        is_brief = is_leaf and (node.toString() == "Program Brief")
+        is_target = is_leaf and (node.toString() == "Targets")
+        is_functionality = is_leaf and not (is_brief or is_target)
+
         if node:
-            if node.isLeaf():
+            if is_functionality:
                 pane.setRightComponent(self.create_tabs(node, parent))
+            elif is_brief:
+                brief_textarea = JTextArea()
+                brief_textarea.setLineWrap(True)
+                brief_textarea.setText("This is the program brief:")
+
+                pane.setRightComponent(brief_textarea)
+            elif is_target:
+                target_textarea = JTextArea()
+                target_textarea.setLineWrap(True)
+                target_textarea.setText("These are the targets:")
+
+                pane.setRightComponent(target_textarea)
             else:
                 name = node.toString()
                 functionality_textarea = JTextArea()
