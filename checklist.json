@@ -1,0 +1,385 @@
+{
+  "checklist": {
+    "brief": "",
+    "functionality": {
+      "Authentication": {
+        "description": "",
+        "vulns": {
+          "Authentication Bypass - Vertical": {
+            "description": "Check to see if the login sequence can be bypassed in any way to get higher level permissions.",
+            "resources": [],
+            "vrt": {
+              "priority": "",
+              "class": ""
+            }
+          },
+          "Authentication Bypass - Horizontal": {
+            "description": "Check to see if the login sequence can be bypassed in any way to get access to a user of the same account type.",
+            "resources": [],
+            "vrt": {
+              "priority": "",
+              "class": ""
+            }
+          },
+          "Cross Site Scripting": {
+            "description": "Check all parameters that present any kind of reflection.",
+            "resources": [],
+            "vrt": {
+              "priority": "",
+              "class": ""
+            }
+          },
+          "Server Security Misconfiguration": {
+            "description": "Check to see if the application was configured using common default credentials",
+            "resources": [],
+            "vrt": {
+              "priority": "",
+              "class": ""
+            }
+          },
+          "SQL Injection": {
+            "description": "Check all parameters that present themselves as a SELECT statement.",
+            "resources": [],
+            "vrt": {
+              "priority": "",
+              "class": ""
+            }
+          }
+        }
+      },
+      "Account": {
+        "description": "",
+        "vulns": {
+          "Authentication Bypass - Vertical": {
+            "description": "Check to see if any kind of checks can be bypassed in any way to perform actions that require higher level permissions.",
+            "resources": [],
+            "vrt": {
+              "priority": "",
+              "class": ""
+            }
+          },
+          "Authentication Bypass - Horizontal": {
+            "description": "Check to see if any kind of checks can be bypassed in any way to perform actions as a user of the same type.",
+            "resources": [],
+            "vrt": {
+              "priority": "",
+              "class": ""
+            }
+          },
+          "Cross Site Scripting": {
+            "description": "Check all parameters that present any kind of reflection.",
+            "resources": [],
+            "vrt": {
+              "priority": "",
+              "class": ""
+            }
+          },
+          "Cross Site Request Forgery": {
+            "description": "Check the reset password as well as updating other account information.",
+            "resources": [],
+            "vrt": {
+              "priority": "",
+              "class": ""
+            }
+          },
+          "Insecure Direct Object Reference": {
+            "description": "Check if you can get access to other users accounts by changing common parameters.",
+            "resources": [],
+            "vrt": {
+              "priority": "",
+              "class": ""
+            }
+          },
+          "SQL Injection": {
+            "description": "Check all parameters that present themselves as an INSERT, DELETE, or UPDATE statement.",
+            "resources": [],
+            "vrt": {
+              "priority": "",
+              "class": ""
+            }
+          }
+        }
+      },
+      "Account Recovery": {
+        "description": "",
+        "vulns": {
+          "Cross Site Scripting": {
+            "description": "Check all parameters that present any kind of reflection.",
+            "resources": [],
+            "vrt": {
+              "priority": "",
+              "class": ""
+            }
+          },
+          "Insecure Direct Object Reference": {
+            "description": "Check to see if you can reset other user accounts and have the recovery sent to something you control",
+            "resources": [],
+              "vrt": {
+                "priority": "",
+                "class": ""
+              }
+          },
+          "SQL Injection": {
+            "description": "Check all parameters that present themselves as a SELECT statement.",
+            "resources": [],
+            "vrt": {
+              "priority": "",
+              "class": ""
+            }
+          }
+        }
+      },
+      "Account Registration": {
+        "description": "",
+        "vulns": {
+          "Application-Level Denial-of-Service (DoS)": {
+            "description": "Check for the ability to perform a DoS on account creations. Be very careful while testing.",
+            "resources": [],
+            "vrt": {
+              "priority": "",
+              "class": ""
+            }
+          },
+          "Cross Site Scripting": {
+            "description": "Check all parameters that present any kind of reflection.",
+            "resources": [],
+            "vrt": {
+              "priority": "",
+              "class": ""
+            }
+          },
+          "Insecure Direct Object Reference": {
+            "description": "Check to see if you can overwrite existing accounts and make them your own. Be very careful while testing and only do so on an account that you own.",
+            "resources": [],
+            "vrt": {
+              "priority": "",
+              "class": ""
+            }
+          },
+          "SQL Injection": {
+            "description": "Check all parameters that present themselves as a SELECT or INSERT statement.",
+            "resources": [],
+              "vrt": {
+              "priority": "",
+              "class": ""
+            }
+          }
+        }
+      },
+      "API": {
+        "description": "",
+        "vulns": {
+          "Authentication Bypass - Vertical": {
+            "description": "Check to see if any kind of checks can be bypassed in any way to perform actions that require higher level permissions.",
+            "resources": [],
+            "vrt": {
+              "priority": "",
+              "class": ""
+            }
+          },
+          "Authentication Bypass - Horizontal": {
+            "description": "Check to see if any kind of checks can be bypassed in any way to perform actions as a user of the same type.",
+            "resources": [],
+            "vrt": {
+              "priority": "",
+              "class": ""
+            }
+          },
+          "Critically Sensitive Data - Private API Keys": {
+            "description": "Check for private API keys.",
+            "resources": [],
+            "vrt": {
+              "priority": "",
+              "class": ""
+            }
+          },
+          "Cross Site Request Forgery": {
+            "description": "Check to see if there is any CSRF protection on any kind of sensitive functionality.",
+            "resources": [],
+            "vrt": {
+              "priority": "",
+              "class": ""
+            }
+          },
+          "Insecure Direct Object Reference": {
+            "description": "Check to see if anything can be accessed through the API that you should not have access to.",
+            "resources": [],
+            "vrt": {
+              "priority": "",
+              "class": ""
+            }
+          },
+          "SQL Injection": {
+            "description": "Check all parameters that present themselves as a SELECT, INSERT, DELETE, or UPDATE statement.",
+            "resources": [],
+            "vrt": {
+              "priority": "",
+              "class": ""
+            }
+          }
+        }
+      },
+      "Contact Us": {
+        "description": "",
+        "vulns": {
+          "Cross Site Scripting": {
+            "description": "Check all parameters that present any kind of reflection.",
+            "resources": [],
+            "vrt": {
+              "priority": "",
+              "class": ""
+            }
+          },
+          "Insecure Direct Object Reference": {
+            "description": "Check to see if you can control where the contact emails go to create an email relay.",
+            "resources": [],
+            "vrt": {
+              "priority": "",
+              "class": ""
+            }
+          },
+          "SQL Injection": {
+            "description": "Check all parameters that present themselves as a SELECT statement.",
+            "resources": [],
+            "vrt": {
+              "priority": "",
+              "class": ""
+            }
+          }
+        }
+      },
+      "File Download/Upload": {
+        "description": "",
+        "vulns": {
+          "Cross Site Scripting": {
+            "description": "Check all parameters that present any kind of reflection when uploading a file.",
+            "resources": [],
+            "vrt": {
+              "priority": "",
+              "class": ""
+            }
+          },
+          "Insecure Direct Object Reference": {
+            "description": "Check to see if you can download files that you should not have access to. Also check to see if you can upload files as other users.",
+            "resources": [],
+            "vrt": {
+              "priority": "",
+              "class": ""
+            }
+          },
+          "Server-Side Injection - Local File Inclusion": {
+            "description": "Check for Local File Inclusion when downloading files.",
+            "resources": [],
+            "vrt": {
+              "priority": "",
+              "class": ""
+            }
+          },
+          "Server-Side Injection - Remote Code Execution": {
+            "description": "Check for Remote Code Execution when uploading files to the application's server.",
+            "resources": [],
+            "vrt": {
+              "priority": "",
+              "class": ""
+            }
+          },
+          "SQL Injection": {
+            "description": "Check all parameters that present themselves as a SELECT, INSERT, DELETE, or UPDATE statement.",
+            "resources": [],
+            "vrt": {
+              "priority": "",
+              "class": ""
+            }
+          }
+        }
+      },
+      "General": {
+        "description": "",
+        "vulns": {
+          "Application-Level Denial-of-Service (DoS)": {
+            "description": "Check for the ability to perform a DoS on certain functionalities that are susecptible to attack. Be very careful while testing.",
+            "resources": [],
+            "vrt": {
+              "priority": "",
+              "class": ""
+            }
+          },
+          "Missing Function Level Access Control - Server-Side Request Forgery": {
+            "description": "Check for SSRF on requests that present themselves as doing server type functionality from the client side.",
+            "resources": [],
+            "vrt": {
+              "priority": "",
+              "class": ""
+            }
+          },
+          "Server-Side Injection - XML External Entity Injection": {
+            "description": "Check for XXE on requests that present themselves with the HTTP response Content-Type of application/xml.",
+            "resources": [],
+            "vrt": {
+              "priority": "",
+              "class": ""
+            }
+          },
+          "Server Security Misconfiguration": {
+            "description": "Check to see if the DNS has been misconfigured for subdomain takeover.",
+            "resources": [],
+            "vrt": {
+              "priority": "",
+              "class": ""
+            }
+          }
+        }
+      },
+      "Search": {
+        "description": "",
+        "vulns": {
+          "Cross Site Scripting": {
+            "description": "Check all parameters that present any kind of reflection when uploading a file.",
+            "resources": [],
+            "vrt": {
+              "priority": "",
+              "class": ""
+            }
+          },
+          "SQL Injection": {
+            "description": "Check all parameters that present themselves as a SELECT statement.",
+            "resources": [],
+            "vrt": {
+              "priority": "",
+              "class": ""
+            }
+          }
+        }
+      },
+      "Money Transactions": {
+        "description": "",
+        "vulns": {
+          "Cross Site Scripting": {
+            "description": "Check all parameters that present any kind of reflection.",
+            "resources": [],
+            "vrt": {
+              "priority": "",
+              "class": ""
+            }
+          },
+          "Insecure Direct Object Reference": {
+            "description": "Check to see if you can change the transaction details. Try things like changing how much money will be paid, which account money is coming from and where the money is going to get sent to, see if you can set negative amounts of money, etc.",
+            "resources": [],
+            "vrt": {
+              "priority": "",
+              "class": ""
+            }
+          },
+          "SQL Injection": {
+            "description": "Check all parameters that present themselves as a SELECT, INSERT, or UPDATE statement.",
+            "resources": [],
+            "vrt": {
+              "priority": "",
+              "class": ""
+            }
+          }
+        }
+      }
+    }
+  }
+}
