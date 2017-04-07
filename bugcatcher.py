@@ -1,4 +1,3 @@
-import ast
 import json
 from burp import IBurpExtender
 from burp import ITab
@@ -31,9 +30,7 @@ class BurpExtender(IBurpExtender, ITab):
     def get_data(self):
         with open("checklist.json") as data_file:
             data = json.load(data_file)
-            data = str(data)
-            data = ast.literal_eval(data)
-            checklist = data.get("checklist")
+            checklist = data["checklist"]
 
         return checklist
 
@@ -54,21 +51,22 @@ class BurpExtender(IBurpExtender, ITab):
 
         return pane
 
-    # TODO: Make the tree creation dynamic using a JSON file
+    # Creates the tree dynamically using a JSON file
     def create_checklist_tree(self):
+        data = self.data
+        functionality = data["functionality"]
+
         root = DefaultMutableTreeNode("Functionality")
 
-        account = DefaultMutableTreeNode("Account")
-        account.add(DefaultMutableTreeNode("Cross Site Scripting"))
-        account.add(DefaultMutableTreeNode("Cross Site Request Forgery"))
-        account.add(DefaultMutableTreeNode("SQL Injection"))
+        # TODO: Sort the functionality by name
+        for functionality_name in functionality:
+            vulns = functionality[functionality_name]["vulns"]
+            node = DefaultMutableTreeNode(functionality_name)
 
-        search = DefaultMutableTreeNode("Search")
-        search.add(DefaultMutableTreeNode("Cross Site Scripting"))
-        search.add(DefaultMutableTreeNode("SQL Injection"))
+            for vuln_name in vulns:
+                node.add(DefaultMutableTreeNode(vuln_name))
 
-        root.add(account)
-        root.add(search)
+            root.add(node)
 
         return root
 
@@ -91,19 +89,20 @@ class TSL(TreeSelectionListener):
     def valueChanged(self, tse):
         pane = self.pane
         node = self.tree.getLastSelectedPathComponent()
+        parent = node.getParent().toString()
 
         if node:
             if node.isLeaf():
-                pane.setRightComponent(JLabel(node.toString()))
+                pane.setRightComponent(self.create_tabs(node, parent))
             else:
                 pane.setRightComponent(JLabel(node.toString()))
         else:
-            pane.setRightComponent(JLabel(node.toString() + ' else'))
+            pane.setRightComponent(JLabel('WAT'))
 
     # TODO: Make the tabs dynamically using the JSON file
-    def create_tabs(self):
+    def create_tabs(self, node, parent):
         description_panel = JScrollPane(
-            JLabel(str(self.data))
+            JLabel(parent)
         )
 
         resources_panel = JScrollPane(
@@ -114,4 +113,4 @@ class TSL(TreeSelectionListener):
         tabbed_pane.add("Description", description_panel)
         tabbed_pane.add("Resources", resources_panel)
 
-        return
+        return tabbed_pane
