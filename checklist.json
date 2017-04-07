@@ -23,7 +23,10 @@
           },
           "Cross Site Scripting": {
             "description": "Check all parameters that present any kind of reflection.",
-            "resources": [],
+            "resources": [
+              "https://www.owasp.org/index.php/Top_10_2013-A3-Cross-Site_Scripting_(XSS)",
+              "https://www.owasp.org/index.php/Top_10_2013-A3-Cross-Site_Scripting_(XSS)"
+            ],
             "vrt": {
               "priority": "",
               "class": ""
@@ -68,7 +71,7 @@
           },
           "Cross Site Scripting": {
             "description": "Check all parameters that present any kind of reflection.",
-            "resources": [],
+            "resources": ["https://www.owasp.org/index.php/Top_10_2013-A3-Cross-Site_Scripting_(XSS)"],
             "vrt": {
               "priority": "",
               "class": ""
@@ -105,7 +108,7 @@
         "vulns": {
           "Cross Site Scripting": {
             "description": "Check all parameters that present any kind of reflection.",
-            "resources": [],
+            "resources": ["https://www.owasp.org/index.php/Top_10_2013-A3-Cross-Site_Scripting_(XSS)"],
             "vrt": {
               "priority": "",
               "class": ""
@@ -142,7 +145,7 @@
           },
           "Cross Site Scripting": {
             "description": "Check all parameters that present any kind of reflection.",
-            "resources": [],
+            "resources": ["https://www.owasp.org/index.php/Top_10_2013-A3-Cross-Site_Scripting_(XSS)"],
             "vrt": {
               "priority": "",
               "class": ""
@@ -224,7 +227,7 @@
         "vulns": {
           "Cross Site Scripting": {
             "description": "Check all parameters that present any kind of reflection.",
-            "resources": [],
+            "resources": ["https://www.owasp.org/index.php/Top_10_2013-A3-Cross-Site_Scripting_(XSS)"],
             "vrt": {
               "priority": "",
               "class": ""
@@ -253,7 +256,7 @@
         "vulns": {
           "Cross Site Scripting": {
             "description": "Check all parameters that present any kind of reflection when uploading a file.",
-            "resources": [],
+            "resources": ["https://www.owasp.org/index.php/Top_10_2013-A3-Cross-Site_Scripting_(XSS)"],
             "vrt": {
               "priority": "",
               "class": ""
@@ -304,16 +307,16 @@
               "class": ""
             }
           },
-          "Missing Function Level Access Control - Server-Side Request Forgery": {
-            "description": "Check for SSRF on requests that present themselves as doing server type functionality from the client side.",
+          "Server-Side Injection - XML External Entity Injection": {
+            "description": "Check for XXE on requests that present themselves with the HTTP response Content-Type of application/xml.",
             "resources": [],
             "vrt": {
               "priority": "",
               "class": ""
             }
           },
-          "Server-Side Injection - XML External Entity Injection": {
-            "description": "Check for XXE on requests that present themselves with the HTTP response Content-Type of application/xml.",
+          "Server-Side Request Forgery": {
+            "description": "Check for SSRF on requests that present themselves as doing server type functionality from the client side.",
             "resources": [],
             "vrt": {
               "priority": "",
@@ -335,7 +338,7 @@
         "vulns": {
           "Cross Site Scripting": {
             "description": "Check all parameters that present any kind of reflection when uploading a file.",
-            "resources": [],
+            "resources": ["https://www.owasp.org/index.php/Top_10_2013-A3-Cross-Site_Scripting_(XSS)"],
             "vrt": {
               "priority": "",
               "class": ""
@@ -356,7 +359,7 @@
         "vulns": {
           "Cross Site Scripting": {
             "description": "Check all parameters that present any kind of reflection.",
-            "resources": [],
+            "resources": ["https://www.owasp.org/index.php/Top_10_2013-A3-Cross-Site_Scripting_(XSS)"],
             "vrt": {
               "priority": "",
               "class": ""
