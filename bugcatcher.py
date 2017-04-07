@@ -1,3 +1,4 @@
+import ast
 import json
 from burp import IBurpExtender
 from burp import ITab
@@ -9,24 +10,32 @@ from javax.swing import JSplitPane
 from javax.swing import JScrollPane
 from javax.swing import JTabbedPane
 from javax.swing import JTree
-from javax.swing import SwingConstants
 from javax.swing.event import TreeSelectionEvent
 from javax.swing.event import TreeSelectionListener
 from javax.swing.tree import DefaultMutableTreeNode
 from javax.swing.tree import TreeSelectionModel
-from java.io import PrintWriter
 
 class BurpExtender(IBurpExtender, ITab):
     EXTENSION_NAME = "Bug Catcher"
 
     def registerExtenderCallbacks(self, callbacks):
         self.callbacks = callbacks
+        self.data = self.get_data()
         self.pane = self.create_pane()
         self.helpers = callbacks.getHelpers()
         self.callbacks.setExtensionName(self.EXTENSION_NAME)
         self.callbacks.addSuiteTab(self)
 
         return
+
+    def get_data(self):
+        with open("checklist.json") as data_file:
+            data = json.load(data_file)
+            data = str(data)
+            data = ast.literal_eval(data)
+            checklist = data.get("checklist")
+
+        return checklist
 
     def create_pane(self):
         self.status = JLabel('Nothing selected')
@@ -41,12 +50,13 @@ class BurpExtender(IBurpExtender, ITab):
                 JScrollPane(tree),
                 JScrollPane(self.status))
 
-        tree.addTreeSelectionListener(TSL(tree, pane))
+        tree.addTreeSelectionListener(TSL(tree, pane, self.data))
 
         return pane
 
+    # TODO: Make the tree creation dynamic using a JSON file
     def create_checklist_tree(self):
-        root = DefaultMutableTreeNode("Bug Catcher Checklist")
+        root = DefaultMutableTreeNode("Functionality")
 
         account = DefaultMutableTreeNode("Account")
         account.add(DefaultMutableTreeNode("Cross Site Scripting"))
@@ -68,17 +78,32 @@ class BurpExtender(IBurpExtender, ITab):
     def getUiComponent(self):
         return self.pane
 
+class Data():
+    def __init__(self):
+        return
+
 class TSL(TreeSelectionListener):
-    def __init__(self, tree, pane):
+    def __init__(self, tree, pane, data):
         self.tree = tree
         self.pane = pane
+        self.data = data
 
     def valueChanged(self, tse):
         pane = self.pane
         node = self.tree.getLastSelectedPathComponent()
 
+        if node:
+            if node.isLeaf():
+                pane.setRightComponent(JLabel(node.toString()))
+            else:
+                pane.setRightComponent(JLabel(node.toString()))
+        else:
+            pane.setRightComponent(JLabel(node.toString() + ' else'))
+
+    # TODO: Make the tabs dynamically using the JSON file
+    def create_tabs(self):
         description_panel = JScrollPane(
-            JLabel(node.toString())
+            JLabel(str(self.data))
         )
 
         resources_panel = JScrollPane(
@@ -89,11 +114,4 @@ class TSL(TreeSelectionListener):
         tabbed_pane.add("Description", description_panel)
         tabbed_pane.add("Resources", resources_panel)
 
-        if node:
-            if node.isLeaf():
-                pane.setRightComponent(tabbed_pane)
-            else:
-                pane.setRightComponent(tabbed_pane)
-        else:
-            pane.setRightComponent(tabbed_pane)
-
+        return
