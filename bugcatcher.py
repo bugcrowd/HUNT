@@ -8,12 +8,15 @@ from javax.swing import JPanel
 from javax.swing import JSplitPane
 from javax.swing import JScrollPane
 from javax.swing import JTabbedPane
+from javax.swing import JTextArea
 from javax.swing import JTree
 from javax.swing.event import TreeSelectionEvent
 from javax.swing.event import TreeSelectionListener
 from javax.swing.tree import DefaultMutableTreeNode
 from javax.swing.tree import TreeSelectionModel
 
+# TODO: Refactor to move functions into their own classes based on
+# functionality
 class BurpExtender(IBurpExtender, ITab):
     EXTENSION_NAME = "Bug Catcher"
 
@@ -34,8 +37,13 @@ class BurpExtender(IBurpExtender, ITab):
 
         return checklist
 
+    # Creates a tree event listener to dynamically render each vuln class
+    # as its own pane
     def create_pane(self):
-        self.status = JLabel('Nothing selected')
+        status = JTextArea()
+        status.setLineWrap(True)
+        status.setText("Nothing selected")
+        self.status = status
 
         checklist_tree = self.create_checklist_tree()
         tree = JTree(checklist_tree)
@@ -45,13 +53,15 @@ class BurpExtender(IBurpExtender, ITab):
 
         pane = JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
                 JScrollPane(tree),
-                JScrollPane(self.status))
+                JScrollPane(self.status)
+        )
 
         tree.addTreeSelectionListener(TSL(tree, pane, self.data))
 
         return pane
 
-    # Creates the tree dynamically using a JSON file
+    # TODO: Create nodes for Program Brief and Targets
+    # Creates the tree dynamically using the JSON file
     def create_checklist_tree(self):
         data = self.data
         functionality = data["functionality"]
@@ -76,6 +86,7 @@ class BurpExtender(IBurpExtender, ITab):
     def getUiComponent(self):
         return self.pane
 
+# TODO: Put function for getting data here
 class Data():
     def __init__(self):
         return
@@ -95,19 +106,37 @@ class TSL(TreeSelectionListener):
             if node.isLeaf():
                 pane.setRightComponent(self.create_tabs(node, parent))
             else:
-                pane.setRightComponent(JLabel(node.toString()))
+                name = node.toString()
+                functionality_textarea = JTextArea()
+                functionality_textarea.setLineWrap(True)
+                functionality_textarea.setText(name)
+
+                pane.setRightComponent(functionality_textarea)
         else:
-            pane.setRightComponent(JLabel('WAT'))
+            pane.setRightComponent(JLabel('I AM ERROR'))
 
-    # TODO: Make the tabs dynamically using the JSON file
+    # Creates the tabs dynamically using data from the JSON file
     def create_tabs(self, node, parent):
-        description_panel = JScrollPane(
-            JLabel(parent)
-        )
+        vuln_name = node.toString()
+        description_text = str(self.data["functionality"][parent]["vulns"][vuln_name]["description"])
+        resource_urls = self.data["functionality"][parent]["vulns"][vuln_name]["resources"]
+        resource_text = ""
 
-        resources_panel = JScrollPane(
-            JLabel(node.toString())
-        )
+        for url in resource_urls:
+            resource_text = resource_text + str(url) + "\n"
+
+        # Renders the description tab
+        description_textarea = JTextArea()
+        description_textarea.setLineWrap(True)
+        description_textarea.setText(description_text)
+        description_panel = JScrollPane(description_textarea)
+
+        # Renders the resources tab
+        resource_textarea = JTextArea()
+        resource_textarea.setLineWrap(True)
+        resource_textarea.setWrapStyleWord(True)
+        resource_textarea.setText(resource_text)
+        resources_panel = JScrollPane(resource_textarea)
 
         tabbed_pane = JTabbedPane()
         tabbed_pane.add("Description", description_panel)
