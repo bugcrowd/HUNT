@@ -37,6 +37,12 @@ class BurpExtender(IBurpExtender, IContextMenuFactory, ITab):
         return
 
     def createMenuItems(self, invocation):
+        # Do not create a menu item unless getting a context menu from the proxy history
+        is_proxy_history = invocation.getInvocationContext() == invocation.CONTEXT_PROXY_HISTORY
+
+        if not is_proxy_history:
+            return
+
         data = self.data
         functionality = data["functionality"]
 
@@ -50,15 +56,17 @@ class BurpExtender(IBurpExtender, IContextMenuFactory, ITab):
 
             for vuln_name in vulns:
                 item_vuln = JMenuItem(vuln_name)
-                menu_vuln.add(vuln_name)
+                menu_vuln.add(vuln_name)#, self.set_menu(functionality_name, vuln_name))
 
             bugcatcher_menu.add(menu_vuln)
-
 
         burp_menu = []
         burp_menu.append(bugcatcher_menu)
 
         return burp_menu
+
+    def set_menu(self, functionality_name, vuln_name):
+        return
 
     # TODO: Move to Data class
     def get_data(self):
