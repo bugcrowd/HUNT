@@ -40,12 +40,17 @@ class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, 
 
     def __init__(self):
         self.data = self.get_data()
+        self.checklist = self.create_checklist()
+        self.tree = self.create_tree()
         self.pane = self.create_pane()
+
+        self.create_tabs()
 
     # TODO: Use invokeLater()
     def registerExtenderCallbacks(self, callbacks):
         self.callbacks = callbacks
         self.helpers = callbacks.getHelpers()
+        self.callbacks.registerExtensionStateListener(self)
         self.callbacks.setExtensionName(self.EXTENSION_NAME)
         self.callbacks.addSuiteTab(self)
         self.callbacks.registerContextMenuFactory(self)
@@ -93,37 +98,11 @@ class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, 
 
         return checklist
 
-    # TODO: Move to View class
-    # TODO: Figure out how to use JCheckboxTree instead of a simple JTree
-    # TODO: Change icons to Bugcrowd logo for brief, VRT logo for vulns,
-    #       bullseye for Targets, etc
-    # Creates a tree event listener to dynamically render each vuln class
-    # as its own pane
-    def create_pane(self):
-        status = JTextArea()
-        status.setLineWrap(True)
-        status.setText("Nothing selected")
-        self.status = status
-
-        checklist_tree = self.create_checklist_tree()
-        tree = JTree(checklist_tree)
-        tree.getSelectionModel().setSelectionMode(
-            TreeSelectionModel.SINGLE_TREE_SELECTION
-        )
-
-        pane = JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
-                JScrollPane(tree),
-                JTabbedPane()
-        )
-
-        tree.addTreeSelectionListener(TSL(tree, pane, self.data))
-
-        return pane
-
+    # TODO: Maintain state persistence
     # TODO: Move to View class
     # TODO: Use Bugcrowd API to grab the Program Brief and Targets
-    # Creates the tree dynamically using the JSON file
-    def create_checklist_tree(self):
+    # Creates a DefaultMutableTreeNode using the JSON file data
+    def create_checklist(self):
         data = self.data
         functionality = data["functionality"]
 
@@ -143,11 +122,50 @@ class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, 
 
         return root
 
+    # Creates a JTree object from the checklist
+    def create_tree(self):
+        tree = JTree(self.checklist)
+        tree.getSelectionModel().setSelectionMode(
+            TreeSelectionModel.SINGLE_TREE_SELECTION
+        )
+
+        return tree
+
+    # TODO: Move to View class
+    # TODO: Figure out how to use JCheckboxTree instead of a simple JTree
+    # TODO: Change icons to Bugcrowd logo for brief, VRT logo for vulns,
+    #       bullseye for Targets, etc
+    # Creates a tree event listener to dynamically render each vuln class
+    # as its own pane
+    def create_pane(self):
+        status = JTextArea()
+        status.setLineWrap(True)
+        status.setText("Nothing selected")
+        self.status = status
+
+        pane = JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
+                JScrollPane(self.tree),
+                JTabbedPane()
+        )
+
+        return pane
+
+    # Create a JTabbedPane instance for each entry in the JTree
+    def create_tabs(self):
+        tabs = TSL(self.tree, self.pane, self.data)
+        self.tree.addTreeSelectionListener(tabs)
+
+        return
+
     def getTabCaption(self):
         return self.EXTENSION_NAME
 
     def getUiComponent(self):
         return self.pane
+
+    def extensionUnloaded(self):
+        print "Bug Catcher plugin unloaded"
+        return
 
 class MenuItem(ActionListener):
     def __init__(self, pane, functionality_name, vuln_name):
@@ -168,11 +186,54 @@ class Data():
     def __init__(self):
         return
 
+# TODO: Put all functions pertaining to creating the Burp views
+class View():
+    def __init__(self):
+        return
+
 class TSL(TreeSelectionListener):
     def __init__(self, tree, pane, data):
         self.tree = tree
         self.pane = pane
         self.data = data
+
+    # Creates the tabs dynamically using data from the JSON file
+    def create_tabs(self, node, parent):
+        functionality_name = node.getParent().toString()
+        vuln_name = node.toString()
+
+        description_text = str(self.data["functionality"][parent]["vulns"][vuln_name]["description"])
+        resource_urls = self.data["functionality"][parent]["vulns"][vuln_name]["resources"]
+        resource_text = ""
+
+        print "Create new tabs for " + vuln_name
+
+        for url in resource_urls:
+            resource_text = resource_text + str(url) + "\n"
+
+        # Renders the description tab
+        description_textarea = JTextArea()
+        description_textarea.setLineWrap(True)
+        description_textarea.setText(description_text)
+        description_panel = JScrollPane(description_textarea)
+
+        # Renders the bugs tab
+        bugs_tabs = JTabbedPane()
+        bugs_panel = JScrollPane(bugs_tabs)
+
+        # Renders the resources tab
+        resource_textarea = JTextArea()
+        resource_textarea.setLineWrap(True)
+        resource_textarea.setWrapStyleWord(True)
+        resource_textarea.setText(resource_text)
+        resources_panel = JScrollPane(resource_textarea)
+
+        tabs = JTabbedPane()
+        tabs.add("Description", description_panel)
+        tabs.add("Bugs", bugs_panel)
+        tabs.add("Resources", resources_panel)
+
+        return tabs
 
     def valueChanged(self, tse):
         pane = self.pane
@@ -183,6 +244,8 @@ class TSL(TreeSelectionListener):
         is_brief = is_leaf and (node.toString() == "Program Brief")
         is_target = is_leaf and (node.toString() == "Targets")
         is_functionality = is_leaf and not (is_brief or is_target)
+
+        print "TSL called for " + node.toString()
 
         if node:
             if is_functionality:
@@ -209,39 +272,6 @@ class TSL(TreeSelectionListener):
         else:
             pane.setRightComponent(JLabel('I AM ERROR'))
 
-    # Creates the tabs dynamically using data from the JSON file
-    def create_tabs(self, node, parent):
-        vuln_name = node.toString()
-        description_text = str(self.data["functionality"][parent]["vulns"][vuln_name]["description"])
-        resource_urls = self.data["functionality"][parent]["vulns"][vuln_name]["resources"]
-        resource_text = ""
-
-        for url in resource_urls:
-            resource_text = resource_text + str(url) + "\n"
-
-        # Renders the description tab
-        description_textarea = JTextArea()
-        description_textarea.setLineWrap(True)
-        description_textarea.setText(description_text)
-        description_panel = JScrollPane(description_textarea)
-
-        # Renders the bugs tab
-        bugs_tabs = JTabbedPane()
-        bugs_panel = JScrollPane(bugs_tabs)
-
-        # Renders the resources tab
-        resource_textarea = JTextArea()
-        resource_textarea.setLineWrap(True)
-        resource_textarea.setWrapStyleWord(True)
-        resource_textarea.setText(resource_text)
-        resources_panel = JScrollPane(resource_textarea)
-
-        tabbed_pane = JTabbedPane()
-        tabbed_pane.add("Description", description_panel)
-        tabbed_pane.add("Bugs", bugs_panel)
-        tabbed_pane.add("Resources", resources_panel)
-
-        return tabbed_pane
 
 if __name__ in [ '__main__', 'main' ] :
     EventQueue.invokeLater(Run(BurpExtender))
