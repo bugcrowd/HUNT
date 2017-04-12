@@ -1,8 +1,13 @@
 import json
 from burp import IBurpExtender
+from burp import IExtensionStateListener
 from burp import IContextMenuFactory
 from burp import IContextMenuInvocation
 from burp import ITab
+from java.awt import EventQueue
+from java.awt.event import ActionEvent
+from java.awt.event import ActionListener
+from java.lang import Runnable
 from javax import swing
 from javax.swing import JCheckBox
 from javax.swing import JMenu
@@ -20,19 +25,30 @@ from javax.swing.event import TreeSelectionListener
 from javax.swing.tree import DefaultMutableTreeNode
 from javax.swing.tree import TreeSelectionModel
 
+# Using the Runnable class for thread-safety with Swing
+class Run(Runnable):
+    def __init__(self, runner):
+        self.runner = runner
+
+    def run(self):
+        self.runner()
+
 # TODO: Refactor to move functions into their own classes based on
 # functionality
-class BurpExtender(IBurpExtender, IContextMenuFactory, ITab):
+class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, ITab):
     EXTENSION_NAME = "Bug Catcher"
 
-    def registerExtenderCallbacks(self, callbacks):
-        self.callbacks = callbacks
+    def __init__(self):
         self.data = self.get_data()
         self.pane = self.create_pane()
+
+    # TODO: Use invokeLater()
+    def registerExtenderCallbacks(self, callbacks):
+        self.callbacks = callbacks
         self.helpers = callbacks.getHelpers()
         self.callbacks.setExtensionName(self.EXTENSION_NAME)
-        self.callbacks.registerContextMenuFactory(self)
         self.callbacks.addSuiteTab(self)
+        self.callbacks.registerContextMenuFactory(self)
 
         return
 
@@ -44,6 +60,7 @@ class BurpExtender(IBurpExtender, IContextMenuFactory, ITab):
             return
 
         data = self.data
+        pane = self.pane
         functionality = data["functionality"]
 
         # Create the menu item for the Burp context menu
@@ -54,9 +71,12 @@ class BurpExtender(IBurpExtender, IContextMenuFactory, ITab):
             vulns = functionality[functionality_name]["vulns"]
             menu_vuln = JMenu(functionality_name)
 
+            # Create a menu item and an action listener per vulnerability
+            # class on each functionality
             for vuln_name in vulns:
                 item_vuln = JMenuItem(vuln_name)
-                menu_vuln.add(vuln_name)#, self.set_menu(functionality_name, vuln_name))
+                item_vuln.addActionListener(MenuItem(pane, functionality_name, vuln_name))
+                menu_vuln.add(item_vuln)
 
             bugcatcher_menu.add(menu_vuln)
 
@@ -64,9 +84,6 @@ class BurpExtender(IBurpExtender, IContextMenuFactory, ITab):
         burp_menu.append(bugcatcher_menu)
 
         return burp_menu
-
-    def set_menu(self, functionality_name, vuln_name):
-        return
 
     # TODO: Move to Data class
     def get_data(self):
@@ -96,7 +113,7 @@ class BurpExtender(IBurpExtender, IContextMenuFactory, ITab):
 
         pane = JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
                 JScrollPane(tree),
-                JScrollPane(self.status)
+                JTabbedPane()
         )
 
         tree.addTreeSelectionListener(TSL(tree, pane, self.data))
@@ -131,6 +148,20 @@ class BurpExtender(IBurpExtender, IContextMenuFactory, ITab):
 
     def getUiComponent(self):
         return self.pane
+
+class MenuItem(ActionListener):
+    def __init__(self, pane, functionality_name, vuln_name):
+        self.pane = pane
+        self.functionality_name = functionality_name
+        self.vuln_name = vuln_name
+
+    def actionPerformed(self, e):
+        right_pane = self.pane.getRightComponent()
+
+        request_tab = JLabel(self.functionality_name + " - " + self.vuln_name)
+        request_panel = JScrollPane(request_tab)
+
+        self.pane.getRightComponent().addTab(self.vuln_name, None)
 
 # TODO: Put function for getting data here
 class Data():
@@ -195,8 +226,8 @@ class TSL(TreeSelectionListener):
         description_panel = JScrollPane(description_textarea)
 
         # Renders the bugs tab
-        bugs_textarea = JScrollPane()
-        bugs_panel = JScrollPane(bugs_textarea)
+        bugs_tabs = JTabbedPane()
+        bugs_panel = JScrollPane(bugs_tabs)
 
         # Renders the resources tab
         resource_textarea = JTextArea()
@@ -211,3 +242,6 @@ class TSL(TreeSelectionListener):
         tabbed_pane.add("Resources", resources_panel)
 
         return tabbed_pane
+
+if __name__ in [ '__main__', 'main' ] :
+    EventQueue.invokeLater(Run(BurpExtender))
