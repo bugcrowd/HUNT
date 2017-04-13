@@ -43,10 +43,9 @@ class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, 
         self.checklist = self.create_checklist()
         self.tree = self.create_tree()
         self.pane = self.create_pane()
+        self.tabbed_panes = self.create_tabbed_panes()
+        self.create_tsl()
 
-        self.create_tabs()
-
-    # TODO: Use invokeLater()
     def registerExtenderCallbacks(self, callbacks):
         self.callbacks = callbacks
         self.helpers = callbacks.getHelpers()
@@ -64,9 +63,7 @@ class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, 
         if not is_proxy_history:
             return
 
-        data = self.data
-        pane = self.pane
-        functionality = data["functionality"]
+        functionality = self.data["functionality"]
 
         # Create the menu item for the Burp context menu
         bugcatcher_menu = JMenu("Send to Bug Catcher")
@@ -80,7 +77,7 @@ class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, 
             # class on each functionality
             for vuln_name in vulns:
                 item_vuln = JMenuItem(vuln_name)
-                item_vuln.addActionListener(MenuItem(pane, functionality_name, vuln_name))
+                item_vuln.addActionListener(MenuItem(self.tree, self.pane, functionality_name, vuln_name, self.tabbed_panes))
                 menu_vuln.add(item_vuln)
 
             bugcatcher_menu.add(menu_vuln)
@@ -89,6 +86,16 @@ class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, 
         burp_menu.append(bugcatcher_menu)
 
         return burp_menu
+
+    def getTabCaption(self):
+        return self.EXTENSION_NAME
+
+    def getUiComponent(self):
+        return self.pane
+
+    def extensionUnloaded(self):
+        print "Bug Catcher plugin unloaded"
+        return
 
     # TODO: Move to Data class
     def get_data(self):
@@ -150,36 +157,84 @@ class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, 
 
         return pane
 
-    # Create a JTabbedPane instance for each entry in the JTree
-    def create_tabs(self):
-        tabs = TSL(self.tree, self.pane, self.data)
-        self.tree.addTreeSelectionListener(tabs)
+    def create_tsl(self):
+        tsl = TSL(self.tree, self.pane, self.data, self.tabbed_panes)
+        self.tree.addTreeSelectionListener(tsl)
 
         return
 
-    def getTabCaption(self):
-        return self.EXTENSION_NAME
+    # Creates the tabs dynamically using data from the JSON file
+    def create_tabbed_panes(self):
+        functionality = self.data["functionality"]
+        tabbed_panes = {}
 
-    def getUiComponent(self):
-        return self.pane
+        for functionality_name in functionality:
+            vulns = functionality[functionality_name]["vulns"]
 
-    def extensionUnloaded(self):
-        print "Bug Catcher plugin unloaded"
-        return
+            for vuln_name in vulns:
+                key = functionality_name + "." + vuln_name
+                tabbed_pane = self.create_tabbed_pane(functionality_name, vuln_name)
+                tabbed_panes[key] = tabbed_pane
+
+        return tabbed_panes
+
+    # Creates a JTabbedPane for each vulnerability per functionality
+    def create_tabbed_pane(self, functionality_name, vuln_name):
+        description_tab = self.create_description_tab(functionality_name, vuln_name)
+        bugs_tab = self.create_bugs_tab()
+        resources_tab = self.create_resource_tab(functionality_name, vuln_name)
+
+        tabbed_pane = JTabbedPane()
+        tabbed_pane.add("Description", description_tab)
+        tabbed_pane.add("Bugs", bugs_tab)
+        tabbed_pane.add("Resources", resources_tab)
+
+        return tabbed_pane
+
+    # Creates the description panel
+    def create_description_tab(self, fn, vn):
+        description_text = str(self.data["functionality"][fn]["vulns"][vn]["description"])
+        description_textarea = JTextArea()
+        description_textarea.setLineWrap(True)
+        description_textarea.setText(description_text)
+        description_panel = JScrollPane(description_textarea)
+
+        return description_panel
+
+    # Creates the bugs panel
+    def create_bugs_tab(self):
+        bugs_tab = JTabbedPane()
+
+        return bugs_tab
+
+    # Creates the resources panel
+    def create_resource_tab(self, fn, vn):
+        resource_urls = self.data["functionality"][fn]["vulns"][vn]["resources"]
+        resource_text = ""
+
+        for url in resource_urls:
+            resource_text = resource_text + str(url) + "\n"
+
+        resource_textarea = JTextArea()
+        resource_textarea.setLineWrap(True)
+        resource_textarea.setWrapStyleWord(True)
+        resource_textarea.setText(resource_text)
+        resources_panel = JScrollPane(resource_textarea)
+
+        return resources_panel
 
 class MenuItem(ActionListener):
-    def __init__(self, pane, functionality_name, vuln_name):
+    def __init__(self, tree, pane, functionality_name, vuln_name, tabbed_panes):
+        self.tree = tree
         self.pane = pane
-        self.functionality_name = functionality_name
-        self.vuln_name = vuln_name
+        self.key = functionality_name + "." + vuln_name
+        self.tabbed_panes = tabbed_panes
 
     def actionPerformed(self, e):
-        right_pane = self.pane.getRightComponent()
+        bugs_tab = self.tabbed_panes[self.key].getComponentAt(1)
+        tab_count = str(bugs_tab.getTabCount())
+        bugs_tab.add(tab_count, JScrollPane())
 
-        request_tab = JLabel(self.functionality_name + " - " + self.vuln_name)
-        request_panel = JScrollPane(request_tab)
-
-        self.pane.getRightComponent().addTab(self.vuln_name, None)
 
 # TODO: Put function for getting data here
 class Data():
@@ -192,64 +247,29 @@ class View():
         return
 
 class TSL(TreeSelectionListener):
-    def __init__(self, tree, pane, data):
+    def __init__(self, tree, pane, data, tabbed_panes):
         self.tree = tree
         self.pane = pane
         self.data = data
-
-    # Creates the tabs dynamically using data from the JSON file
-    def create_tabs(self, node, parent):
-        functionality_name = node.getParent().toString()
-        vuln_name = node.toString()
-
-        description_text = str(self.data["functionality"][parent]["vulns"][vuln_name]["description"])
-        resource_urls = self.data["functionality"][parent]["vulns"][vuln_name]["resources"]
-        resource_text = ""
-
-        print "Create new tabs for " + vuln_name
-
-        for url in resource_urls:
-            resource_text = resource_text + str(url) + "\n"
-
-        # Renders the description tab
-        description_textarea = JTextArea()
-        description_textarea.setLineWrap(True)
-        description_textarea.setText(description_text)
-        description_panel = JScrollPane(description_textarea)
-
-        # Renders the bugs tab
-        bugs_tabs = JTabbedPane()
-        bugs_panel = JScrollPane(bugs_tabs)
-
-        # Renders the resources tab
-        resource_textarea = JTextArea()
-        resource_textarea.setLineWrap(True)
-        resource_textarea.setWrapStyleWord(True)
-        resource_textarea.setText(resource_text)
-        resources_panel = JScrollPane(resource_textarea)
-
-        tabs = JTabbedPane()
-        tabs.add("Description", description_panel)
-        tabs.add("Bugs", bugs_panel)
-        tabs.add("Resources", resources_panel)
-
-        return tabs
+        self.tabbed_panes = tabbed_panes
 
     def valueChanged(self, tse):
         pane = self.pane
         node = self.tree.getLastSelectedPathComponent()
-        parent = node.getParent().toString()
+
+        vuln_name = node.toString()
+        functionality_name = node.getParent().toString()
 
         is_leaf = node.isLeaf()
-        is_brief = is_leaf and (node.toString() == "Program Brief")
-        is_target = is_leaf and (node.toString() == "Targets")
+        is_brief = is_leaf and (vuln_name == "Program Brief")
+        is_target = is_leaf and (vuln_name == "Targets")
         is_functionality = is_leaf and not (is_brief or is_target)
-
-        print "TSL called for " + node.toString()
 
         if node:
             if is_functionality:
-                pane.setRightComponent(self.create_tabs(node, parent))
+                key = functionality_name + "." + vuln_name
+                tabbed_pane = self.tabbed_panes[key]
+                pane.setRightComponent(tabbed_pane)
             elif is_brief:
                 brief_textarea = JTextArea()
                 brief_textarea.setLineWrap(True)
