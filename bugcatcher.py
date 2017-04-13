@@ -5,11 +5,8 @@ from burp import IContextMenuFactory
 from burp import IContextMenuInvocation
 from burp import ITab
 from java.awt import EventQueue
-from java.awt.event import ActionEvent
 from java.awt.event import ActionListener
 from java.lang import Runnable
-from javax import swing
-from javax.swing import JCheckBox
 from javax.swing import JMenu
 from javax.swing import JMenuBar
 from javax.swing import JMenuItem
@@ -34,7 +31,7 @@ class Run(Runnable):
         self.runner()
 
 # TODO: Refactor to move functions into their own classes based on
-# functionality
+#       functionality
 class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, ITab):
     EXTENSION_NAME = "Bug Catcher"
 
@@ -53,8 +50,6 @@ class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, 
         self.callbacks.setExtensionName(self.EXTENSION_NAME)
         self.callbacks.addSuiteTab(self)
         self.callbacks.registerContextMenuFactory(self)
-
-        return
 
     def createMenuItems(self, invocation):
         # Do not create a menu item unless getting a context menu from the proxy history
@@ -105,7 +100,6 @@ class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, 
 
         return checklist
 
-    # TODO: Maintain state persistence
     # TODO: Move to View class
     # TODO: Use Bugcrowd API to grab the Program Brief and Targets
     # Creates a DefaultMutableTreeNode using the JSON file data
@@ -140,10 +134,9 @@ class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, 
 
     # TODO: Move to View class
     # TODO: Figure out how to use JCheckboxTree instead of a simple JTree
-    # TODO: Change icons to Bugcrowd logo for brief, VRT logo for vulns,
-    #       bullseye for Targets, etc
-    # Creates a tree event listener to dynamically render each vuln class
-    # as its own pane
+    # TODO: Change to briefcase icon for brief, P1-P5 icons for vulns,
+    #       bullseye icon for Targets, etc
+    # Create a JSplitPlane with a JTree to the left and JTabbedPane to right
     def create_pane(self):
         status = JTextArea()
         status.setLineWrap(True)
@@ -183,11 +176,13 @@ class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, 
         description_tab = self.create_description_tab(functionality_name, vuln_name)
         bugs_tab = self.create_bugs_tab()
         resources_tab = self.create_resource_tab(functionality_name, vuln_name)
+        notes_tab = self.create_notes_tab()
 
         tabbed_pane = JTabbedPane()
         tabbed_pane.add("Description", description_tab)
         tabbed_pane.add("Bugs", bugs_tab)
         tabbed_pane.add("Resources", resources_tab)
+        tabbed_pane.add("Notes", notes_tab)
 
         return tabbed_pane
 
@@ -201,6 +196,7 @@ class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, 
 
         return description_panel
 
+    # TODO: Add functionality to remove tabs
     # Creates the bugs panel
     def create_bugs_tab(self):
         bugs_tab = JTabbedPane()
@@ -223,6 +219,11 @@ class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, 
 
         return resources_panel
 
+    def create_notes_tab(self):
+        notes_textarea = JTextArea()
+
+        return notes_textarea
+
 class MenuItem(ActionListener):
     def __init__(self, tree, pane, functionality_name, vuln_name, tabbed_panes):
         self.tree = tree
@@ -234,7 +235,6 @@ class MenuItem(ActionListener):
         bugs_tab = self.tabbed_panes[self.key].getComponentAt(1)
         tab_count = str(bugs_tab.getTabCount())
         bugs_tab.add(tab_count, JScrollPane())
-
 
 # TODO: Put function for getting data here
 class Data():
@@ -260,6 +260,7 @@ class TSL(TreeSelectionListener):
         vuln_name = node.toString()
         functionality_name = node.getParent().toString()
 
+        # TODO: Move Program Brief and Targets nodes creation elsewhere
         is_leaf = node.isLeaf()
         is_brief = is_leaf and (vuln_name == "Program Brief")
         is_target = is_leaf and (vuln_name == "Targets")
