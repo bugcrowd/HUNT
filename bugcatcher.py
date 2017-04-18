@@ -6,7 +6,9 @@ from burp import IContextMenuInvocation
 from burp import ITab
 from java.awt import EventQueue
 from java.awt.event import ActionListener
+from java.awt.event import ItemListener
 from java.lang import Runnable
+from javax.swing import JCheckBox
 from javax.swing import JMenu
 from javax.swing import JMenuBar
 from javax.swing import JMenuItem
@@ -37,6 +39,7 @@ class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, 
 
     def __init__(self):
         self.data = self.get_data()
+        self.issues = self.get_issues()
         self.checklist = self.create_checklist()
         self.tree = self.create_tree()
         self.pane = self.create_pane()
@@ -100,6 +103,13 @@ class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, 
 
         return checklist
 
+    # TODO: Move to Data class
+    def get_issues(self):
+        with open("issues.json") as data_file:
+            issues = json.load(data_file)
+
+        return issues
+
     # TODO: Move to View class
     # TODO: Use Bugcrowd API to grab the Program Brief and Targets
     # Creates a DefaultMutableTreeNode using the JSON file data
@@ -108,6 +118,7 @@ class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, 
         functionality = data["functionality"]
 
         root = DefaultMutableTreeNode("Bug Catcher Check List")
+        root.add(DefaultMutableTreeNode("Settings"))
         root.add(DefaultMutableTreeNode("Program Brief"))
         root.add(DefaultMutableTreeNode("Targets"))
 
@@ -151,7 +162,7 @@ class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, 
         return pane
 
     def create_tsl(self):
-        tsl = TSL(self.tree, self.pane, self.data, self.tabbed_panes)
+        tsl = TSL(self.tree, self.pane, self.data, self.issues, self.tabbed_panes)
         self.tree.addTreeSelectionListener(tsl)
 
         return
@@ -236,6 +247,31 @@ class MenuItem(ActionListener):
         tab_count = str(bugs_tab.getTabCount())
         bugs_tab.add(tab_count, JScrollPane())
 
+# ItemListener that will write back to the issues.json file whenever something on the
+# settings is checked or unchecked
+class Settings(ItemListener):
+    def __init__(self, issues, vuln_names, vuln_name, is_enabled):
+        self.issues = issues
+        self.vuln_names = vuln_names
+        self.vuln_name = vuln_name
+        self.is_enabled = is_enabled
+
+    def itemStateChanged(self, e):
+        is_checked = int(e.getStateChange()) == 1
+        is_unchecked = int(e.getStateChange()) == 2
+
+        if is_checked:
+            self.issues["issues"][self.vuln_name]["enabled"] = True
+            print self.vuln_name + " was checked"
+
+        if is_unchecked:
+            self.issues["issues"][self.vuln_name]["enabled"] = False
+            print self.vuln_name + " was unchecked"
+
+        with open("issues.json", "w") as data:
+            data.write(json.dumps(self.issues, indent=2, sort_keys=True))
+            data.close()
+
 # TODO: Put function for getting data here
 class Data():
     def __init__(self):
@@ -247,10 +283,11 @@ class View():
         return
 
 class TSL(TreeSelectionListener):
-    def __init__(self, tree, pane, data, tabbed_panes):
+    def __init__(self, tree, pane, data, issues, tabbed_panes):
         self.tree = tree
         self.pane = pane
         self.data = data
+        self.issues = issues
         self.tabbed_panes = tabbed_panes
 
     def valueChanged(self, tse):
@@ -262,15 +299,19 @@ class TSL(TreeSelectionListener):
 
         # TODO: Move Program Brief and Targets nodes creation elsewhere
         is_leaf = node.isLeaf()
+        is_settings = is_leaf and (vuln_name == "Settings")
         is_brief = is_leaf and (vuln_name == "Program Brief")
         is_target = is_leaf and (vuln_name == "Targets")
-        is_functionality = is_leaf and not (is_brief or is_target)
+        is_functionality = is_leaf and not (is_settings or is_brief or is_target)
 
         if node:
             if is_functionality:
                 key = functionality_name + "." + vuln_name
                 tabbed_pane = self.tabbed_panes[key]
                 pane.setRightComponent(tabbed_pane)
+            elif is_settings:
+                settings_pane = self.create_settings_pane()
+                pane.setRightComponent(settings_pane)
             elif is_brief:
                 brief_textarea = JTextArea()
                 brief_textarea.setLineWrap(True)
@@ -292,6 +333,20 @@ class TSL(TreeSelectionListener):
                 pane.setRightComponent(functionality_textarea)
         else:
             pane.setRightComponent(JLabel('I AM ERROR'))
+
+    def create_settings_pane(self):
+        pane = JPanel()
+
+        issues = self.issues
+        vuln_names = issues["issues"]
+
+        for vuln_name in vuln_names:
+            is_enabled = vuln_names[vuln_name]["enabled"]
+            enabled_checkbox = JCheckBox(vuln_name, is_enabled)
+            enabled_checkbox.addItemListener(Settings(issues, vuln_names, vuln_name, is_enabled))
+            pane.add(enabled_checkbox)
+
+        return pane
 
 
 if __name__ in [ '__main__', 'main' ] :
