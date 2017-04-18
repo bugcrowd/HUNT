@@ -1,59 +1,62 @@
 {
   "issues": {
-    "sql_injection": {
-      "name": "Possible SQL Injection",
-      "check_location": [
-        "query_string",
-        "post_body"
-      ],
+    "Open Redirect": {
+      "check_location": {
+        "request": true, 
+        "response": false
+      }, 
+      "detail": "There is probably an Open Redirect on the <b>$param$</b> parameter", 
+      "enabled": true, 
+      "level": "Information", 
+      "name": "Possible Open Redirect", 
       "params": [
-        "id",
-        "ids",
-        "query",
-        "userid"
-      ],
-      "level": "Information",
-      "detail": "There is probably SQL Injection on the <b>$param$</b> parameter"
-    },
-    "open_redirect": {
-      "name": "Possible Open Redirect",
-      "check_location": [
-        "query_string",
-        "post_body"
-      ],
+        "dest", 
+        "continue", 
+        "redirect", 
+        "url", 
+        "uri", 
+        "window", 
+        "next"
+      ]
+    }, 
+    "Remote File Inclusion": {
+      "check_location": {
+        "request": true, 
+        "response": false
+      }, 
+      "detail": "There is probably a Remote File Inclusion on the <b>$param$</b> parameter", 
+      "enabled": true, 
+      "level": "Information", 
+      "name": "Possible Remote File Inclusion", 
       "params": [
-          "dest",
-          "continue",
-          "redirect",
-          "url",
-          "uri",
-          "window",
-          "next"
-      ],
-      "level": "Information",
-      "detail": "There is probably an Open Redirect on the <b>$param$</b> parameter"
-    },
-    "rfi": {
-      "name": "Possible Remote File Inclusion",
-      "check_location": [
-        "query_string",
-        "post_body"
-      ],
-      "params": [
-        "file",
-        "document",
-        "folder",
-        "root",
-        "path",
-        "pg",
-        "style",
-        "pdf",
-        "template",
-        "php_path",
+        "file", 
+        "document", 
+        "folder", 
+        "root", 
+        "path", 
+        "pg", 
+        "style", 
+        "pdf", 
+        "template", 
+        "php_path", 
         "doc"
-      ],
-      "level": "Information",
-      "detail": "There is probably a Remote File Inclusion on the <b>$param$</b> parameter"
+      ]
+    }, 
+    "SQL Injection": {
+      "check_location": {
+        "request": true, 
+        "response": false
+      }, 
+      "detail": "There is probably SQL Injection on the <b>$param$</b> parameter", 
+      "enabled": true, 
+      "level": "Severe", 
+      "name": "Possible SQL Injection", 
+      "params": [
+        "id", 
+        "ids", 
+        "query", 
+        "userid"
+      ]
     }
   }
 }
