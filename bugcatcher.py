@@ -53,10 +53,12 @@ class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, 
         self.callbacks.registerContextMenuFactory(self)
 
     def createMenuItems(self, invocation):
-        # Do not create a menu item unless getting a context menu from the proxy history
+        # Do not create a menu item unless getting a context menu from the proxy history or scanner results
         is_proxy_history = invocation.getInvocationContext() == invocation.CONTEXT_PROXY_HISTORY
+        is_scanner_results = invocation.getInvocationContext() == invocation.CONTEXT_SCANNER_RESULTS
+        is_correct_context = is_proxy_history or is_scanner_results
 
-        if not is_proxy_history:
+        if not is_correct_context:
             return
 
         functionality = self.checklist["functionality"]
@@ -73,7 +75,8 @@ class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, 
             # class on each functionality
             for vuln_name in vulns:
                 item_vuln = JMenuItem(vuln_name)
-                item_vuln.addActionListener(MenuItem(self.view, functionality_name, vuln_name))
+                menu_action_listener = MenuActionListener(self.view, functionality_name, vuln_name)
+                item_vuln.addActionListener(menu_action_listener)
                 menu_vuln.add(item_vuln)
 
             bugcatcher_menu.add(menu_vuln)
@@ -94,7 +97,7 @@ class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, 
         return
 
 
-class MenuItem(ActionListener):
+class MenuActionListener(ActionListener):
     def __init__(self, view, functionality_name, vuln_name):
         self.tree = view.get_tree()
         self.pane = view.get_pane()
@@ -163,7 +166,18 @@ class View:
         self.set_tree()
         self.set_pane()
         self.set_tabbed_panes()
+
+        self.set_program_brief()
+        self.set_settings()
+        self.set_targets()
+
         self.set_tsl()
+
+    def get_checklist(self):
+        return self.checklist
+
+    def get_issues(self):
+        return self.issues
 
     # TODO: Use Bugcrowd API to grab the Program Brief and Targets
     # Creates a DefaultMutableTreeNode using the JSON file data
@@ -281,18 +295,52 @@ class View:
         return notes_textarea
 
     def set_tsl(self):
-        tsl = TSL(self.tree, self.pane, self.checklist, self.issues, self.tabbed_panes)
+        tsl = TSL(self)
         self.tree.addTreeSelectionListener(tsl)
 
         return
 
+    def set_program_brief(self):
+        self.program_brief = JTextArea()
+        self.program_brief.setLineWrap(True)
+        self.program_brief.setText("This is the program brief:")
+
+    def get_program_brief(self):
+        return self.program_brief
+
+    def set_settings(self):
+        self.settings = JPanel()
+
+        issues = self.issues
+        vuln_names = issues["issues"]
+
+        for vuln_name in vuln_names:
+            is_enabled = vuln_names[vuln_name]["enabled"]
+            enabled_checkbox = JCheckBox(vuln_name, is_enabled)
+            enabled_checkbox.addItemListener(Settings(issues, vuln_names, vuln_name, is_enabled))
+            self.settings.add(enabled_checkbox)
+
+    def get_settings(self):
+        return self.settings
+
+    def set_targets(self):
+        self.targets = JTextArea()
+        self.targets.setLineWrap(True)
+        self.targets.setText("These are the targets:")
+
+    def get_targets(self):
+        return self.targets
+
 class TSL(TreeSelectionListener):
-    def __init__(self, tree, pane, checklist, issues, tabbed_panes):
-        self.tree = tree
-        self.pane = pane
-        self.checklist = checklist
-        self.issues = issues
-        self.tabbed_panes = tabbed_panes
+    def __init__(self, view):
+        self.tree = view.get_tree()
+        self.pane = view.get_pane()
+        self.checklist = view.get_checklist()
+        self.issues = view.get_issues()
+        self.tabbed_panes = view.get_tabbed_panes()
+        self.program_brief = view.get_program_brief()
+        self.settings = view.get_settings()
+        self.targets = view.get_targets()
 
     def valueChanged(self, tse):
         pane = self.pane
@@ -314,43 +362,15 @@ class TSL(TreeSelectionListener):
                 tabbed_pane = self.tabbed_panes[key]
                 pane.setRightComponent(tabbed_pane)
             elif is_settings:
-                settings_pane = self.create_settings_pane()
-                pane.setRightComponent(settings_pane)
+                pane.setRightComponent(self.settings)
             elif is_brief:
-                brief_textarea = JTextArea()
-                brief_textarea.setLineWrap(True)
-                brief_textarea.setText("This is the program brief:")
-
-                pane.setRightComponent(brief_textarea)
+                pane.setRightComponent(self.program_brief)
             elif is_target:
-                target_textarea = JTextArea()
-                target_textarea.setLineWrap(True)
-                target_textarea.setText("These are the targets:")
-
-                pane.setRightComponent(target_textarea)
+                pane.setRightComponent(self.targets)
             else:
-                name = node.toString()
-                functionality_textarea = JTextArea()
-                functionality_textarea.setLineWrap(True)
-                functionality_textarea.setText("Make a description for: " + name)
-
-                pane.setRightComponent(functionality_textarea)
+                print "No description for " + vuln_name
         else:
-            pane.setRightComponent(JLabel('I AM ERROR'))
-
-    def create_settings_pane(self):
-        pane = JPanel()
-
-        issues = self.issues
-        vuln_names = issues["issues"]
-
-        for vuln_name in vuln_names:
-            is_enabled = vuln_names[vuln_name]["enabled"]
-            enabled_checkbox = JCheckBox(vuln_name, is_enabled)
-            enabled_checkbox.addItemListener(Settings(issues, vuln_names, vuln_name, is_enabled))
-            pane.add(enabled_checkbox)
-
-        return pane
+            print "Cannot set a pane for " + vuln_name
 
 
 if __name__ in [ '__main__', 'main' ] :
