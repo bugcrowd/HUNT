@@ -38,9 +38,11 @@ class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, 
     EXTENSION_NAME = "Bug Catcher"
 
     def __init__(self):
-        self.data = self.get_data()
-        self.issues = self.get_issues()
-        self.checklist = self.create_checklist()
+        data = Data()
+
+        self.checklist = data.get_checklist()
+        self.issues = data.get_issues()
+        self.checklist_tree = self.create_checklist_tree()
         self.tree = self.create_tree()
         self.pane = self.create_pane()
         self.tabbed_panes = self.create_tabbed_panes()
@@ -61,7 +63,7 @@ class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, 
         if not is_proxy_history:
             return
 
-        functionality = self.data["functionality"]
+        functionality = self.checklist["functionality"]
 
         # Create the menu item for the Burp context menu
         bugcatcher_menu = JMenu("Send to Bug Catcher")
@@ -95,27 +97,11 @@ class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, 
         print "Bug Catcher plugin unloaded"
         return
 
-    # TODO: Move to Data class
-    def get_data(self):
-        with open("checklist.json") as data_file:
-            data = json.load(data_file)
-            checklist = data["checklist"]
-
-        return checklist
-
-    # TODO: Move to Data class
-    def get_issues(self):
-        with open("issues.json") as data_file:
-            issues = json.load(data_file)
-
-        return issues
-
     # TODO: Move to View class
     # TODO: Use Bugcrowd API to grab the Program Brief and Targets
     # Creates a DefaultMutableTreeNode using the JSON file data
-    def create_checklist(self):
-        data = self.data
-        functionality = data["functionality"]
+    def create_checklist_tree(self):
+        functionality = self.checklist["functionality"]
 
         root = DefaultMutableTreeNode("Bug Catcher Check List")
         root.add(DefaultMutableTreeNode("Settings"))
@@ -136,7 +122,7 @@ class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, 
 
     # Creates a JTree object from the checklist
     def create_tree(self):
-        tree = JTree(self.checklist)
+        tree = JTree(self.checklist_tree)
         tree.getSelectionModel().setSelectionMode(
             TreeSelectionModel.SINGLE_TREE_SELECTION
         )
@@ -162,14 +148,14 @@ class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, 
         return pane
 
     def create_tsl(self):
-        tsl = TSL(self.tree, self.pane, self.data, self.issues, self.tabbed_panes)
+        tsl = TSL(self.tree, self.pane, self.checklist, self.issues, self.tabbed_panes)
         self.tree.addTreeSelectionListener(tsl)
 
         return
 
     # Creates the tabs dynamically using data from the JSON file
     def create_tabbed_panes(self):
-        functionality = self.data["functionality"]
+        functionality = self.checklist["functionality"]
         tabbed_panes = {}
 
         for functionality_name in functionality:
@@ -199,7 +185,7 @@ class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, 
 
     # Creates the description panel
     def create_description_tab(self, fn, vn):
-        description_text = str(self.data["functionality"][fn]["vulns"][vn]["description"])
+        description_text = str(self.checklist["functionality"][fn]["vulns"][vn]["description"])
         description_textarea = JTextArea()
         description_textarea.setLineWrap(True)
         description_textarea.setText(description_text)
@@ -216,7 +202,7 @@ class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, 
 
     # Creates the resources panel
     def create_resource_tab(self, fn, vn):
-        resource_urls = self.data["functionality"][fn]["vulns"][vn]["resources"]
+        resource_urls = self.checklist["functionality"][fn]["vulns"][vn]["resources"]
         resource_text = ""
 
         for url in resource_urls:
@@ -274,8 +260,27 @@ class Settings(ItemListener):
 
 # TODO: Put function for getting data here
 class Data():
+    shared_state = {}
+
     def __init__(self):
-        return
+        self.__dict__ = self.shared_state
+        self.set_checklist()
+        self.set_issues()
+
+    def set_checklist(self):
+        with open("checklist.json") as data_file:
+            data = json.load(data_file)
+            self.checklist = data["checklist"]
+
+    def get_checklist(self):
+        return self.checklist
+
+    def set_issues(self):
+        with open("issues.json") as data_file:
+            self.issues = json.load(data_file)
+
+    def get_issues(self):
+        return self.issues
 
 # TODO: Put all functions pertaining to creating the Burp views
 class View():
@@ -283,10 +288,10 @@ class View():
         return
 
 class TSL(TreeSelectionListener):
-    def __init__(self, tree, pane, data, issues, tabbed_panes):
+    def __init__(self, tree, pane, checklist, issues, tabbed_panes):
         self.tree = tree
         self.pane = pane
-        self.data = data
+        self.checklist = checklist
         self.issues = issues
         self.tabbed_panes = tabbed_panes
 
