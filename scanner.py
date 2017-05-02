@@ -1,4 +1,5 @@
 import json
+import urlparse
 from burp import IBurpExtender
 from burp import IScannerCheck
 from burp import IScanIssue
@@ -16,14 +17,13 @@ class BurpExtender(IBurpExtender, IScannerCheck):
         self.callbacks.registerScannerCheck(self)
 
     def doPassiveScan(self, request_response):
-        current_issues = self.issues.get_scanner_issues()
-
         raw_request = request_response.getRequest()
         raw_response = request_response.getResponse()
         request = self.helpers.analyzeRequest(raw_request)
         response = self.helpers.analyzeResponse(raw_response)
 
         parameters = request.getParameters()
+        url = self.helpers.analyzeRequest(request_response).getUrl()
         vuln_parameters = self.check_parameters(parameters)
 
         is_not_empty = len(vuln_parameters) > 0
@@ -31,11 +31,7 @@ class BurpExtender(IBurpExtender, IScannerCheck):
         if is_not_empty:
             self.create_scanner_issues(vuln_parameters, request_response)
 
-        # Test code
-        for issue in current_issues:
-            print issue.getUrl()
-            print issue.getParameter()
-            print
+        current_issues = self.issues.get_scanner_issues()
 
         # Do not show any Bugcrowd found issues in the Scanner window
         return None
@@ -70,12 +66,16 @@ class BurpExtender(IBurpExtender, IScannerCheck):
         return vuln_parameters
 
     def create_scanner_issues(self, vuln_parameters, request_response):
+        # Takes into account if there is more than one vulnerable parameter
         for vuln_parameter in vuln_parameters:
             issues = self.issues.get_json()
             parameter = str(vuln_parameter.keys()[0])
             vuln_name = vuln_parameter.get(parameter)
 
             url = self.helpers.analyzeRequest(request_response).getUrl()
+            url = urlparse.urlsplit(str(url))
+            url = url.scheme + "://" + url.hostname + url.path
+
             http_service = request_response.getHttpService()
             http_messages = [self.callbacks.applyMarkers(request_response, None, None)]
             detail = issues["issues"][vuln_name]["detail"]
