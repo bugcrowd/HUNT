@@ -61,7 +61,7 @@ class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, 
         if not is_correct_context:
             return
 
-        functionality = self.checklist["functionality"]
+        functionality = self.checklist["Functionality"]
 
         # Create the menu item for the Burp context menu
         bugcatcher_menu = JMenu("Send to Bug Catcher")
@@ -96,7 +96,6 @@ class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, 
         print "Bug Catcher plugin unloaded"
         return
 
-
 class MenuActionListener(ActionListener):
     def __init__(self, view, functionality_name, vuln_name):
         self.tree = view.get_tree()
@@ -111,7 +110,7 @@ class MenuActionListener(ActionListener):
 
 # ItemListener that will write back to the issues.json file whenever something on the
 # settings is checked or unchecked
-class Settings(ItemListener):
+class SettingsItemListener(ItemListener):
     def __init__(self, issues, vuln_names, vuln_name, is_enabled):
         self.issues = issues
         self.vuln_names = vuln_names
@@ -134,6 +133,7 @@ class Settings(ItemListener):
             data.write(json.dumps(self.issues, indent=2, sort_keys=True))
             data.close()
 
+# Singleton/Borg
 class Data():
     shared_state = {}
 
@@ -180,14 +180,21 @@ class View:
         return self.issues
 
     # TODO: Use Bugcrowd API to grab the Program Brief and Targets
+    # TODO: Create the checklist dynamically for all nodes based on JSON structure
     # Creates a DefaultMutableTreeNode using the JSON file data
     def set_checklist_tree(self):
-        functionality = self.checklist["functionality"]
+        self.checklist_tree = DefaultMutableTreeNode("Bug Catcher Methodology")
 
-        self.checklist_tree = DefaultMutableTreeNode("Bug Catcher Check List")
-        self.checklist_tree.add(DefaultMutableTreeNode("Settings"))
-        self.checklist_tree.add(DefaultMutableTreeNode("Program Brief"))
-        self.checklist_tree.add(DefaultMutableTreeNode("Targets"))
+        for item in self.checklist:
+            node = DefaultMutableTreeNode(item)
+            self.checklist_tree.add(node)
+
+            is_functionality = node.toString() == "Functionality"
+
+            if is_functionality:
+                functionality_node = node
+
+        functionality = self.checklist["Functionality"]
 
         # TODO: Sort the functionality by name and by vuln class
         for functionality_name in functionality:
@@ -197,7 +204,7 @@ class View:
             for vuln_name in vulns:
                 node.add(DefaultMutableTreeNode(vuln_name))
 
-            self.checklist_tree.add(node)
+            functionality_node.add(node)
 
     # Creates a JTree object from the checklist
     def set_tree(self):
@@ -229,7 +236,7 @@ class View:
 
     # Creates the tabs dynamically using data from the JSON file
     def set_tabbed_panes(self):
-        functionality = self.checklist["functionality"]
+        functionality = self.checklist["Functionality"]
         self.tabbed_panes = {}
 
         for functionality_name in functionality:
@@ -258,7 +265,7 @@ class View:
 
     # Creates the description panel
     def set_description_tab(self, fn, vn):
-        description_text = str(self.checklist["functionality"][fn]["vulns"][vn]["description"])
+        description_text = str(self.checklist["Functionality"][fn]["vulns"][vn]["description"])
         description_textarea = JTextArea()
         description_textarea.setLineWrap(True)
         description_textarea.setText(description_text)
@@ -275,7 +282,7 @@ class View:
 
     # Creates the resources panel
     def set_resource_tab(self, fn, vn):
-        resource_urls = self.checklist["functionality"][fn]["vulns"][vn]["resources"]
+        resource_urls = self.checklist["Functionality"][fn]["vulns"][vn]["resources"]
         resource_text = ""
 
         for url in resource_urls:
@@ -317,7 +324,10 @@ class View:
         for vuln_name in vuln_names:
             is_enabled = vuln_names[vuln_name]["enabled"]
             enabled_checkbox = JCheckBox(vuln_name, is_enabled)
-            enabled_checkbox.addItemListener(Settings(issues, vuln_names, vuln_name, is_enabled))
+
+            settings_item_listener = SettingsItemListener(issues, vuln_names, vuln_name, is_enabled)
+            enabled_checkbox.addItemListener(settings_item_listener)
+
             self.settings.add(enabled_checkbox)
 
     def get_settings(self):
@@ -346,6 +356,10 @@ class TSL(TreeSelectionListener):
         pane = self.pane
         node = self.tree.getLastSelectedPathComponent()
 
+        # Check if node is root. If it is, don't display anything
+        if node == None or node.getParent() == None:
+            return
+
         vuln_name = node.toString()
         functionality_name = node.getParent().toString()
 
@@ -354,7 +368,8 @@ class TSL(TreeSelectionListener):
         is_settings = is_leaf and (vuln_name == "Settings")
         is_brief = is_leaf and (vuln_name == "Program Brief")
         is_target = is_leaf and (vuln_name == "Targets")
-        is_functionality = is_leaf and not (is_settings or is_brief or is_target)
+        is_folder = is_leaf and (vuln_name == "Functionality")
+        is_functionality = is_leaf and not (is_settings or is_brief or is_target or is_folder)
 
         if node:
             if is_functionality:
