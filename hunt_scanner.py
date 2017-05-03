@@ -80,20 +80,6 @@ class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, 
         print "HUNT - Scanner plugin unloaded"
         return
 
-class Data:
-    shared_state = {}
-
-    def __init__(self):
-        self.__dict__ = self.shared_state
-        self.set_issues()
-
-    def set_issues(self):
-        with open("issues.json") as data_file:
-            self.issues = json.load(data_file)
-
-    def get_issues(self):
-        return self.issues
-
 class View:
     def __init__(self, issues):
         self.issues = issues
