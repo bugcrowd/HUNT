@@ -5,6 +5,7 @@ from burp import IExtensionStateListener
 from burp import IContextMenuFactory
 from burp import IContextMenuInvocation
 from burp import IScanIssue
+from burp import IScannerCheck
 from burp import ITab
 from java.awt import EventQueue
 from java.awt.event import ActionListener
@@ -34,7 +35,7 @@ class Run(Runnable):
     def run(self):
         self.runner()
 
-class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, ITab):
+class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, IScannerCheck, ITab):
     EXTENSION_NAME = "HUNT - Scanner"
 
     def __init__(self):
@@ -48,6 +49,7 @@ class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, 
         self.callbacks.setExtensionName(self.EXTENSION_NAME)
         self.callbacks.addSuiteTab(self)
         self.callbacks.registerContextMenuFactory(self)
+        self.callbacks.registerScannerCheck(self)
 
     def doPassiveScan(self, request_response):
         raw_request = request_response.getRequest()
@@ -57,18 +59,16 @@ class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, 
 
         parameters = request.getParameters()
         url = self.helpers.analyzeRequest(request_response).getUrl()
-        vuln_parameters = self.issues.check_parameters(parameters)
+        vuln_parameters = self.issues.check_parameters(self.helpers, parameters)
 
         is_not_empty = len(vuln_parameters) > 0
 
         if is_not_empty:
-            # TODO: Refactor and move to Issues class
-            self.issues.create_scanner_issues(vuln_parameters, request_response)
-
-        current_issues = self.issues.get_scanner_issues()
+            self.issues.create_scanner_issues(self.callbacks, self.helpers, vuln_parameters, request_response)
+            #self.issues.set_scanner_count(self.view)
 
         # Do not show any Bugcrowd found issues in the Scanner window
-        return None
+        return []
 
     def getTabCaption(self):
         return self.EXTENSION_NAME
@@ -86,6 +86,7 @@ class View:
 
         self.set_vuln_tree()
         self.set_tree()
+        self.set_tabbed_pane()
         self.set_pane()
 
     def set_vuln_tree(self):
@@ -114,17 +115,26 @@ class View:
         return self.tree
 
     # Creates a JTabbedPane for each vulnerability per functionality
-    def set_tabbed_pane(self, functionality_name, vuln_name):
-        description_tab = self.set_description_tab(functionality_name, vuln_name)
-        bugs_tab = self.set_bugs_tab()
-        resources_tab = self.set_resource_tab(functionality_name, vuln_name)
-        notes_tab = self.set_notes_tab()
+    def set_tabbed_pane(self):
+        request_tab = self.set_request_tab()
+        response_tab = self.set_response_tab()
 
         self.tabbed_pane = JTabbedPane()
-        self.tabbed_pane.add("Description", description_tab)
-        self.tabbed_pane.add("Bugs", bugs_tab)
-        self.tabbed_pane.add("Resources", resources_tab)
-        self.tabbed_pane.add("Notes", notes_tab)
+        self.tabbed_pane.add("Request", request_tab)
+        self.tabbed_pane.add("Response", response_tab)
+
+    def get_tabbed_pane(self):
+        return self.tabbed_pane
+
+    def set_request_tab(self):
+        request_tab = JScrollPane()
+
+        return request_tab
+
+    def set_response_tab(self):
+        response_tab = JScrollPane()
+
+        return response_tab
 
     def set_pane(self):
         status = JTextArea()
@@ -134,7 +144,7 @@ class View:
 
         scanner_pane = JSplitPane(JSplitPane.VERTICAL_SPLIT,
                        JScrollPane(),
-                       JTabbedPane()
+                       self.tabbed_pane
         )
 
         self.pane = JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
@@ -144,6 +154,13 @@ class View:
 
     def get_pane(self):
         return self.pane
+
+class IssueTSL(TreeSelectionListener):
+    def __init__(self, view):
+        return
+
+    def valueChanged(self, tse):
+        return
 
 class TSL(TreeSelectionListener):
     def __init__(self, view):
@@ -170,10 +187,8 @@ class TSL(TreeSelectionListener):
 
 class Issues:
     scanner_issues = []
-    shared_state = {}
 
     def __init__(self):
-        self.__dict__ = self.shared_state
         self.set_json()
         self.set_issues()
 
@@ -206,9 +221,9 @@ class Issues:
     def get_scanner_issues(self):
         return self.scanner_issues
 
-    def check_parameters(self, parameters):
+    def check_parameters(self, helpers, parameters):
         vuln_parameters = []
-        issues = self.issues.get_issues()
+        issues = self.get_issues()
 
         for parameter in parameters:
             # Make sure that the parameter is not from the cookies
@@ -217,8 +232,8 @@ class Issues:
 
             if is_not_cookie:
                 # Handle double URL encoding just in case
-                parameter_decoded = self.helpers.urlDecode(parameter.getName())
-                parameter_decoded = self.helpers.urlDecode(parameter_decoded)
+                parameter_decoded = helpers.urlDecode(parameter.getName())
+                parameter_decoded = helpers.urlDecode(parameter_decoded)
             else:
                 continue
 
@@ -234,19 +249,19 @@ class Issues:
 
         return vuln_parameters
 
-    def create_scanner_issues(self, vuln_parameters, request_response):
+    def create_scanner_issues(self, callbacks, helpers, vuln_parameters, request_response):
         # Takes into account if there is more than one vulnerable parameter
         for vuln_parameter in vuln_parameters:
-            issues = self.issues.get_json()
+            issues = self.get_json()
             parameter = str(vuln_parameter.keys()[0])
             vuln_name = vuln_parameter.get(parameter)
 
-            url = self.helpers.analyzeRequest(request_response).getUrl()
+            url = helpers.analyzeRequest(request_response).getUrl()
             url = urlparse.urlsplit(str(url))
             url = url.scheme + "://" + url.hostname + url.path
 
             http_service = request_response.getHttpService()
-            http_messages = [self.callbacks.applyMarkers(request_response, None, None)]
+            http_messages = [callbacks.applyMarkers(request_response, None, None)]
             detail = issues["issues"][vuln_name]["detail"]
             severity = "Medium"
 
@@ -254,10 +269,20 @@ class Issues:
 
             if is_not_dupe:
                 scanner_issue = ScannerIssue(url, parameter, http_service, http_messages, vuln_name, detail, severity)
-                self.issues.set_scanner_issues(scanner_issue)
+                self.set_scanner_issues(scanner_issue)
+
+    def set_scanner_count(self, view):
+        issues = self.get_scanner_issues()
+
+        for issue in issues:
+            issue_name = issue.getIssueName()
+
+            print issue_name
+
+        return
 
     def check_duplicate_issue(self, url, parameter, vuln_name):
-        issues = self.issues.get_scanner_issues()
+        issues = self.get_scanner_issues()
 
         for issue in issues:
             is_same_url = url == issue.getUrl()
