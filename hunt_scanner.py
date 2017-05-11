@@ -70,8 +70,6 @@ class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, 
         if is_not_empty:
             self.issues.create_scanner_issues(self.view, self.callbacks, self.helpers, vuln_parameters, request_response)
 
-        print self.issues.get_issues()
-
         # Do not show any Bugcrowd found issues in the Scanner window
         return []
 
@@ -160,30 +158,6 @@ class View:
 
     def get_pane(self):
         return self.pane
-
-class IssueTSL(TreeSelectionListener):
-    def __init__(self, view):
-        self.issues = view.get_issues()
-        self.tree = view.get_tree()
-        self.pane = view.get_pane()
-
-    def valueChanged(self, tse):
-        pane = self.pane
-        node = self.tree.getLastSelectedPathComponent()
-
-        vuln_name = node.toString()
-        functionality_name = node.getParent().toString()
-
-        is_leaf = node.isLeaf()
-
-        if node:
-            if is_leaf:
-                print "Yes??"
-            else:
-                print "No description for " + vuln_name
-        else:
-            print "Cannot set a pane for " + vuln_name
-
 
 class TSL(TreeSelectionListener):
     def __init__(self, view):
@@ -278,11 +252,12 @@ class Issues:
     def create_scanner_issues(self, view, callbacks, helpers, vuln_parameters, request_response):
         # Takes into account if there is more than one vulnerable parameter
         for vuln_parameter in vuln_parameters:
+            print vuln_parameters
             issues = self.get_issues()
             json = self.get_json()
 
             issue_name = vuln_parameter["name"]
-            param = vuln_parameter["param"]
+            issue_param = vuln_parameter["param"]
 
             url = helpers.analyzeRequest(request_response).getUrl()
             url = urlparse.urlsplit(str(url))
@@ -293,20 +268,24 @@ class Issues:
             detail = json["issues"][issue_name]["detail"]
             severity = "Medium"
 
-            is_not_dupe = self.check_duplicate_issue(url, param, issue_name)
+            is_not_dupe = self.check_duplicate_issue(url, issue_param, issue_name)
 
             if is_not_dupe:
                 for issue in issues:
                     is_name = issue["name"] == issue_name
-                    is_param = issue["param"] == param
+                    is_param = issue["param"] == issue_param
                     is_issue = is_name and is_param
 
                     if is_issue:
                         issue["count"] += 1
+                        issue_count = issue["count"]
+                        break
 
-                scanner_issue = ScannerIssue(url, param, http_service, http_messages, issue_name, detail, severity)
+                scanner_issue = ScannerIssue(url, issue_param, http_service, http_messages, issue_name, detail, severity)
                 self.set_scanner_issues(scanner_issue)
-                self.add_scanner_count(view)
+                self.add_scanner_count(view, issue_name, issue_param, issue_count)
+
+        print "length: " + str(len(self.get_scanner_issues()))
 
     def check_duplicate_issue(self, url, parameter, issue_name):
         issues = self.get_scanner_issues()
@@ -322,7 +301,7 @@ class Issues:
 
         return True
 
-    def add_scanner_count(self, view):
+    def add_scanner_count(self, view, issue_name, issue_param, issue_count):
         issues = self.get_issues()
         scanner_issues = self.get_scanner_issues()
 
@@ -331,60 +310,48 @@ class Issues:
         root = model.getRoot()
         count = int(root.getChildCount())
 
-        # These for loops are out of control
-        for scanner_issue in scanner_issues:
-            issue_name = scanner_issue.getIssueName()
-            issue_param = scanner_issue.getParameter()
+        print "length: " + str(len(scanner_issues))
 
-            for issue in issues:
-                is_issue_name = issue["name"] == issue_name
-                is_issue_param = issue["param"] == issue_param
-                is_count = is_issue_name and is_issue_param
+        # TODO: Refactor into one function that just takes nodes
+        # Iterates through each vulnerability class leaf node in tree
+        for i in range(count):
+            node = model.getChild(root, i)
+            tree_issue_name = node.toString()
 
-                if is_count:
-                    issue_count = issue["count"]
+            is_issue_name = re.search(issue_name, tree_issue_name)
 
-            # TODO: Refactor into one function that just takes nodes
-            # Iterates through each vulnerability class in tree
-            for i in range(count):
-                node = model.getChild(root, i)
-                tree_issue_name = node.toString()
+            if is_issue_name:
+                total_issues = 0
+                child_count = node.getChildCount()
 
-                is_issue_name = re.search(issue_name, tree_issue_name)
+                # TODO: Refactor into one function that just takes nodes
+                # Iterates through each parameter leaf node vulnerability class
+                for j in range(child_count):
+                    child = node.getChildAt(j)
+                    tree_param_name = child.toString()
 
-                # TODO: Fix to display the right number
-                if is_issue_name:
-                    is_count = re.search('\((\d+)\)', tree_issue_name)
+                    is_param_name = re.search(issue_param, tree_param_name)
+                    print issue_param + " " + tree_param_name
 
-                    if is_count:
-                        vuln_count = int(is_count.group(1))
-                        vuln_count += issue_count
-                    else:
-                        vuln_count = 0
+                    # Change the display of each parameter leaf node based on
+                    # how many issues are found
+                    if is_param_name:
+                        total_issues += issue_count
+                        param_text = issue_param + " (" + str(issue_count) + ")"
+                        print param_text
 
-                    issue_text = issue_name + " (" + str(vuln_count) + ")"
+                        child.setUserObject(param_text)
+                        model.nodeChanged(child)
+                        model.reload(node)
+                        break
 
-                    node.setUserObject(issue_text)
-                    model.nodeChanged(node)
-                    model.reload(node)
+                issue_text = issue_name + " (" + str(total_issues) + ")"
+                print issue_text
 
-                    child_count = node.getChildCount()
-
-                    # TODO: Refactor into one function that just takes nodes
-                    # Iterates through each parameter in vulnerability class
-                    for j in range(child_count):
-                        child = node.getChildAt(j)
-                        tree_param_name = child.toString()
-
-                        is_param_name = re.search(issue_param, tree_param_name)
-
-                        if is_param_name:
-                            param_text = issue_param + " (" + str(issue_count) + ")"
-                            print param_text
-
-                            child.setUserObject(param_text)
-                            model.nodeChanged(child)
-                            model.reload(node)
+                node.setUserObject(issue_text)
+                model.nodeChanged(node)
+                model.reload(node)
+                break
 
 # TODO: Fill out all the getters with proper returns
 # TODO: Pass the entire request_response object instead of each individual parameter for the
