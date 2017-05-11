@@ -1,4 +1,5 @@
 import json
+import re
 import urlparse
 from burp import IBurpExtender
 from burp import IExtensionStateListener
@@ -12,6 +13,7 @@ from java.awt.event import ActionListener
 from java.awt.event import ItemListener
 from java.lang import Runnable
 from javax.swing import JCheckBox
+from javax.swing import JComponent
 from javax.swing import JMenu
 from javax.swing import JMenuBar
 from javax.swing import JMenuItem
@@ -25,6 +27,8 @@ from javax.swing import JTree
 from javax.swing.event import TreeSelectionEvent
 from javax.swing.event import TreeSelectionListener
 from javax.swing.tree import DefaultMutableTreeNode
+from javax.swing.tree import DefaultTreeCellRenderer
+from javax.swing.tree import DefaultTreeModel
 from javax.swing.tree import TreeSelectionModel
 
 # Using the Runnable class for thread-safety with Swing
@@ -64,8 +68,9 @@ class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, 
         is_not_empty = len(vuln_parameters) > 0
 
         if is_not_empty:
-            self.issues.create_scanner_issues(self.callbacks, self.helpers, vuln_parameters, request_response)
-            #self.issues.set_scanner_count(self.view)
+            self.issues.create_scanner_issues(self.view, self.callbacks, self.helpers, vuln_parameters, request_response)
+
+        print self.issues.get_issues()
 
         # Do not show any Bugcrowd found issues in the Scanner window
         return []
@@ -102,7 +107,8 @@ class View:
             parameters = self.issues["issues"][vuln_name]["params"]
 
             for parameter in parameters:
-                vuln.add(DefaultMutableTreeNode(parameter))
+                param_node = DefaultMutableTreeNode(parameter)
+                vuln.add(param_node)
 
     # Creates a JTree object from the checklist
     def set_tree(self):
@@ -157,10 +163,27 @@ class View:
 
 class IssueTSL(TreeSelectionListener):
     def __init__(self, view):
-        return
+        self.issues = view.get_issues()
+        self.tree = view.get_tree()
+        self.pane = view.get_pane()
 
     def valueChanged(self, tse):
-        return
+        pane = self.pane
+        node = self.tree.getLastSelectedPathComponent()
+
+        vuln_name = node.toString()
+        functionality_name = node.getParent().toString()
+
+        is_leaf = node.isLeaf()
+
+        if node:
+            if is_leaf:
+                print "Yes??"
+            else:
+                print "No description for " + vuln_name
+        else:
+            print "Cannot set a pane for " + vuln_name
+
 
 class TSL(TreeSelectionListener):
     def __init__(self, view):
@@ -206,10 +229,13 @@ class Issues:
         for vuln_name in issues:
             parameters = issues[vuln_name]["params"]
 
-            # TODO: Refactor and change from dict to list because de-duping is handled elsewhere
             for parameter in parameters:
-                issue = {}
-                issue[parameter] = vuln_name
+                issue = {
+                    "name": str(vuln_name),
+                    "param": str(parameter),
+                    "count": 0
+                }
+
                 self.issues.append(issue)
 
     def get_issues(self):
@@ -222,7 +248,7 @@ class Issues:
         return self.scanner_issues
 
     def check_parameters(self, helpers, parameters):
-        vuln_parameters = []
+        vuln_params = []
         issues = self.get_issues()
 
         for parameter in parameters:
@@ -241,20 +267,22 @@ class Issues:
             #       Example: id_param, param_id, paramID, etc
             # Check to see if the current parameter is a potentially vuln parameter
             for issue in issues:
-                vuln_parameter = str(issue.keys()[0])
-                is_vuln_found = parameter_decoded == vuln_parameter
+                vuln_param = issue["param"]
+                is_vuln_found = parameter_decoded == vuln_param
 
                 if is_vuln_found:
-                    vuln_parameters.append(issue)
+                    vuln_params.append(issue)
 
-        return vuln_parameters
+        return vuln_params
 
-    def create_scanner_issues(self, callbacks, helpers, vuln_parameters, request_response):
+    def create_scanner_issues(self, view, callbacks, helpers, vuln_parameters, request_response):
         # Takes into account if there is more than one vulnerable parameter
         for vuln_parameter in vuln_parameters:
-            issues = self.get_json()
-            parameter = str(vuln_parameter.keys()[0])
-            vuln_name = vuln_parameter.get(parameter)
+            issues = self.get_issues()
+            json = self.get_json()
+
+            issue_name = vuln_parameter["name"]
+            param = vuln_parameter["param"]
 
             url = helpers.analyzeRequest(request_response).getUrl()
             url = urlparse.urlsplit(str(url))
@@ -262,68 +290,131 @@ class Issues:
 
             http_service = request_response.getHttpService()
             http_messages = [callbacks.applyMarkers(request_response, None, None)]
-            detail = issues["issues"][vuln_name]["detail"]
+            detail = json["issues"][issue_name]["detail"]
             severity = "Medium"
 
-            is_not_dupe = self.check_duplicate_issue(url, parameter, vuln_name)
+            is_not_dupe = self.check_duplicate_issue(url, param, issue_name)
 
             if is_not_dupe:
-                scanner_issue = ScannerIssue(url, parameter, http_service, http_messages, vuln_name, detail, severity)
+                for issue in issues:
+                    is_name = issue["name"] == issue_name
+                    is_param = issue["param"] == param
+                    is_issue = is_name and is_param
+
+                    if is_issue:
+                        issue["count"] += 1
+
+                scanner_issue = ScannerIssue(url, param, http_service, http_messages, issue_name, detail, severity)
                 self.set_scanner_issues(scanner_issue)
+                self.add_scanner_count(view)
 
-    def set_scanner_count(self, view):
-        issues = self.get_scanner_issues()
-
-        for issue in issues:
-            issue_name = issue.getIssueName()
-
-            print issue_name
-
-        return
-
-    def check_duplicate_issue(self, url, parameter, vuln_name):
+    def check_duplicate_issue(self, url, parameter, issue_name):
         issues = self.get_scanner_issues()
 
         for issue in issues:
             is_same_url = url == issue.getUrl()
             is_same_parameter = parameter == issue.getParameter()
-            is_same_vuln_name = vuln_name == issue.getIssueName()
-            is_dupe = is_same_url and is_same_parameter and is_same_vuln_name
+            is_same_issue_name = issue_name == issue.getIssueName()
+            is_dupe = is_same_url and is_same_parameter and is_same_issue_name
 
             if is_dupe:
                 return False
 
         return True
 
+    def add_scanner_count(self, view):
+        issues = self.get_issues()
+        scanner_issues = self.get_scanner_issues()
+
+        tree = view.get_pane().getLeftComponent().getViewport().getView()
+        model = tree.getModel()
+        root = model.getRoot()
+        count = int(root.getChildCount())
+
+        # These for loops are out of control
+        for scanner_issue in scanner_issues:
+            issue_name = scanner_issue.getIssueName()
+            issue_param = scanner_issue.getParameter()
+
+            for issue in issues:
+                is_issue_name = issue["name"] == issue_name
+                is_issue_param = issue["param"] == issue_param
+                is_count = is_issue_name and is_issue_param
+
+                if is_count:
+                    issue_count = issue["count"]
+
+            # TODO: Refactor into one function that just takes nodes
+            # Iterates through each vulnerability class in tree
+            for i in range(count):
+                node = model.getChild(root, i)
+                tree_issue_name = node.toString()
+
+                is_issue_name = re.search(issue_name, tree_issue_name)
+
+                # TODO: Fix to display the right number
+                if is_issue_name:
+                    is_count = re.search('\((\d+)\)', tree_issue_name)
+
+                    if is_count:
+                        vuln_count = int(is_count.group(1))
+                        vuln_count += issue_count
+                    else:
+                        vuln_count = 0
+
+                    issue_text = issue_name + " (" + str(vuln_count) + ")"
+
+                    node.setUserObject(issue_text)
+                    model.nodeChanged(node)
+                    model.reload(node)
+
+                    child_count = node.getChildCount()
+
+                    # TODO: Refactor into one function that just takes nodes
+                    # Iterates through each parameter in vulnerability class
+                    for j in range(child_count):
+                        child = node.getChildAt(j)
+                        tree_param_name = child.toString()
+
+                        is_param_name = re.search(issue_param, tree_param_name)
+
+                        if is_param_name:
+                            param_text = issue_param + " (" + str(issue_count) + ")"
+                            print param_text
+
+                            child.setUserObject(param_text)
+                            model.nodeChanged(child)
+                            model.reload(node)
 
 # TODO: Fill out all the getters with proper returns
 # TODO: Pass the entire request_response object instead of each individual parameter for the
 #       class constructor.
 class ScannerIssue(IScanIssue):
-    def __init__(self, url, parameter, http_service, http_messages, vuln_name, detail, severity):
-        self.this_url = url
+    def __init__(self, url, parameter, http_service, http_messages, issue_name, detail, severity):
+        self.current_url = url
         self.http_service = http_service
         self.http_messages = http_messages
         self.detail = detail.replace("$param$", parameter)
-        self.this_severity = severity
+        self.current_severity = severity
         self.issue_background = "Bugcrowd"
-        self.vuln_name = vuln_name
+        self.issue_name = issue_name
         self.parameter = parameter
+        self.remediation_background = ""
 
     def getParameter(self):
         return self.parameter
 
     def getUrl(self):
-        return self.this_url
+        return self.current_url
 
     def getIssueName(self):
-        return self.vuln_name
+        return self.issue_name
 
     def getIssueType(self):
         return 0
 
     def getSeverity(self):
-        return self.this_severity
+        return self.current_severity
 
     def getConfidence(self):
         return "Certain"
@@ -332,7 +423,7 @@ class ScannerIssue(IScanIssue):
         return self.issue_background
 
     def getRemediationBackground(self):
-        pass
+        return self.remediation_background
 
     def getIssueDetail(self):
         return self.detail
