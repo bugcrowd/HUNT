@@ -44,7 +44,9 @@ class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, 
 
     def __init__(self):
         self.issues = Issues()
-        self.view = View(self.issues.get_json())
+        json = self.issues.get_json()
+        issues = self.issues.get_issues()
+        self.view = View(json, issues)
 
     def registerExtenderCallbacks(self, callbacks):
         self.callbacks = callbacks
@@ -84,25 +86,28 @@ class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, 
         return
 
 class View:
-    def __init__(self, issues):
+    def __init__(self, json, issues):
+        self.json = json
         self.issues = issues
+        self.scanner_panes = {}
 
         self.set_vuln_tree()
         self.set_tree()
-        self.set_tabbed_pane()
+        self.set_scanner_panes()
         self.set_pane()
+        self.set_tsl()
 
     def set_vuln_tree(self):
         self.vuln_tree = DefaultMutableTreeNode("Vulnerability Classes")
 
-        vulns = self.issues["issues"]
+        vulns = self.json["issues"]
 
         # TODO: Sort the functionality by name and by vuln class
         for vuln_name in vulns:
             vuln = DefaultMutableTreeNode(vuln_name)
             self.vuln_tree.add(vuln)
 
-            parameters = self.issues["issues"][vuln_name]["params"]
+            parameters = self.json["issues"][vuln_name]["params"]
 
             for parameter in parameters:
                 param_node = DefaultMutableTreeNode(parameter)
@@ -118,27 +123,62 @@ class View:
     def get_tree(self):
         return self.tree
 
+    # Creates the tabs dynamically using data from the JSON file
+    def set_scanner_panes(self):
+        issues = self.issues
+
+        for issue in issues:
+            issue_name = issue["name"]
+            issue_param = issue["param"]
+
+            key = issue_name + "." + issue_param
+
+            top_pane = self.create_request_pane(issue_name)
+            bottom_pane = self.create_tabbed_pane()
+
+            scanner_pane = JSplitPane(JSplitPane.VERTICAL_SPLIT,
+                           top_pane,
+                           bottom_pane
+            )
+
+            self.scanner_panes[key] = scanner_pane
+
+    def get_scanner_panes(self):
+        return self.scanner_panes
+
+    def create_request_pane(self, issue_name):
+        request_pane = JScrollPane(JLabel(issue_name))
+
+        return request_pane
+
     # Creates a JTabbedPane for each vulnerability per functionality
-    def set_tabbed_pane(self):
-        request_tab = self.set_request_tab()
-        response_tab = self.set_response_tab()
+    def create_tabbed_pane(self):
+        request_tab = self.create_request_tab()
+        response_tab = self.create_response_tab()
 
-        self.tabbed_pane = JTabbedPane()
-        self.tabbed_pane.add("Request", request_tab)
-        self.tabbed_pane.add("Response", response_tab)
+        tabbed_pane = JTabbedPane()
+        tabbed_pane.add("Request", request_tab)
+        tabbed_pane.add("Response", response_tab)
 
-    def get_tabbed_pane(self):
-        return self.tabbed_pane
+        self.tabbed_pane = tabbed_pane
 
-    def set_request_tab(self):
+        return tabbed_pane
+
+    def create_request_tab(self):
         request_tab = JScrollPane()
 
         return request_tab
 
-    def set_response_tab(self):
+    def create_response_tab(self):
         response_tab = JScrollPane()
 
         return response_tab
+
+    def set_tsl(self):
+        tsl = TSL(self)
+        self.tree.addTreeSelectionListener(tsl)
+
+        return
 
     def set_pane(self):
         status = JTextArea()
@@ -159,24 +199,31 @@ class View:
     def get_pane(self):
         return self.pane
 
+    def set_request_pane(scanner_pane, issue_name, issue_param)
+        return
+
 class TSL(TreeSelectionListener):
     def __init__(self, view):
-        self.issues = view.get_issues()
+        self.view = view
         self.tree = view.get_tree()
         self.pane = view.get_pane()
+        self.scanner_panes = view.get_scanner_panes()
 
     def valueChanged(self, tse):
         pane = self.pane
         node = self.tree.getLastSelectedPathComponent()
 
-        vuln_name = node.toString()
-        functionality_name = node.getParent().toString()
+        issue_name = node.getParent().toString()
+        issue_param = node.toString()
 
         is_leaf = node.isLeaf()
 
         if node:
             if is_leaf:
-                print "Yes??"
+                key = issue_name + "." + issue_param
+                scanner_pane = self.scanner_panes[key]
+                self.view.set_requests(scanner_pane, issue_name, issue_param)
+                pane.setRightComponent(scanner_pane)
             else:
                 print "No description for " + vuln_name
         else:
@@ -184,6 +231,7 @@ class TSL(TreeSelectionListener):
 
 class Issues:
     scanner_issues = []
+    total_count = {}
 
     def __init__(self):
         self.set_json()
@@ -252,7 +300,6 @@ class Issues:
     def create_scanner_issues(self, view, callbacks, helpers, vuln_parameters, request_response):
         # Takes into account if there is more than one vulnerable parameter
         for vuln_parameter in vuln_parameters:
-            print vuln_parameters
             issues = self.get_issues()
             json = self.get_json()
 
@@ -279,13 +326,18 @@ class Issues:
                     if is_issue:
                         issue["count"] += 1
                         issue_count = issue["count"]
+                        is_key_exists = issue_name in self.total_count
+
+                        if is_key_exists:
+                            self.total_count[issue_name] += 1
+                        else:
+                            self.total_count[issue_name] = issue_count
+
                         break
 
                 scanner_issue = ScannerIssue(url, issue_param, http_service, http_messages, issue_name, detail, severity)
                 self.set_scanner_issues(scanner_issue)
-                self.add_scanner_count(view, issue_name, issue_param, issue_count)
-
-        print "length: " + str(len(self.get_scanner_issues()))
+                self.add_scanner_count(view, issue_name, issue_param, issue_count, self.total_count[issue_name])
 
     def check_duplicate_issue(self, url, parameter, issue_name):
         issues = self.get_scanner_issues()
@@ -301,7 +353,7 @@ class Issues:
 
         return True
 
-    def add_scanner_count(self, view, issue_name, issue_param, issue_count):
+    def add_scanner_count(self, view, issue_name, issue_param, issue_count, total_count):
         issues = self.get_issues()
         scanner_issues = self.get_scanner_issues()
 
@@ -331,26 +383,24 @@ class Issues:
                     tree_param_name = child.toString()
 
                     is_param_name = re.search(issue_param, tree_param_name)
-                    print issue_param + " " + tree_param_name
 
                     # Change the display of each parameter leaf node based on
                     # how many issues are found
                     if is_param_name:
-                        total_issues += issue_count
                         param_text = issue_param + " (" + str(issue_count) + ")"
-                        print param_text
 
                         child.setUserObject(param_text)
                         model.nodeChanged(child)
                         model.reload(node)
+
                         break
 
-                issue_text = issue_name + " (" + str(total_issues) + ")"
-                print issue_text
+                issue_text = issue_name + " (" + str(total_count) + ")"
 
                 node.setUserObject(issue_text)
                 model.nodeChanged(node)
                 model.reload(node)
+
                 break
 
 # TODO: Fill out all the getters with proper returns
