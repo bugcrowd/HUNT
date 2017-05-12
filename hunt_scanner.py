@@ -46,7 +46,8 @@ class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, 
         self.issues = Issues()
         json = self.issues.get_json()
         issues = self.issues.get_issues()
-        self.view = View(json, issues)
+        scanner_issues = self.issues.get_scanner_issues()
+        self.view = View(json, issues, scanner_issues)
 
     def registerExtenderCallbacks(self, callbacks):
         self.callbacks = callbacks
@@ -86,9 +87,10 @@ class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, 
         return
 
 class View:
-    def __init__(self, json, issues):
+    def __init__(self, json, issues, scanner_issues):
         self.json = json
         self.issues = issues
+        self.scanner_issues = scanner_issues
         self.scanner_panes = {}
 
         self.set_vuln_tree()
@@ -96,6 +98,9 @@ class View:
         self.set_scanner_panes()
         self.set_pane()
         self.set_tsl()
+
+    def get_scanner_issues(self):
+        return self.scanner_issues
 
     def set_vuln_tree(self):
         self.vuln_tree = DefaultMutableTreeNode("Vulnerability Classes")
@@ -147,7 +152,7 @@ class View:
         return self.scanner_panes
 
     def create_request_pane(self, issue_name):
-        request_pane = JScrollPane(JLabel(issue_name))
+        request_pane = JScrollPane()
 
         return request_pane
 
@@ -199,14 +204,27 @@ class View:
     def get_pane(self):
         return self.pane
 
-    def set_request_pane(scanner_pane, issue_name, issue_param)
-        return
+    def create_scanner_pane(self, scanner_pane, scanner_issues, issue_name, issue_param):
+        request_pane = scanner_pane.getTopComponent().getViewport()
+        tabbed_pane = scanner_pane.getBottomComponent()
+        request_panel = JPanel()
+
+        for scanner_issue in scanner_issues:
+            is_same_name = scanner_issue.getIssueName() == issue_name
+            is_same_param = scanner_issue.getParameter() == issue_param
+            is_same_issue = is_same_name and is_same_param
+
+            if is_same_issue:
+                request_panel.add(JLabel(str(scanner_issue.getUrl()) + "\n"))
+
+        request_pane.add(request_panel)
 
 class TSL(TreeSelectionListener):
     def __init__(self, view):
         self.view = view
         self.tree = view.get_tree()
         self.pane = view.get_pane()
+        self.scanner_issues = view.get_scanner_issues()
         self.scanner_panes = view.get_scanner_panes()
 
     def valueChanged(self, tse):
@@ -216,13 +234,25 @@ class TSL(TreeSelectionListener):
         issue_name = node.getParent().toString()
         issue_param = node.toString()
 
+        issue_name_match = re.search("\(", issue_name)
+        issue_param_match = re.search("\(", issue_param)
+
+        is_name_match = issue_name_match != None
+        is_param_match = issue_param_match != None
+
+        if is_name_match:
+            issue_name = issue_name.split(" (")[0]
+
+        if is_param_match:
+            issue_param = issue_param.split(" (")[0]
+
         is_leaf = node.isLeaf()
 
         if node:
             if is_leaf:
                 key = issue_name + "." + issue_param
                 scanner_pane = self.scanner_panes[key]
-                self.view.set_requests(scanner_pane, issue_name, issue_param)
+                self.view.create_scanner_pane(scanner_pane, self.scanner_issues, issue_name, issue_param)
                 pane.setRightComponent(scanner_pane)
             else:
                 print "No description for " + vuln_name
