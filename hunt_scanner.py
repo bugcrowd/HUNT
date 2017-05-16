@@ -12,12 +12,14 @@ from java.awt import EventQueue
 from java.awt.event import ActionListener
 from java.awt.event import ItemListener
 from java.lang import Runnable
+from javax.swing import DefaultListModel
 from javax.swing import JCheckBox
 from javax.swing import JComponent
+from javax.swing import JLabel
+from javax.swing import JList
 from javax.swing import JMenu
 from javax.swing import JMenuBar
 from javax.swing import JMenuItem
-from javax.swing import JLabel
 from javax.swing import JPanel
 from javax.swing import JSplitPane
 from javax.swing import JScrollPane
@@ -138,7 +140,7 @@ class View:
 
             key = issue_name + "." + issue_param
 
-            top_pane = self.create_request_pane(issue_name)
+            top_pane = self.create_request_list_pane(issue_name)
             bottom_pane = self.create_tabbed_pane()
 
             scanner_pane = JSplitPane(JSplitPane.VERTICAL_SPLIT,
@@ -151,10 +153,10 @@ class View:
     def get_scanner_panes(self):
         return self.scanner_panes
 
-    def create_request_pane(self, issue_name):
-        request_pane = JScrollPane()
+    def create_request_list_pane(self, issue_name):
+        request_list_pane = JScrollPane()
 
-        return request_pane
+        return request_list_pane
 
     # Creates a JTabbedPane for each vulnerability per functionality
     def create_tabbed_pane(self):
@@ -191,8 +193,10 @@ class View:
         status.setText("Nothing selected")
         self.status = status
 
+        request_list_pane = JScrollPane()
+
         scanner_pane = JSplitPane(JSplitPane.VERTICAL_SPLIT,
-                       JScrollPane(),
+                       request_list_pane,
                        self.tabbed_pane
         )
 
@@ -205,9 +209,15 @@ class View:
         return self.pane
 
     def create_scanner_pane(self, scanner_pane, scanner_issues, issue_name, issue_param):
-        request_pane = scanner_pane.getTopComponent().getViewport()
-        tabbed_pane = scanner_pane.getBottomComponent()
-        request_panel = JPanel()
+        request_list_pane = scanner_pane.getTopComponent()
+        request_list = self.create_request_list(request_list_pane)
+        request_list_pane.getViewport().setView(request_list)
+
+        #tabbed_pane = scanner_pane.getBottomComponent()
+
+    def create_request_list(self, pane):
+        request_list_model = DefaultListModel()
+        request_list_model.setSelectionMode(ListSelectionModel.SINGLE_SELECTION)
 
         for scanner_issue in scanner_issues:
             is_same_name = scanner_issue.getIssueName() == issue_name
@@ -215,9 +225,10 @@ class View:
             is_same_issue = is_same_name and is_same_param
 
             if is_same_issue:
-                request_panel.add(JLabel(str(scanner_issue.getUrl()) + "\n"))
+                request_list_model.addElement(str(scanner_issue.getUrl()))
 
-        request_pane.add(request_panel)
+        return JList(request_list_model)
+
 
 class TSL(TreeSelectionListener):
     def __init__(self, view):
@@ -258,6 +269,13 @@ class TSL(TreeSelectionListener):
                 print "No description for " + vuln_name
         else:
             print "Cannot set a pane for " + vuln_name
+
+class IssueTSL(TreeSelectionListener):
+    def __init__(self):
+        return
+
+    def valueChanged(self, tse):
+        return
 
 class Issues:
     scanner_issues = []
@@ -391,8 +409,6 @@ class Issues:
         model = tree.getModel()
         root = model.getRoot()
         count = int(root.getChildCount())
-
-        print "length: " + str(len(scanner_issues))
 
         # TODO: Refactor into one function that just takes nodes
         # Iterates through each vulnerability class leaf node in tree
