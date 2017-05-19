@@ -26,6 +26,8 @@ from javax.swing import JScrollPane
 from javax.swing import JTabbedPane
 from javax.swing import JTextArea
 from javax.swing import JTree
+from javax.swing import ListSelectionModel
+from javax.swing.event import ListSelectionListener
 from javax.swing.event import TreeSelectionEvent
 from javax.swing.event import TreeSelectionListener
 from javax.swing.tree import DefaultMutableTreeNode
@@ -143,10 +145,7 @@ class View:
             top_pane = self.create_request_list_pane(issue_name)
             bottom_pane = self.create_tabbed_pane()
 
-            scanner_pane = JSplitPane(JSplitPane.VERTICAL_SPLIT,
-                           top_pane,
-                           bottom_pane
-            )
+            scanner_pane = JSplitPane(JSplitPane.VERTICAL_SPLIT, top_pane, bottom_pane)
 
             self.scanner_panes[key] = scanner_pane
 
@@ -160,26 +159,14 @@ class View:
 
     # Creates a JTabbedPane for each vulnerability per functionality
     def create_tabbed_pane(self):
-        request_tab = self.create_request_tab()
-        response_tab = self.create_response_tab()
-
         tabbed_pane = JTabbedPane()
-        tabbed_pane.add("Request", request_tab)
-        tabbed_pane.add("Response", response_tab)
+        tabbed_pane.add("Advisory", JScrollPane())
+        tabbed_pane.add("Request", JScrollPane())
+        tabbed_pane.add("Response", JScrollPane())
 
         self.tabbed_pane = tabbed_pane
 
         return tabbed_pane
-
-    def create_request_tab(self):
-        request_tab = JScrollPane()
-
-        return request_tab
-
-    def create_response_tab(self):
-        response_tab = JScrollPane()
-
-        return response_tab
 
     def set_tsl(self):
         tsl = TSL(self)
@@ -208,27 +195,73 @@ class View:
     def get_pane(self):
         return self.pane
 
-    def create_scanner_pane(self, scanner_pane, scanner_issues, issue_name, issue_param):
+    # TODO: Make dict of request listeners where the key is scanner_issue
+    def create_scanner_pane(self, scanner_pane, issue_name, issue_param):
+        scanner_issues = self.get_scanner_issues()
+
         request_list_pane = scanner_pane.getTopComponent()
-        request_list = self.create_request_list(request_list_pane)
-        request_list_pane.getViewport().setView(request_list)
-
-        #tabbed_pane = scanner_pane.getBottomComponent()
-
-    def create_request_list(self, pane):
         request_list_model = DefaultListModel()
-        request_list_model.setSelectionMode(ListSelectionModel.SINGLE_SELECTION)
 
         for scanner_issue in scanner_issues:
             is_same_name = scanner_issue.getIssueName() == issue_name
             is_same_param = scanner_issue.getParameter() == issue_param
-            is_same_issue = is_same_name and is_same_param
+            is_same_issue =  is_same_name and is_same_param
 
             if is_same_issue:
-                request_list_model.addElement(str(scanner_issue.getUrl()))
+                url = str(scanner_issue.getUrl())
+                request_list_model.addElement(url)
 
-        return JList(request_list_model)
+        request_list = JList(request_list_model)
+        request_list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION)
 
+        request_listener = IssueListener(self, request_list, scanner_pane, issue_name, issue_param)
+        request_list.addListSelectionListener(request_listener)
+
+        request_list_pane.getViewport().setView(request_list)
+        request_list_pane.revalidate()
+        request_list_pane.repaint()
+
+    # TODO: Call dict of request listeners where the key is scanner_issue
+    def set_tabbed_pane(self, scanner_pane, issue_url, issue_name, issue_param):
+        tabbed_pane = scanner_pane.getBottomComponent()
+        scanner_issues = self.get_scanner_issues()
+
+        for scanner_issue in scanner_issues:
+            is_same_url = scanner_issue.getUrl() == issue_url
+            is_same_name = scanner_issue.getIssueName() == issue_name
+            is_same_param = scanner_issue.getParameter() == issue_param
+            is_same_issue = is_same_url and is_same_name and is_same_param
+
+            if is_same_issue:
+                current_issue = scanner_issue
+                break
+
+        advisory_tab_pane = self.set_advisory_tab_pane(current_issue)
+        tabbed_pane.setComponentAt(0, advisory_tab_pane)
+
+        request_tab_pane = self.set_request_tab_pane(current_issue)
+        tabbed_pane.setComponentAt(1, request_tab_pane)
+
+        response_tab_pane = self.set_response_tab_pane(current_issue)
+        tabbed_pane.setComponentAt(2, response_tab_pane)
+
+    def set_advisory_tab_pane(self, scanner_issue):
+        advisory_textarea = JTextArea(
+            scanner_issue.getUrl() + "\n\n" +
+            scanner_issue.getIssueDetail()
+        )
+
+        return advisory_textarea
+
+    def set_request_tab_pane(self, scanner_issue):
+        request_tab_textarea = JTextArea()
+
+        return request_tab_textarea
+
+    def set_response_tab_pane(self, scanner_issue):
+        response_tab_textarea = JTextArea()
+
+        return response_tab_textarea
 
 class TSL(TreeSelectionListener):
     def __init__(self, view):
@@ -263,19 +296,24 @@ class TSL(TreeSelectionListener):
             if is_leaf:
                 key = issue_name + "." + issue_param
                 scanner_pane = self.scanner_panes[key]
-                self.view.create_scanner_pane(scanner_pane, self.scanner_issues, issue_name, issue_param)
+                self.view.create_scanner_pane(scanner_pane, issue_name, issue_param)
                 pane.setRightComponent(scanner_pane)
             else:
-                print "No description for " + vuln_name
+                print "No description for " + issue_name + " " + issue_param
         else:
-            print "Cannot set a pane for " + vuln_name
+            print "Cannot set a pane for " + issue_name + " " + issue_param
 
-class IssueTSL(TreeSelectionListener):
-    def __init__(self):
-        return
+class IssueListener(ListSelectionListener):
+    def __init__(self, view, request_list, scanner_pane, issue_name, issue_param):
+        self.view = view
+        self.request_list = request_list
+        self.scanner_pane = scanner_pane
+        self.issue_name = issue_name
+        self.issue_param = issue_param
 
-    def valueChanged(self, tse):
-        return
+    def valueChanged(self, lse):
+        url = self.request_list.getSelectedValue()
+        self.view.set_tabbed_pane(self.scanner_pane, url, self.issue_name, self.issue_param)
 
 class Issues:
     scanner_issues = []
