@@ -34,6 +34,7 @@ from javax.swing.tree import DefaultMutableTreeNode
 from javax.swing.tree import DefaultTreeCellRenderer
 from javax.swing.tree import DefaultTreeModel
 from javax.swing.tree import TreeSelectionModel
+from org.python.core.util import StringUtil
 
 # Using the Runnable class for thread-safety with Swing
 class Run(Runnable):
@@ -48,14 +49,12 @@ class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, 
 
     def __init__(self):
         self.issues = Issues()
-        json = self.issues.get_json()
-        issues = self.issues.get_issues()
-        scanner_issues = self.issues.get_scanner_issues()
-        self.view = View(json, issues, scanner_issues)
+        self.view = View(self.issues)
 
     def registerExtenderCallbacks(self, callbacks):
         self.callbacks = callbacks
         self.helpers = callbacks.getHelpers()
+        self.view.set_helpers(self.helpers)
         self.callbacks.registerExtensionStateListener(self)
         self.callbacks.setExtensionName(self.EXTENSION_NAME)
         self.callbacks.addSuiteTab(self)
@@ -91,10 +90,10 @@ class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, 
         return
 
 class View:
-    def __init__(self, json, issues, scanner_issues):
-        self.json = json
-        self.issues = issues
-        self.scanner_issues = scanner_issues
+    def __init__(self, issues):
+        self.json = issues.get_json()
+        self.issues = issues.get_issues()
+        self.scanner_issues = issues.get_scanner_issues()
         self.scanner_panes = {}
 
         self.set_vuln_tree()
@@ -102,6 +101,15 @@ class View:
         self.set_scanner_panes()
         self.set_pane()
         self.set_tsl()
+
+    def set_helpers(self, helpers):
+        self.helpers = helpers
+
+    def get_helpers(self):
+        return self.helpers
+
+    def get_issues(self):
+        return self.issues
 
     def get_scanner_issues(self):
         return self.scanner_issues
@@ -254,14 +262,24 @@ class View:
         return advisory_textarea
 
     def set_request_tab_pane(self, scanner_issue):
-        request_tab_textarea = JTextArea()
+        raw_request = scanner_issue.getRequestResponse().getRequest()
+        request_body = StringUtil.fromBytes(raw_request)
+        request_body = request_body.encode("utf-8")
 
-        return request_tab_textarea
+        request_tab_textarea = JTextArea(request_body)
+        request_tab_textarea.setLineWrap(True)
+
+        return JScrollPane(request_tab_textarea)
 
     def set_response_tab_pane(self, scanner_issue):
-        response_tab_textarea = JTextArea()
+        raw_response = scanner_issue.getRequestResponse().getResponse()
+        response_body = StringUtil.fromBytes(raw_response)
+        response_body = response_body.encode("utf-8")
 
-        return response_tab_textarea
+        response_tab_textarea = JTextArea(response_body)
+        response_tab_textarea.setLineWrap(True)
+
+        return JScrollPane(response_tab_textarea)
 
 class TSL(TreeSelectionListener):
     def __init__(self, view):
@@ -421,7 +439,7 @@ class Issues:
 
                         break
 
-                scanner_issue = ScannerIssue(url, issue_param, http_service, http_messages, issue_name, detail, severity)
+                scanner_issue = ScannerIssue(url, issue_name, issue_param, http_service, http_messages, detail, severity, request_response)
                 self.set_scanner_issues(scanner_issue)
                 self.add_scanner_count(view, issue_name, issue_param, issue_count, self.total_count[issue_name])
 
@@ -488,19 +506,21 @@ class Issues:
                 break
 
 # TODO: Fill out all the getters with proper returns
-# TODO: Pass the entire request_response object instead of each individual parameter for the
-#       class constructor.
 class ScannerIssue(IScanIssue):
-    def __init__(self, url, parameter, http_service, http_messages, issue_name, detail, severity):
+    def __init__(self, url, issue_name, parameter, http_service, http_messages, detail, severity, request_response):
         self.current_url = url
         self.http_service = http_service
         self.http_messages = http_messages
         self.detail = detail.replace("$param$", parameter)
         self.current_severity = severity
+        self.request_response = request_response
         self.issue_background = "Bugcrowd"
         self.issue_name = issue_name
         self.parameter = parameter
         self.remediation_background = ""
+
+    def getRequestResponse(self):
+        return self.request_response
 
     def getParameter(self):
         return self.parameter
