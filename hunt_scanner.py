@@ -15,12 +15,14 @@ from java.lang import Runnable
 from javax.swing import DefaultListModel
 from javax.swing import JCheckBox
 from javax.swing import JComponent
+from javax.swing import JEditorPane
 from javax.swing import JLabel
 from javax.swing import JList
 from javax.swing import JMenu
 from javax.swing import JMenuBar
 from javax.swing import JMenuItem
 from javax.swing import JPanel
+from javax.swing import JPopupMenu
 from javax.swing import JSplitPane
 from javax.swing import JScrollPane
 from javax.swing import JTabbedPane
@@ -78,6 +80,14 @@ class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, 
 
         # Do not show any Bugcrowd found issues in the Scanner window
         return []
+
+    def createMenuItems(self, invocation):
+        popup = JPopupMenu()
+        test = JMenu("test")
+        test.add("test")
+        popup.add(test)
+
+        return [popup]
 
     def getTabCaption(self):
         return self.EXTENSION_NAME
@@ -254,12 +264,15 @@ class View:
         tabbed_pane.setComponentAt(2, response_tab_pane)
 
     def set_advisory_tab_pane(self, scanner_issue):
-        advisory_textarea = JTextArea(
-            scanner_issue.getUrl() + "\n\n" +
-            scanner_issue.getIssueDetail()
+        advisory_pane = JEditorPane()
+        advisory_pane.setEditable(False)
+        advisory_pane.setContentType("text/html")
+        advisory_pane.setText("<html>" +
+            scanner_issue.getUrl() + "<br><br>" +
+            scanner_issue.getIssueDetail() + "</html>"
         )
 
-        return advisory_textarea
+        return JScrollPane(advisory_pane)
 
     def set_request_tab_pane(self, scanner_issue):
         raw_request = scanner_issue.getRequestResponse().getRequest()
