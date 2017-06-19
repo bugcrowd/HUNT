@@ -11,6 +11,8 @@ from burp import ITab
 from java.awt import EventQueue
 from java.awt.event import ActionListener
 from java.awt.event import ItemListener
+from java.awt.event import MouseAdapter
+from java.awt.event import MouseEvent
 from java.lang import Runnable
 from javax.swing import DefaultListModel
 from javax.swing import JCheckBox
@@ -30,6 +32,7 @@ from javax.swing import JTextArea
 from javax.swing import JTree
 from javax.swing import ListSelectionModel
 from javax.swing.event import ListSelectionListener
+from javax.swing.event import PopupMenuListener
 from javax.swing.event import TreeSelectionEvent
 from javax.swing.event import TreeSelectionListener
 from javax.swing.tree import DefaultMutableTreeNode
@@ -82,12 +85,7 @@ class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, 
         return []
 
     def createMenuItems(self, invocation):
-        popup = JPopupMenu()
-        test = JMenu("test")
-        test.add("test")
-        popup.add(test)
-
-        return [popup]
+        return self.view.get_context_menu()
 
     def getTabCaption(self):
         return self.EXTENSION_NAME
@@ -235,6 +233,9 @@ class View:
         request_listener = IssueListener(self, request_list, scanner_pane, issue_name, issue_param)
         request_list.addListSelectionListener(request_listener)
 
+        # Set a context menu
+        self.set_context_menu(request_list)
+
         request_list_pane.getViewport().setView(request_list)
         request_list_pane.revalidate()
         request_list_pane.repaint()
@@ -293,6 +294,47 @@ class View:
         response_tab_textarea.setLineWrap(True)
 
         return JScrollPane(response_tab_textarea)
+
+    def set_context_menu(self, component):
+        context_menu = JPopupMenu()
+        repeater = JMenuItem("Send to Repeater")
+        context_menu.add(repeater)
+
+        context_menu_listener = ContextMenuListener(component, context_menu)
+        component.addMouseListener(context_menu_listener)
+
+class ContextMenuListener(MouseAdapter):
+    def __init__(self, component, context_menu):
+        self.component = component
+        self.context_menu = context_menu
+
+    def mouseReleased(self, e):
+        self.check(e)
+
+    def mousePressed(self, e):
+        self.check(e)
+
+    def check(self, e):
+        isSelection = self.component.getSelectedValue() != None
+        isTrigger = e.isPopupTrigger()
+        isContextMenu = isSelection and isTrigger
+
+        if(isContextMenu):
+            self.component.setSelectedIndex(self.component.locationToIndex(e.getPoint()))
+            self.context_menu.show(self.component, e.getX(), e.getY())
+
+class PopupListener(PopupMenuListener):
+    def __init__(self):
+        return
+
+    def popupMenuCanceled(self, e):
+        print "Popup menu canceled"
+
+    def popupMenuWillBecomeInvisible(self, e):
+        print "Popup menu invisible"
+
+    def popupMenuWillBecomeVisible(self, e):
+        print "Popup menu visible"
 
 class TSL(TreeSelectionListener):
     def __init__(self, view):
