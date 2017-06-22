@@ -28,6 +28,13 @@ Give examples
 * *Insecure Direct Object Reference* ?
 
 
+### TODO
+* Change regex for parameter names to include user_id instead of just id
+* Add functionality to send request/response to other Burp tabs like Repeater
+* Add PCI and WAHH methodology JSON files
+* Add more text for advisory in scanner window
+* Add more description and resources in methodology window
+
 ## Authors
 
 * **Jason Haddix** - *Initial work* 
