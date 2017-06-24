@@ -31,6 +31,7 @@ from javax.swing import JTabbedPane
 from javax.swing import JTextArea
 from javax.swing import JTree
 from javax.swing import ListSelectionModel
+from javax.swing import SwingUtilities
 from javax.swing.event import ListSelectionListener
 from javax.swing.event import PopupMenuListener
 from javax.swing.event import TreeSelectionEvent
@@ -58,6 +59,7 @@ class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, 
 
     def registerExtenderCallbacks(self, callbacks):
         self.callbacks = callbacks
+        self.view.set_callbacks(callbacks)
         self.helpers = callbacks.getHelpers()
         self.view.set_helpers(self.helpers)
         self.callbacks.registerExtensionStateListener(self)
@@ -109,6 +111,9 @@ class View:
         self.set_scanner_panes()
         self.set_pane()
         self.set_tsl()
+
+    def set_callbacks(self, callbacks):
+        self.callbacks = callbacks
 
     def set_helpers(self, helpers):
         self.helpers = helpers
@@ -221,7 +226,7 @@ class View:
         for scanner_issue in scanner_issues:
             is_same_name = scanner_issue.getIssueName() == issue_name
             is_same_param = scanner_issue.getParameter() == issue_param
-            is_same_issue =  is_same_name and is_same_param
+            is_same_issue = is_same_name and is_same_param
 
             if is_same_issue:
                 url = str(scanner_issue.getUrl())
@@ -233,15 +238,13 @@ class View:
         request_listener = IssueListener(self, request_list, scanner_pane, issue_name, issue_param)
         request_list.addListSelectionListener(request_listener)
 
-        # Set a context menu
-        self.set_context_menu(request_list)
 
         request_list_pane.getViewport().setView(request_list)
         request_list_pane.revalidate()
         request_list_pane.repaint()
 
     # TODO: Call dict of request listeners where the key is scanner_issue
-    def set_tabbed_pane(self, scanner_pane, issue_url, issue_name, issue_param):
+    def set_tabbed_pane(self, scanner_pane, request_list, issue_url, issue_name, issue_param):
         tabbed_pane = scanner_pane.getBottomComponent()
         scanner_issues = self.get_scanner_issues()
 
@@ -253,6 +256,7 @@ class View:
 
             if is_same_issue:
                 current_issue = scanner_issue
+                self.set_context_menu(request_list, scanner_issue)
                 break
 
         advisory_tab_pane = self.set_advisory_tab_pane(current_issue)
@@ -273,6 +277,9 @@ class View:
             scanner_issue.getIssueDetail() + "</html>"
         )
 
+        # Set a context menu
+        self.set_context_menu(advisory_pane, scanner_issue)
+
         return JScrollPane(advisory_pane)
 
     def set_request_tab_pane(self, scanner_issue):
@@ -282,6 +289,9 @@ class View:
 
         request_tab_textarea = JTextArea(request_body)
         request_tab_textarea.setLineWrap(True)
+
+        # Set a context menu
+        self.set_context_menu(request_tab_textarea, scanner_issue)
 
         return JScrollPane(request_tab_textarea)
 
@@ -293,12 +303,23 @@ class View:
         response_tab_textarea = JTextArea(response_body)
         response_tab_textarea.setLineWrap(True)
 
+        # Set a context menu
+        self.set_context_menu(response_tab_textarea, scanner_issue)
+
         return JScrollPane(response_tab_textarea)
 
-    def set_context_menu(self, component):
+    # Pass scanner_issue as argument
+    def set_context_menu(self, component, scanner_issue):
         context_menu = JPopupMenu()
+
         repeater = JMenuItem("Send to Repeater")
+        repeater.addActionListener(PopupListener(scanner_issue, self.callbacks))
+
+        intruder = JMenuItem("Send to Intruder")
+        intruder.addActionListener(PopupListener(scanner_issue, self.callbacks))
+
         context_menu.add(repeater)
+        context_menu.add(intruder)
 
         context_menu_listener = ContextMenuListener(component, context_menu)
         component.addMouseListener(context_menu_listener)
@@ -308,33 +329,53 @@ class ContextMenuListener(MouseAdapter):
         self.component = component
         self.context_menu = context_menu
 
-    def mouseReleased(self, e):
-        self.check(e)
-
     def mousePressed(self, e):
-        self.check(e)
+        is_right_click = SwingUtilities.isRightMouseButton(e)
+
+        if is_right_click:
+            self.check(e)
 
     def check(self, e):
-        isSelection = self.component.getSelectedValue() != None
-        isTrigger = e.isPopupTrigger()
-        isContextMenu = isSelection and isTrigger
+        is_list = type(self.component) == type(JList())
 
-        if(isContextMenu):
-            self.component.setSelectedIndex(self.component.locationToIndex(e.getPoint()))
-            self.context_menu.show(self.component, e.getX(), e.getY())
+        if is_list:
+            is_selection = self.component.getSelectedValue() != None
+            is_trigger = e.isPopupTrigger()
+            is_context_menu = is_selection and is_trigger
+            index = self.component.locationToIndex(e.getPoint())
+            self.component.setSelectedIndex(index)
 
-class PopupListener(PopupMenuListener):
-    def __init__(self):
-        return
+        self.context_menu.show(self.component, e.getX(), e.getY())
 
-    def popupMenuCanceled(self, e):
-        print "Popup menu canceled"
+class PopupListener(ActionListener):
+    def __init__(self, scanner_issue, callbacks):
+        self.host = scanner_issue.getHttpService().getHost()
+        self.port = scanner_issue.getHttpService().getPort()
+        self.protocol = scanner_issue.getHttpService().getProtocol()
+        self.request = scanner_issue.getRequestResponse().getRequest()
+        self.callbacks = callbacks
 
-    def popupMenuWillBecomeInvisible(self, e):
-        print "Popup menu invisible"
+        if self.protocol == 443:
+            self.use_https = True
+        else:
+            self.use_https = False
 
-    def popupMenuWillBecomeVisible(self, e):
-        print "Popup menu visible"
+    def actionPerformed(self, e):
+        action = str(e.getActionCommand())
+
+        repeater_match = re.search("Repeater", action)
+        intruder_match = re.search("Intruder", action)
+
+        is_repeater_match = repeater_match != None
+        is_intruder_match = intruder_match != None
+
+        if is_repeater_match:
+            print "Sending to Repeater"
+            self.callbacks.sendToRepeater(self.host, self.port, self.use_https, self.request, None)
+
+        if is_intruder_match:
+            print "Sending to Intruder"
+            self.callbacks.sendToIntruder(self.host, self.port, self.use_https, self.request)
 
 class TSL(TreeSelectionListener):
     def __init__(self, view):
@@ -386,7 +427,7 @@ class IssueListener(ListSelectionListener):
 
     def valueChanged(self, lse):
         url = self.request_list.getSelectedValue()
-        self.view.set_tabbed_pane(self.scanner_pane, url, self.issue_name, self.issue_param)
+        self.view.set_tabbed_pane(self.scanner_pane, self.request_list, url, self.issue_name, self.issue_param)
 
 class Issues:
     scanner_issues = []
