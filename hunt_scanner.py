@@ -15,6 +15,7 @@ from java.awt.event import MouseAdapter
 from java.awt.event import MouseEvent
 from java.lang import Runnable
 from javax.swing import DefaultListModel
+from javax.swing import DefaultCellEditor
 from javax.swing import JCheckBox
 from javax.swing import JComponent
 from javax.swing import JEditorPane
@@ -27,6 +28,7 @@ from javax.swing import JPanel
 from javax.swing import JPopupMenu
 from javax.swing import JSplitPane
 from javax.swing import JScrollPane
+from javax.swing import JTable
 from javax.swing import JTabbedPane
 from javax.swing import JTextArea
 from javax.swing import JTree
@@ -34,8 +36,10 @@ from javax.swing import ListSelectionModel
 from javax.swing import SwingUtilities
 from javax.swing.event import ListSelectionListener
 from javax.swing.event import PopupMenuListener
+from javax.swing.event import TableModelListener
 from javax.swing.event import TreeSelectionEvent
 from javax.swing.event import TreeSelectionListener
+from javax.swing.table import DefaultTableModel
 from javax.swing.tree import DefaultMutableTreeNode
 from javax.swing.tree import DefaultTreeCellRenderer
 from javax.swing.tree import DefaultTreeModel
@@ -216,12 +220,14 @@ class View:
     def get_pane(self):
         return self.pane
 
-    # TODO: Make dict of request listeners where the key is scanner_issue
     def create_scanner_pane(self, scanner_pane, issue_name, issue_param):
         scanner_issues = self.get_scanner_issues()
+        request_table_pane = scanner_pane.getTopComponent()
 
-        request_list_pane = scanner_pane.getTopComponent()
-        request_list_model = DefaultListModel()
+        scanner_table_model = ScannerTableModel()
+        scanner_table_model.addColumn("Checked")
+        scanner_table_model.addColumn("Host")
+        scanner_table_model.addColumn("Path")
 
         for scanner_issue in scanner_issues:
             is_same_name = scanner_issue.getIssueName() == issue_name
@@ -229,21 +235,21 @@ class View:
             is_same_issue = is_same_name and is_same_param
 
             if is_same_issue:
-                url = str(scanner_issue.getUrl())
-                request_list_model.addElement(url)
+                scanner_table_model.addRow([
+                    False,
+                    scanner_issue.getHttpService().getHost(),
+                    scanner_issue.getUrl()
+                ])
 
-        request_list = JList(request_list_model)
-        request_list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION)
+        scanner_table = JTable(scanner_table_model)
+        scanner_table_listener = IssueListener(self, scanner_table, scanner_pane, issue_name, issue_param)
+        scanner_table.getSelectionModel().addListSelectionListener(scanner_table_listener)
+        scanner_table.getColumnModel().getColumn(0).setCellEditor(DefaultCellEditor(JCheckBox()))
 
-        request_listener = IssueListener(self, request_list, scanner_pane, issue_name, issue_param)
-        request_list.addListSelectionListener(request_listener)
+        request_table_pane.getViewport().setView(scanner_table)
+        request_table_pane.revalidate()
+        request_table_pane.repaint()
 
-
-        request_list_pane.getViewport().setView(request_list)
-        request_list_pane.revalidate()
-        request_list_pane.repaint()
-
-    # TODO: Call dict of request listeners where the key is scanner_issue
     def set_tabbed_pane(self, scanner_pane, request_list, issue_url, issue_name, issue_param):
         tabbed_pane = scanner_pane.getBottomComponent()
         scanner_issues = self.get_scanner_issues()
@@ -258,6 +264,8 @@ class View:
                 current_issue = scanner_issue
                 self.set_context_menu(request_list, scanner_issue)
                 break
+
+        print current_issue
 
         advisory_tab_pane = self.set_advisory_tab_pane(current_issue)
         tabbed_pane.setComponentAt(0, advisory_tab_pane)
@@ -323,6 +331,19 @@ class View:
 
         context_menu_listener = ContextMenuListener(component, context_menu)
         component.addMouseListener(context_menu_listener)
+
+class ScannerTableModel(DefaultTableModel):
+    def __init__(self):
+        return
+
+    def getColumnClass(self, col):
+        if col == 0:
+            return True.__class__
+        else:
+            return "".__class__
+
+    def isCellEditable(self, row, col):
+        return col == 0
 
 class ContextMenuListener(MouseAdapter):
     def __init__(self, component, context_menu):
@@ -418,16 +439,17 @@ class TSL(TreeSelectionListener):
             print "Cannot set a pane for " + issue_name + " " + issue_param
 
 class IssueListener(ListSelectionListener):
-    def __init__(self, view, request_list, scanner_pane, issue_name, issue_param):
+    def __init__(self, view, table, scanner_pane, issue_name, issue_param):
         self.view = view
-        self.request_list = request_list
+        self.table = table
         self.scanner_pane = scanner_pane
         self.issue_name = issue_name
         self.issue_param = issue_param
 
-    def valueChanged(self, lse):
-        url = self.request_list.getSelectedValue()
-        self.view.set_tabbed_pane(self.scanner_pane, self.request_list, url, self.issue_name, self.issue_param)
+    def valueChanged(self, e):
+        row = self.table.getSelectedRow()
+        url = self.table.getModel().getValueAt(row, 2)
+        self.view.set_tabbed_pane(self.scanner_pane, self.table, url, self.issue_name, self.issue_param)
 
 class Issues:
     scanner_issues = []
