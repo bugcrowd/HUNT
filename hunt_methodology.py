@@ -23,6 +23,7 @@ from javax.swing.event import TreeSelectionEvent
 from javax.swing.event import TreeSelectionListener
 from javax.swing.tree import DefaultMutableTreeNode
 from javax.swing.tree import TreeSelectionModel
+from org.python.core.util import StringUtil
 
 # Using the Runnable class for thread-safety with Swing
 class Run(Runnable):
@@ -35,7 +36,7 @@ class Run(Runnable):
 # TODO: Refactor to move functions into their own classes based on
 #       functionality
 class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, ITab):
-    EXTENSION_NAME = "Bug Catcher"
+    EXTENSION_NAME = "HUNT - Methodology"
 
     def __init__(self):
         data = Data()
@@ -61,6 +62,8 @@ class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, 
         if not is_correct_context:
             return
 
+        request_response = invocation.getSelectedMessages()[0]
+
         functionality = self.checklist["Functionality"]
 
         # Create the menu item for the Burp context menu
@@ -75,7 +78,7 @@ class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, 
             # class on each functionality
             for vuln_name in vulns:
                 item_vuln = JMenuItem(vuln_name)
-                menu_action_listener = MenuActionListener(self.view, functionality_name, vuln_name)
+                menu_action_listener = MenuActionListener(self.view, self.callbacks, request_response, functionality_name, vuln_name)
                 item_vuln.addActionListener(menu_action_listener)
                 menu_vuln.add(item_vuln)
 
@@ -93,11 +96,14 @@ class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, 
         return self.view.get_pane()
 
     def extensionUnloaded(self):
-        print "Bug Catcher plugin unloaded"
+        print "HUNT - Methodology plugin unloaded"
         return
 
 class MenuActionListener(ActionListener):
-    def __init__(self, view, functionality_name, vuln_name):
+    def __init__(self, view, callbacks, request_response, functionality_name, vuln_name):
+        self.view = view
+        self.callbacks = callbacks
+        self.request_response = request_response
         self.tree = view.get_tree()
         self.pane = view.get_pane()
         self.key = functionality_name + "." + vuln_name
@@ -106,7 +112,16 @@ class MenuActionListener(ActionListener):
     def actionPerformed(self, e):
         bugs_tab = self.tabbed_panes[self.key].getComponentAt(1)
         tab_count = str(bugs_tab.getTabCount())
-        bugs_tab.add(tab_count, JScrollPane())
+
+
+        request_tab = self.view.set_request_tab_pane(self.request_response)
+        response_tab = self.view.set_response_tab_pane(self.request_response)
+
+        tabbed_pane = JTabbedPane()
+        tabbed_pane.add("Request", request_tab)
+        tabbed_pane.add("Response", response_tab)
+
+        bugs_tab.add(tab_count, tabbed_pane)
 
 # ItemListener that will write back to the issues.json file whenever something on the
 # settings is checked or unchecked
@@ -340,6 +355,32 @@ class View:
 
     def get_targets(self):
         return self.targets
+
+    def set_request_tab_pane(self, request_response):
+        raw_request = request_response.getRequest()
+        request_body = StringUtil.fromBytes(raw_request)
+        request_body = request_body.encode("utf-8")
+
+        request_tab_textarea = JTextArea(request_body)
+        request_tab_textarea.setLineWrap(True)
+
+        # Set a context menu
+        #self.set_context_menu(request_tab_textarea, scanner_issue)
+
+        return JScrollPane(request_tab_textarea)
+
+    def set_response_tab_pane(self, request_response):
+        raw_response = request_response.getResponse()
+        response_body = StringUtil.fromBytes(raw_response)
+        response_body = response_body.encode("utf-8")
+
+        response_tab_textarea = JTextArea(response_body)
+        response_tab_textarea.setLineWrap(True)
+
+        # Set a context menu
+        #self.set_context_menu(response_tab_textarea, scanner_issue)
+
+        return JScrollPane(response_tab_textarea)
 
 class TSL(TreeSelectionListener):
     def __init__(self, view):
