@@ -5,9 +5,12 @@ from burp import IContextMenuFactory
 from burp import IContextMenuInvocation
 from burp import ITab
 from java.awt import EventQueue
+from java.awt import GridBagLayout
+from java.awt import GridBagConstraints
 from java.awt.event import ActionListener
 from java.awt.event import ItemListener
 from java.lang import Runnable
+from javax.swing import JButton
 from javax.swing import JCheckBox
 from javax.swing import JMenu
 from javax.swing import JMenuBar
@@ -113,15 +116,41 @@ class MenuActionListener(ActionListener):
         bugs_tab = self.tabbed_panes[self.key].getComponentAt(1)
         tab_count = str(bugs_tab.getTabCount())
 
-
         request_tab = self.view.set_request_tab_pane(self.request_response)
         response_tab = self.view.set_response_tab_pane(self.request_response)
+        bugs_tabbed_pane = self.view.set_bugs_tabbed_pane(request_tab, response_tab)
 
-        tabbed_pane = JTabbedPane()
-        tabbed_pane.add("Request", request_tab)
-        tabbed_pane.add("Response", response_tab)
+        bugs_tab.add(tab_count, bugs_tabbed_pane)
+        index = bugs_tab.indexOfTab(tab_count)
+        panel_tab = JPanel(GridBagLayout())
+        panel_tab.setOpaque(False)
+        label_title = JLabel(tab_count)
+        button_close = JButton("x")
 
-        bugs_tab.add(tab_count, tabbed_pane)
+        gbc = GridBagConstraints()
+        gbc.gridx = 0
+        gbc.gridy = 0
+        gbc.weightx = 1
+
+        panel_tab.add(label_title, gbc)
+
+        gbc.gridx += 1
+        gbc.weightx = 0
+        panel_tab.add(button_close, gbc)
+
+        bugs_tab.setTabComponentAt(index, panel_tab)
+
+        button_close.addActionListener(CloseTab(bugs_tab))
+
+class CloseTab(ActionListener):
+    def __init__(self, bugs_tab):
+        self.bugs_tab = bugs_tab
+
+    def actionPerformed(self, e):
+        selected = self.bugs_tab.getSelectedComponent()
+
+        if selected != None:
+            self.bugs_tab.remove(selected)
 
 # ItemListener that will write back to the issues.json file whenever something on the
 # settings is checked or unchecked
@@ -364,9 +393,6 @@ class View:
         request_tab_textarea = JTextArea(request_body)
         request_tab_textarea.setLineWrap(True)
 
-        # Set a context menu
-        #self.set_context_menu(request_tab_textarea, scanner_issue)
-
         return JScrollPane(request_tab_textarea)
 
     def set_response_tab_pane(self, request_response):
@@ -377,10 +403,15 @@ class View:
         response_tab_textarea = JTextArea(response_body)
         response_tab_textarea.setLineWrap(True)
 
-        # Set a context menu
-        #self.set_context_menu(response_tab_textarea, scanner_issue)
-
         return JScrollPane(response_tab_textarea)
+
+    def set_bugs_tabbed_pane(self, request_tab, response_tab):
+        bugs_tabbed_pane = JTabbedPane()
+
+        bugs_tabbed_pane.add("Request", request_tab)
+        bugs_tabbed_pane.add("Response", response_tab)
+
+        return bugs_tabbed_pane
 
 class TSL(TreeSelectionListener):
     def __init__(self, view):
