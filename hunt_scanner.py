@@ -106,9 +106,12 @@ class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, 
 class View:
     def __init__(self, issues):
         self.json = issues.get_json()
+        self.issues_object = issues
         self.issues = issues.get_issues()
         self.scanner_issues = issues.get_scanner_issues()
         self.scanner_panes = {}
+        self.scanner_tables = {}
+        self.is_scanner_panes = []
 
         self.set_vuln_tree()
         self.set_tree()
@@ -130,6 +133,22 @@ class View:
 
     def get_scanner_issues(self):
         return self.scanner_issues
+
+    def set_scanner_count(self, is_checked, issue_name, issue_param):
+        self.issues_object.set_scanner_count(self, is_checked, issue_name, issue_param)
+
+    def set_is_scanner_pane(self, scanner_pane):
+        self.is_scanner_panes.append(scanner_pane)
+
+    def get_is_scanner_pane(self, scanner_pane):
+        for pane in self.get_is_scanner_panes():
+            if pane == scanner_pane:
+                return True
+
+        return False
+
+    def get_is_scanner_panes(self):
+        return self.is_scanner_panes
 
     def set_vuln_tree(self):
         self.vuln_tree = DefaultMutableTreeNode("Vulnerability Classes")
@@ -220,6 +239,20 @@ class View:
     def get_pane(self):
         return self.pane
 
+    def set_scanner_table(self, scanner_pane, scanner_table):
+        self.scanner_tables[scanner_pane] = scanner_table
+
+    def get_scanner_table(self, scanner_pane):
+        return self.scanner_tables[scanner_pane]
+
+    def set_scanner_pane(self, scanner_pane):
+        request_table_pane = scanner_pane.getTopComponent()
+        scanner_table = self.get_scanner_table(scanner_pane)
+
+        request_table_pane.getViewport().setView(scanner_table)
+        request_table_pane.revalidate()
+        request_table_pane.repaint()
+
     def create_scanner_pane(self, scanner_pane, issue_name, issue_param):
         scanner_issues = self.get_scanner_issues()
         request_table_pane = scanner_pane.getTopComponent()
@@ -229,6 +262,8 @@ class View:
         scanner_table_model.addColumn("Host")
         scanner_table_model.addColumn("Path")
 
+        # Search all issues for the correct issue. Once found, add it into
+        # the scanner table model to be showed in the UI.
         for scanner_issue in scanner_issues:
             is_same_name = scanner_issue.getIssueName() == issue_name
             is_same_param = scanner_issue.getParameter() == issue_param
@@ -242,9 +277,14 @@ class View:
                 ])
 
         scanner_table = JTable(scanner_table_model)
-        scanner_table_listener = IssueListener(self, scanner_table, scanner_pane, issue_name, issue_param)
-        scanner_table.getSelectionModel().addListSelectionListener(scanner_table_listener)
         scanner_table.getColumnModel().getColumn(0).setCellEditor(DefaultCellEditor(JCheckBox()))
+        scanner_table.putClientProperty("terminateEditOnFocusLost", True)
+        scanner_table_listener = ScannerTableListener(self, scanner_table, issue_name, issue_param)
+        scanner_table_model.addTableModelListener(scanner_table_listener)
+        scanner_table_list_listener = IssueListener(self, scanner_table, scanner_pane, issue_name, issue_param)
+        scanner_table.getSelectionModel().addListSelectionListener(scanner_table_list_listener)
+
+        self.set_scanner_table(scanner_pane, scanner_table)
 
         request_table_pane.getViewport().setView(scanner_table)
         request_table_pane.revalidate()
@@ -264,8 +304,6 @@ class View:
                 current_issue = scanner_issue
                 self.set_context_menu(request_list, scanner_issue)
                 break
-
-        print current_issue
 
         advisory_tab_pane = self.set_advisory_tab_pane(current_issue)
         tabbed_pane.setComponentAt(0, advisory_tab_pane)
@@ -345,6 +383,22 @@ class ScannerTableModel(DefaultTableModel):
     def isCellEditable(self, row, col):
         return col == 0
 
+class ScannerTableListener(TableModelListener):
+    def __init__(self, view, scanner_table, issue_name, issue_param):
+        self.view = view
+        self.scanner_table = scanner_table
+        self.issue_name = issue_name
+        self.issue_param = issue_param
+
+    def tableChanged(self, e):
+        row = e.getFirstRow()
+        col = e.getColumn()
+        is_checked = self.scanner_table.getValueAt(row, col)
+        is_changed = e.getType() == e.UPDATE
+
+        if is_changed:
+            self.view.set_scanner_count(is_checked, self.issue_name, self.issue_param)
+
 class ContextMenuListener(MouseAdapter):
     def __init__(self, component, context_menu):
         self.component = component
@@ -410,6 +464,9 @@ class TSL(TreeSelectionListener):
         pane = self.pane
         node = self.tree.getLastSelectedPathComponent()
 
+        if node == None:
+            return
+
         issue_name = node.getParent().toString()
         issue_param = node.toString()
 
@@ -431,7 +488,21 @@ class TSL(TreeSelectionListener):
             if is_leaf:
                 key = issue_name + "." + issue_param
                 scanner_pane = self.scanner_panes[key]
-                self.view.create_scanner_pane(scanner_pane, issue_name, issue_param)
+
+                # Check if empty
+                is_scanner_panes = self.view.get_is_scanner_panes()
+
+                if not is_scanner_panes:
+                    self.view.create_scanner_pane(scanner_pane, issue_name, issue_param)
+                    self.view.set_is_scanner_pane(scanner_pane)
+                else:
+                    is_scanner_pane = self.view.get_is_scanner_pane(scanner_pane)
+
+                    if is_scanner_pane:
+                        self.view.set_scanner_pane(scanner_pane)
+                    else:
+                        self.view.create_scanner_pane(scanner_pane, issue_name, issue_param)
+
                 pane.setRightComponent(scanner_pane)
             else:
                 print "No description for " + issue_name + " " + issue_param
@@ -575,6 +646,7 @@ class Issues:
 
         return True
 
+    # Refactor as same code is used in set_scanner_count()
     def add_scanner_count(self, view, issue_name, issue_param, issue_count, total_count):
         issues = self.get_issues()
         scanner_issues = self.get_scanner_issues()
@@ -621,6 +693,73 @@ class Issues:
                 model.nodeChanged(node)
                 model.reload(node)
 
+                break
+
+    def set_scanner_count(self, view, is_checked, issue_name, issue_param):
+        issues = self.get_issues()
+        scanner_issues = self.get_scanner_issues()
+
+        tree = view.get_pane().getLeftComponent().getViewport().getView()
+        model = tree.getModel()
+        root = model.getRoot()
+        count = int(root.getChildCount())
+
+        for i in range(count):
+            node = model.getChild(root, i)
+            tree_issue_name = node.toString()
+
+            is_issue_name = re.search(issue_name, tree_issue_name)
+
+            if is_issue_name:
+                total_issues = 0
+                child_count = node.getChildCount()
+
+                # TODO: Refactor into one function that just takes nodes
+                # Iterates through each parameter leaf node vulnerability class
+                for j in range(child_count):
+                    child = node.getChildAt(j)
+                    tree_param_name = child.toString()
+
+                    is_param_name = re.search(issue_param, tree_param_name)
+
+                    # Change the display of each parameter leaf node based on
+                    # how many issues are found
+                    if is_param_name:
+                        param_count = int(re.search(r'(\d+)', tree_param_name).group(1))
+
+                        '''
+                        if is_param_count:
+                            param_count = int(is_param_count)
+                        else:
+                            param_count = 0
+                        '''
+
+                        if is_checked:
+                            param_text = issue_param + " (" + str(param_count - 1) + ")"
+                        else:
+                            param_text = issue_param + " (" + str(param_count + 1) + ")"
+
+                        child.setUserObject(param_text)
+                        model.nodeChanged(child)
+                        break
+
+                total_count = int(re.search(r'(\d+)', tree_issue_name).group(1))
+
+                '''
+                if is_total_count:
+                    total_count = int(is_total_count)
+                else:
+                    total_count = 0
+                '''
+
+                if is_checked:
+                    issue_text = issue_name + " (" + str(total_count - 1) + ")"
+                else:
+                    issue_text = issue_name + " (" + str(total_count + 1) + ")"
+
+                node.setUserObject(issue_text)
+                model.nodeChanged(node)
+                model.reload(node)
                 break
 
 # TODO: Fill out all the getters with proper returns
