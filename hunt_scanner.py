@@ -371,9 +371,6 @@ class View:
         component.addMouseListener(context_menu_listener)
 
 class ScannerTableModel(DefaultTableModel):
-    def __init__(self):
-        return
-
     def getColumnClass(self, col):
         if col == 0:
             return True.__class__
@@ -445,11 +442,9 @@ class PopupListener(ActionListener):
         is_intruder_match = intruder_match != None
 
         if is_repeater_match:
-            print "Sending to Repeater"
             self.callbacks.sendToRepeater(self.host, self.port, self.use_https, self.request, None)
 
         if is_intruder_match:
-            print "Sending to Intruder"
             self.callbacks.sendToIntruder(self.host, self.port, self.use_https, self.request)
 
 class TSL(TreeSelectionListener):
@@ -727,13 +722,6 @@ class Issues:
                     if is_param_name:
                         param_count = int(re.search(r'(\d+)', tree_param_name).group(1))
 
-                        '''
-                        if is_param_count:
-                            param_count = int(is_param_count)
-                        else:
-                            param_count = 0
-                        '''
-
                         if is_checked:
                             param_text = issue_param + " (" + str(param_count - 1) + ")"
                         else:
@@ -744,13 +732,6 @@ class Issues:
                         break
 
                 total_count = int(re.search(r'(\d+)', tree_issue_name).group(1))
-
-                '''
-                if is_total_count:
-                    total_count = int(is_total_count)
-                else:
-                    total_count = 0
-                '''
 
                 if is_checked:
                     issue_text = issue_name + " (" + str(total_count - 1) + ")"
