@@ -146,31 +146,6 @@ class CloseTab(ActionListener):
         if selected != None:
             self.bugs_tab.remove(selected)
 
-# ItemListener that will write back to the issues.json file whenever something on the
-# settings is checked or unchecked
-class SettingsItemListener(ItemListener):
-    def __init__(self, issues, vuln_names, vuln_name, is_enabled):
-        self.issues = issues
-        self.vuln_names = vuln_names
-        self.vuln_name = vuln_name
-        self.is_enabled = is_enabled
-
-    def itemStateChanged(self, e):
-        is_checked = int(e.getStateChange()) == 1
-        is_unchecked = int(e.getStateChange()) == 2
-
-        if is_checked:
-            self.issues["issues"][self.vuln_name]["enabled"] = True
-            print self.vuln_name + " was checked"
-
-        if is_unchecked:
-            self.issues["issues"][self.vuln_name]["enabled"] = False
-            print self.vuln_name + " was unchecked"
-
-        with open("issues.json", "w") as data:
-            data.write(json.dumps(self.issues, indent=2, sort_keys=True))
-            data.close()
-
 # Singleton/Borg
 class Data():
     shared_state = {}
