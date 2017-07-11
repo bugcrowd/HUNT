@@ -10,6 +10,7 @@ from java.awt import GridBagConstraints
 from java.awt.event import ActionListener
 from java.awt.event import ItemListener
 from java.lang import Runnable
+from javax.swing import GroupLayout
 from javax.swing import JButton
 from javax.swing import JCheckBox
 from javax.swing import JMenu
@@ -126,17 +127,10 @@ class MenuActionListener(ActionListener):
         panel_tab.setOpaque(False)
         label_title = JLabel(tab_count)
         button_close = JButton("x")
+        button_close.setBorder(None)
 
-        gbc = GridBagConstraints()
-        gbc.gridx = 0
-        gbc.gridy = 0
-        gbc.weightx = 1
-
-        panel_tab.add(label_title, gbc)
-
-        gbc.gridx += 1
-        gbc.weightx = 0
-        panel_tab.add(button_close, gbc)
+        panel_tab.add(label_title)
+        panel_tab.add(button_close)
 
         bugs_tab.setTabComponentAt(index, panel_tab)
 
@@ -186,6 +180,7 @@ class Data():
         self.set_checklist()
         self.set_issues()
 
+    # Use callbacks.saveToTempFile()
     def set_checklist(self):
         with open("checklist.json") as data_file:
             data = json.load(data_file)
@@ -361,18 +356,32 @@ class View:
 
     def set_settings(self):
         self.settings = JPanel()
+        layout = GroupLayout(self.settings)
+        self.settings.setLayout(layout)
+        layout.setAutoCreateGaps(True)
 
-        issues = self.issues
-        vuln_names = issues["issues"]
+        load_file_button = JButton("Load JSON File")
+        save_file_button = JButton("Save JSON File")
 
-        for vuln_name in vuln_names:
-            is_enabled = vuln_names[vuln_name]["enabled"]
-            enabled_checkbox = JCheckBox(vuln_name, is_enabled)
+        horizontal_group1 = layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+        horizontal_group1.addComponent(load_file_button)
+        horizontal_group1.addComponent(save_file_button)
 
-            settings_item_listener = SettingsItemListener(issues, vuln_names, vuln_name, is_enabled)
-            enabled_checkbox.addItemListener(settings_item_listener)
+        horizontal_group = layout.createSequentialGroup()
+        horizontal_group.addGroup(horizontal_group1)
 
-            self.settings.add(enabled_checkbox)
+        layout.setHorizontalGroup(horizontal_group)
+
+        vertical_group1 = layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+        vertical_group1.addComponent(load_file_button)
+        vertical_group2 = layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+        vertical_group2.addComponent(save_file_button)
+
+        vertical_group = layout.createSequentialGroup()
+        vertical_group.addGroup(vertical_group1)
+        vertical_group.addGroup(vertical_group2)
+
+        layout.setVerticalGroup(vertical_group)
 
     def get_settings(self):
         return self.settings
