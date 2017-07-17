@@ -1,22 +1,47 @@
 {
   "issues": {
-    "Open Redirect": {
+    "Insecure Direct Object Reference": {
       "check_location": {
         "request": true, 
         "response": false
       }, 
-      "detail": "There is probably an Open Redirect on the <b>$param$</b> parameter", 
+      "detail": "There is probably an OS Command Injection on the <b>$param$</b> parameter", 
       "enabled": true, 
       "level": "Information", 
-      "name": "Possible Open Redirect", 
+      "name": "Possible OS Command Injection", 
       "params": [
-        "dest", 
-        "continue", 
-        "redirect", 
-        "url", 
-        "uri", 
-        "window", 
-        "next"
+        "id", 
+        "user", 
+        "account", 
+        "number", 
+        "order", 
+        "no", 
+        "doc", 
+        "key", 
+        "email", 
+        "group", 
+        "profile", 
+        "edit"
+      ]
+    }, 
+    "OS Command Injection": {
+      "check_location": {
+        "request": true, 
+        "response": false
+      }, 
+      "detail": "There is probably an OS Command Injection on the <b>$param$</b> parameter", 
+      "enabled": true, 
+      "level": "Information", 
+      "name": "Possible OS Command Injection", 
+      "params": [
+        "daemon", 
+        "upload", 
+        "dir", 
+        "execute", 
+        "download", 
+        "log", 
+        "ip", 
+        "cli"
       ]
     }, 
     "Remote File Inclusion": {
@@ -47,15 +72,86 @@
         "request": true, 
         "response": false
       }, 
-      "detail": "There is probably SQL Injection on the <b>$param$</b> parameter", 
+      "detail": "HUNT located the <b>$param$</b> parameter inside of your application traffic. The <b>$param$</b> parameter is most often susceptible to SQL Injection. HUNT recommends further manual analysis of the parameter in question.<br><br>For SQL Injection HUNT references The Bug Hunters Methodology SQL Injection references table:<br><br><a href='http://pentestmonkey.net/cheat-sheet/sql-injection/mysql-sql-injection-cheat-sheet'>PentestMonkey's MySQL Injection Cheat Sheet</a><br><a href='https://websec.wordpress.com/2010/12/04/sqli-filter-evasion-cheat-sheet-mysql/'>Reiner's MySQL Injection Filter Evasion</a><br><a href='http://evilsql.com/main/page2.php'>EvilSQL's Error/Union/Blind MSSQL Cheat Sheet</a><br><a href='http://pentestmonkey.net/cheat-sheet/sql-injection/mssql-sql-injection-cheat-sheet'>PentestMonkey's MSSQL SQL Injection Cheat Sheet</a><br><a href='http://pentestmonkey.net/cheat-sheet/sql-injection/oracle-sql-injection-cheat-sheet'>PentestMonkey's Oracle SQL Cheat Sheet<br>PentestMonkey's PostgreSQL Cheat Sheet</a><br><a href='http://pentestmonkey.net/cheat-sheet/sql-injection/postgres-sql-injection-cheat-sheet'>Access SQL Injection Cheat Sheet</a><br><a href='http://nibblesec.org/files/MSAccessSQLi/MSAccessSQLi.html'>Access SQL Injection Cheat Sheet</a><br><a href='http://pentestmonkey.net/cheat-sheet/sql-injection/ingres-sql-injection-cheat-sheet'>PentestMonkey's Ingres SQL Injection Cheat Sheet</a><br><a href='http://pentestmonkey.net/cheat-sheet/sql-injection/db2-sql-injection-cheat-sheet'>PentestMonkey's DB2 SQL Injection Cheat Sheet</a><br><a href='http://pentestmonkey.net/cheat-sheet/sql-injection/informix-sql-injection-cheat-sheet'>PentestMonkey's Informix SQL Injection Cheat Sheet</a><br><a href='https://sites.google.com/site/0x7674/home/sqlite3injectioncheatsheet'>SQLite3 Injection Cheat Sheet</a><br><a href='https://sites.google.com/site/0x7674/home/sqlite3injectioncheatsheet'>Ruby on Rails (ActiveRecord) SQL Injection Guide</a>", 
       "enabled": true, 
       "level": "Severe", 
       "name": "Possible SQL Injection", 
       "params": [
         "id", 
-        "ids", 
+        "select", 
+        "report", 
+        "role", 
+        "update", 
         "query", 
-        "userid"
+        "user", 
+        "name", 
+        "sort", 
+        "where", 
+        "search", 
+        "params", 
+        "process", 
+        "row", 
+        "view", 
+        "table", 
+        "from", 
+        "sel", 
+        "results", 
+        "sleep", 
+        "fetch", 
+        "order", 
+        "keyword", 
+        "column", 
+        "field", 
+        "delete", 
+        "string", 
+        "number", 
+        "filter"
+      ]
+    }, 
+    "Server Side Request Forgery": {
+      "check_location": {
+        "request": true, 
+        "response": false
+      }, 
+      "detail": "There is probably a Server Side Request Forgery on the <b>$param$</b> parameter", 
+      "enabled": true, 
+      "level": "Information", 
+      "name": "Possible Servier Side Request Forgery", 
+      "params": [
+        "dest", 
+        "redirect", 
+        "uri", 
+        "path", 
+        "continue", 
+        "url", 
+        "window", 
+        "next", 
+        "data", 
+        "reference", 
+        "site", 
+        "html", 
+        "val", 
+        "validate", 
+        "domain", 
+        "callback", 
+        "return", 
+        "page", 
+        "feed", 
+        "host", 
+        "port"
+      ]
+    }, 
+    "Server Side Template Injection": {
+      "check_location": {
+        "request": true, 
+        "response": false
+      }, 
+      "detail": "There is probably an Server Side Template Injection on the <b>$param$</b> parameter", 
+      "enabled": true, 
+      "level": "Information", 
+      "name": "Possible Server Side Template Injection", 
+      "params": [
+        "template"
       ]
     }
   }
