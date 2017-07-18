@@ -37,8 +37,6 @@ class Run(Runnable):
     def run(self):
         self.runner()
 
-# TODO: Refactor to move functions into their own classes based on
-#       functionality
 class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, ITab):
     EXTENSION_NAME = "HUNT - Methodology"
 
@@ -71,22 +69,22 @@ class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, 
         functionality = self.checklist["Functionality"]
 
         # Create the menu item for the Burp context menu
-        bugcatcher_menu = JMenu("Send to Bug Catcher")
+        bugcatcher_menu = JMenu("Send to HUNT - Methodology")
 
         # TODO: Sort the functionality by name and by vuln class
         for functionality_name in functionality:
-            vulns = functionality[functionality_name]["vulns"]
-            menu_vuln = JMenu(functionality_name)
+            tests = functionality[functionality_name]["tests"]
+            menu_test = JMenu(functionality_name)
 
             # Create a menu item and an action listener per vulnerability
             # class on each functionality
-            for vuln_name in vulns:
-                item_vuln = JMenuItem(vuln_name)
-                menu_action_listener = MenuActionListener(self.view, self.callbacks, request_response, functionality_name, vuln_name)
-                item_vuln.addActionListener(menu_action_listener)
-                menu_vuln.add(item_vuln)
+            for test_name in tests:
+                item_test = JMenuItem(test_name)
+                menu_action_listener = MenuActionListener(self.view, self.callbacks, request_response, functionality_name, test_name)
+                item_test.addActionListener(menu_action_listener)
+                menu_test.add(item_test)
 
-            bugcatcher_menu.add(menu_vuln)
+            bugcatcher_menu.add(menu_test)
 
         burp_menu = []
         burp_menu.append(bugcatcher_menu)
@@ -180,10 +178,7 @@ class View:
         self.set_tree()
         self.set_pane()
         self.set_tabbed_panes()
-
-        self.set_program_brief()
         self.set_settings()
-        self.set_targets()
 
         self.set_tsl()
 
@@ -193,11 +188,10 @@ class View:
     def get_issues(self):
         return self.issues
 
-    # TODO: Use Bugcrowd API to grab the Program Brief and Targets
     # TODO: Create the checklist dynamically for all nodes based on JSON structure
     # Creates a DefaultMutableTreeNode using the JSON file data
     def set_checklist_tree(self):
-        self.checklist_tree = DefaultMutableTreeNode("Bug Catcher Methodology")
+        self.checklist_tree = DefaultMutableTreeNode("HUNT - Methodology")
 
         for item in self.checklist:
             node = DefaultMutableTreeNode(item)
@@ -210,13 +204,13 @@ class View:
 
         functionality = self.checklist["Functionality"]
 
-        # TODO: Sort the functionality by name and by vuln class
+        # TODO: Sort the functionality by name and by test name
         for functionality_name in functionality:
-            vulns = functionality[functionality_name]["vulns"]
+            tests = functionality[functionality_name]["tests"]
             node = DefaultMutableTreeNode(functionality_name)
 
-            for vuln_name in vulns:
-                node.add(DefaultMutableTreeNode(vuln_name))
+            for test_name in tests:
+                node.add(DefaultMutableTreeNode(test_name))
 
             functionality_node.add(node)
 
@@ -254,21 +248,21 @@ class View:
         self.tabbed_panes = {}
 
         for functionality_name in functionality:
-            vulns = functionality[functionality_name]["vulns"]
+            tests = functionality[functionality_name]["tests"]
 
-            for vuln_name in vulns:
-                key = functionality_name + "." + vuln_name
-                tabbed_pane = self.set_tabbed_pane(functionality_name, vuln_name)
+            for test_name in tests:
+                key = functionality_name + "." + test_name
+                tabbed_pane = self.set_tabbed_pane(functionality_name, test_name)
                 self.tabbed_panes[key] = self.tabbed_pane
 
     def get_tabbed_panes(self):
         return self.tabbed_panes
 
     # Creates a JTabbedPane for each vulnerability per functionality
-    def set_tabbed_pane(self, functionality_name, vuln_name):
-        description_tab = self.set_description_tab(functionality_name, vuln_name)
+    def set_tabbed_pane(self, functionality_name, test_name):
+        description_tab = self.set_description_tab(functionality_name, test_name)
         bugs_tab = self.set_bugs_tab()
-        resources_tab = self.set_resource_tab(functionality_name, vuln_name)
+        resources_tab = self.set_resource_tab(functionality_name, test_name)
         notes_tab = self.set_notes_tab()
 
         self.tabbed_pane = JTabbedPane()
@@ -279,7 +273,7 @@ class View:
 
     # Creates the description panel
     def set_description_tab(self, fn, vn):
-        description_text = str(self.checklist["Functionality"][fn]["vulns"][vn]["description"])
+        description_text = str(self.checklist["Functionality"][fn]["tests"][vn]["description"])
         description_textarea = JTextArea()
         description_textarea.setLineWrap(True)
         description_textarea.setText(description_text)
@@ -296,7 +290,7 @@ class View:
 
     # Creates the resources panel
     def set_resource_tab(self, fn, vn):
-        resource_urls = self.checklist["Functionality"][fn]["vulns"][vn]["resources"]
+        resource_urls = self.checklist["Functionality"][fn]["tests"][vn]["resources"]
         resource_text = ""
 
         for url in resource_urls:
@@ -320,14 +314,6 @@ class View:
         self.tree.addTreeSelectionListener(tsl)
 
         return
-
-    def set_program_brief(self):
-        self.program_brief = JTextArea()
-        self.program_brief.setLineWrap(True)
-        self.program_brief.setText("This is the program brief:")
-
-    def get_program_brief(self):
-        return self.program_brief
 
     def set_settings(self):
         self.settings = JPanel()
@@ -360,14 +346,6 @@ class View:
 
     def get_settings(self):
         return self.settings
-
-    def set_targets(self):
-        self.targets = JTextArea()
-        self.targets.setLineWrap(True)
-        self.targets.setText("These are the targets:")
-
-    def get_targets(self):
-        return self.targets
 
     def set_request_tab_pane(self, request_response):
         raw_request = request_response.getRequest()
@@ -404,9 +382,7 @@ class TSL(TreeSelectionListener):
         self.checklist = view.get_checklist()
         self.issues = view.get_issues()
         self.tabbed_panes = view.get_tabbed_panes()
-        self.program_brief = view.get_program_brief()
         self.settings = view.get_settings()
-        self.targets = view.get_targets()
 
     def valueChanged(self, tse):
         pane = self.pane
@@ -416,32 +392,25 @@ class TSL(TreeSelectionListener):
         if node == None or node.getParent() == None:
             return
 
-        vuln_name = node.toString()
+        test_name = node.toString()
         functionality_name = node.getParent().toString()
 
-        # TODO: Move Program Brief and Targets nodes creation elsewhere
         is_leaf = node.isLeaf()
-        is_settings = is_leaf and (vuln_name == "Settings")
-        is_brief = is_leaf and (vuln_name == "Program Brief")
-        is_target = is_leaf and (vuln_name == "Targets")
-        is_folder = is_leaf and (vuln_name == "Functionality")
-        is_functionality = is_leaf and not (is_settings or is_brief or is_target or is_folder)
+        is_settings = is_leaf and (test_name == "Settings")
+        is_folder = is_leaf and (test_name == "Functionality")
+        is_functionality = is_leaf and not is_settings
 
         if node:
             if is_functionality:
-                key = functionality_name + "." + vuln_name
+                key = functionality_name + "." + test_name
                 tabbed_pane = self.tabbed_panes[key]
                 pane.setRightComponent(tabbed_pane)
             elif is_settings:
                 pane.setRightComponent(self.settings)
-            elif is_brief:
-                pane.setRightComponent(self.program_brief)
-            elif is_target:
-                pane.setRightComponent(self.targets)
             else:
-                print "No description for " + vuln_name
+                print "No description for " + test_name
         else:
-            print "Cannot set a pane for " + vuln_name
+            print "Cannot set a pane for " + test_name
 
 
 if __name__ in [ '__main__', 'main' ] :
