@@ -9,10 +9,12 @@ from java.awt import GridBagLayout
 from java.awt import GridBagConstraints
 from java.awt.event import ActionListener
 from java.awt.event import ItemListener
+from java.io import FileWriter
 from java.lang import Runnable
 from javax.swing import GroupLayout
 from javax.swing import JButton
 from javax.swing import JCheckBox
+from javax.swing import JFileChooser
 from javax.swing import JMenu
 from javax.swing import JMenuBar
 from javax.swing import JMenuItem
@@ -57,9 +59,11 @@ class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, 
 
     def createMenuItems(self, invocation):
         # Do not create a menu item unless getting a context menu from the proxy history or scanner results
+        is_intruder_results = invocation.getInvocationContext() == invocation.CONTEXT_INTRUDER_ATTACK_RESULTS
         is_proxy_history = invocation.getInvocationContext() == invocation.CONTEXT_PROXY_HISTORY
         is_scanner_results = invocation.getInvocationContext() == invocation.CONTEXT_SCANNER_RESULTS
-        is_correct_context = is_proxy_history or is_scanner_results
+        is_target_tree = invocation.getInvocationContext() == invocation.CONTEXT_TARGET_SITE_MAP_TREE
+        is_correct_context = is_proxy_history or is_scanner_results or is_target_tree or is_intruder_results
 
         if not is_correct_context:
             return
@@ -322,7 +326,11 @@ class View:
         layout.setAutoCreateGaps(True)
 
         load_file_button = JButton("Load JSON File")
+        load_file_button.setActionCommand("load")
+        load_file_button.addActionListener(SettingsAction(load_file_button, None))
         save_file_button = JButton("Save JSON File")
+        save_file_button.setActionCommand("save")
+        save_file_button.addActionListener(SettingsAction(save_file_button, self.tabbed_panes))
 
         horizontal_group1 = layout.createParallelGroup(GroupLayout.Alignment.LEADING)
         horizontal_group1.addComponent(load_file_button)
@@ -374,6 +382,55 @@ class View:
         bugs_tabbed_pane.add("Response", response_tab)
 
         return bugs_tabbed_pane
+
+class SettingsAction(ActionListener):
+    def __init__(self, file_button, tabbed_panes):
+        self.file_button = file_button
+        self.tabbed_panes = tabbed_panes
+
+    def actionPerformed(self, e):
+        file_chooser = JFileChooser()
+        is_load_file = str(e.getActionCommand()) == "load"
+        is_save_file = str(e.getActionCommand()) == "save"
+
+        '''
+        if is_load_file:
+            file_chooser.setDialogTitle("Load JSON File")
+            file_chooser.setDialogType(JFileChooser.LOAD_DIALOG)
+            file_chooser.showOpenDialog(self.file_button)
+        '''
+
+        if is_save_file:
+            file_chooser.setDialogTitle("Save JSON File")
+            file_chooser.setDialogType(JFileChooser.SAVE_DIALOG)
+            save_dialog = file_chooser.showSaveDialog(self.file_button)
+            is_approve = save_dialog == JFileChooser.APPROVE_OPTION
+
+            if is_approve:
+                save_file = file_chooser.getSelectedFile()
+                self.save_data(save_file)
+            else:
+                print "save cancelled"
+
+    def save_data(self, save_file):
+        tabbed_panes = self.tabbed_panes.iteritems()
+
+        for key, tabbed_pane in tabbed_panes:
+            bugs_tabs_count = tabbed_pane.getComponentAt(1).getTabCount()
+
+            for bug in range(bugs_tabs_count):
+                key = key.split(".")
+                functionality = key[0]
+                test = key[1]
+                request = tabbed_pane.getComponentAt(1).getComponentAt(bug).getComponentAt(1).getViewport().getView().getText().encode("utf-8")
+                response = tabbed_pane.getComponentAt(1).getComponentAt(bug).getComponentAt(2).getViewport().getView().getText().encode("utf-8")
+
+
+            notes = tabbed_pane.getComponentAt(2).getViewport().getView()
+        '''
+        file_writer = FileWriter(save_file)
+        file_writer.close()
+        '''
 
 class TSL(TreeSelectionListener):
     def __init__(self, view):
