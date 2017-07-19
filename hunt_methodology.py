@@ -173,6 +173,17 @@ class Data():
     def get_issues(self):
         return self.issues
 
+    def set_bugs(self, functionality_name, test_name, request, response):
+        bug = {
+            "request": request,
+            "response": response
+        }
+
+        self.checklist["Functionality"][functionality_name]["tests"][test_name]["bugs"].append(bug)
+
+    def set_notes(self, functionality_name, test_name, notes):
+        self.checklist["Functionality"][functionality_name]["tests"][test_name]["notes"] = notes
+
 class View:
     def __init__(self, checklist, issues):
         self.checklist = checklist
@@ -407,30 +418,32 @@ class SettingsAction(ActionListener):
             is_approve = save_dialog == JFileChooser.APPROVE_OPTION
 
             if is_approve:
-                save_file = file_chooser.getSelectedFile()
+                save_file = str(file_chooser.getSelectedFile())
                 self.save_data(save_file)
             else:
-                print "save cancelled"
+                print "JSON file save cancelled"
 
     def save_data(self, save_file):
+        data = Data()
         tabbed_panes = self.tabbed_panes.iteritems()
 
         for key, tabbed_pane in tabbed_panes:
             bugs_tabs_count = tabbed_pane.getComponentAt(1).getTabCount()
+            key = key.split(".")
+            functionality_name = key[0]
+            test_name = key[1]
+
+            notes = tabbed_pane.getComponentAt(3).getText()
+            data.set_notes(functionality_name, test_name, notes)
 
             for bug in range(bugs_tabs_count):
-                key = key.split(".")
-                functionality = key[0]
-                test = key[1]
-                request = tabbed_pane.getComponentAt(1).getComponentAt(bug).getComponentAt(1).getViewport().getView().getText().encode("utf-8")
-                response = tabbed_pane.getComponentAt(1).getComponentAt(bug).getComponentAt(2).getViewport().getView().getText().encode("utf-8")
+                request = tabbed_pane.getComponentAt(1).getComponentAt(bug).getComponentAt(0).getViewport().getView().getText().encode("utf-8")
+                response = tabbed_pane.getComponentAt(1).getComponentAt(bug).getComponentAt(1).getViewport().getView().getText().encode("utf-8")
 
+                data.set_bugs(functionality_name, test_name, request, response)
 
-            notes = tabbed_pane.getComponentAt(2).getViewport().getView()
-        '''
-        file_writer = FileWriter(save_file)
-        file_writer.close()
-        '''
+        with open(save_file, 'w') as out_file:
+            json.dump(data.get_checklist(), out_file, indent=2, sort_keys=True)
 
 class TSL(TreeSelectionListener):
     def __init__(self, view):
