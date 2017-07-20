@@ -29,7 +29,7 @@
         "request": true, 
         "response": false
       }, 
-      "detail": "There is probably an OS Command Injection on the <b>$param$</b> parameter", 
+      "detail": "HUNT located the <b>$param$</b> parameter inside of your application traffic. The <b>$param$</b> parameter is most often susceptible to OS Command Injection. HUNT recommends further manual analysis of the parameter in question.<br><br>For OS Command Injection HUNT recommends the following resources to aid in manual testing:<br><br><a href='https://www.owasp.org/index.php/Testing_for_Command_Injection_(OTG-INPVAL-013)'>(OWASP) Testing for OS Command Injection</a><br><a href='https://www.hackerone.com/blog/how-to-command-injections'>Jobert's How To Command Injection</a><br><a href='https://github.com/commixproject/commix'>Commix Command Injection Tool</a><br><a href='https://github.com/fuzzdb-project/fuzzdb/tree/master/attack/os-cmd-execution'>The FuzzDB OS CMD Exec section</a><br><a href='https://ferruh.mavituna.com/unix-command-injection-cheat-sheet-oku/'>Ferruh Mavituna's CMDi Cheat Sheet</a><br>The Web Application Hacker's Handbook: Chapter 10", 
       "enabled": true, 
       "level": "Information", 
       "name": "Possible OS Command Injection", 
