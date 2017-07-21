@@ -149,7 +149,7 @@
         "response": false
       },
       "detail": "HUNT located the <b>$param$</b> parameter inside of your application traffic. The <b>$param$</b> parameter is most often susceptible to Template Injection.",
-      "enabled": false,
+      "enabled": true,
       "level": "Information",
       "name": "Possible Server Side Template Injection",
       "params": [
