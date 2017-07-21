@@ -15,9 +15,9 @@ This extension XXX
 
 ## Getting Started with HUNT Scanner
 
-* First ensure you have the Jython standalone jar set up under "Extender" -> "Options"
-* Add HUNT via "Extender" -> "Extensions"
-* HUNT Scanner will begin to run across traffic that flows through the proxy.
+1. First ensure you have the Jython standalone jar set up under "Extender" -> "Options"
+2. Add HUNT via "Extender" -> "Extensions"
+3. HUNT Scanner will begin to run across traffic that flows through the proxy.
 
 Important to note, HUNT Scanner leverages the passive scanning API. Here are the conditions under which passive scan checks are run: 
 
