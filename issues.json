@@ -154,7 +154,7 @@
       "name": "Possible Server Side Template Injection",
       "params": [
         "template",
-        "preview"
+        "preview",
         "id",
         "view",
         "activity",
