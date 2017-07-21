@@ -47,16 +47,20 @@ Important to note, HUNT Scanner leverages the passive scanning API. Here are the
 
 
 ### TODO
+* Implement script name checking, REST URL support, JSON & XML post-body params.
+* Highlight param in scanner window
+* Search in scanner window
+* Support normal convention of Request tab: Raw, Params, Headers, Hex sub-tabs inside scanner
 * Change regex for parameter names to include user_id instead of just id
-* Add functionality to send request/response to other Burp tabs like Repeater
 * Add PCI and WAHH methodology JSON files
-* Add more text for advisory in scanner window
-* Add more description and resources in methodology window
+* ~~Add more text for advisory in scanner window~~
+* ~~Add more description and resources in methodology window~~
+* ~~Add functionality to send request/response to other Burp tabs like Repeater~~
 
 ## Authors
 
-* **Jason Haddix** - *Initial work* 
 * **JP Villanueva** - *Initial work* 
+* **Jason Haddix** - *Initial work* 
 * **Ryan Black** - *Initial work* 
 * **Fatih Egbatan** - *Initial work*
 * **Vishal Shah** - *Initial work*
