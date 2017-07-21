@@ -319,7 +319,7 @@ class View:
         advisory_pane.setEditable(False)
         advisory_pane.setContentType("text/html")
         advisory_pane.setText("<html>" +
-            scanner_issue.getUrl() + "<br><br>" +
+            "<b>Location</b>: " + scanner_issue.getUrl() + "<br><br>" +
             scanner_issue.getIssueDetail() + "</html>"
         )
 
@@ -363,6 +363,8 @@ class View:
 
         intruder = JMenuItem("Send to Intruder")
         intruder.addActionListener(PopupListener(scanner_issue, self.callbacks))
+
+        hunt = JMenuItem("Send to HUNT")
 
         context_menu.add(repeater)
         context_menu.add(intruder)
@@ -427,7 +429,7 @@ class PopupListener(ActionListener):
         self.request = scanner_issue.getRequestResponse().getRequest()
         self.callbacks = callbacks
 
-        if self.protocol == 443:
+        if self.protocol == "https":
             self.use_https = True
         else:
             self.use_https = False
