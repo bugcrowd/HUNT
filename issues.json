@@ -153,6 +153,13 @@
       "name": "Possible Server Side Template Injection",
       "params": [
         "template"
+        "preview"
+        "id"
+        "view"
+        "activity"
+        "name"
+        "content"
+        "redirect"
       ]
     }
   }
