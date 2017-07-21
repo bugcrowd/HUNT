@@ -35,14 +35,15 @@
       "level": "Information",
       "name": "Possible OS Command Injection",
       "params": [
-        "daemon", 
+        "daemon",
         "upload",
         "dir",
         "execute",
         "download",
         "log",
         "ip",
-        "cli"
+        "cli",
+        "cmd"
       ]
     },
     "File Inclusion & Path Traversal": {
@@ -147,7 +148,7 @@
         "show",
         "navigation",
         "open"
-        
+
       ]
     },
     "Server Side Template Injection": {
@@ -202,7 +203,10 @@
         "reset",
         "shell",
         "toggle",
-        "adm"
+        "adm",
+        "root",
+        "cfg",
+        "config"
       ]
     }
   }
