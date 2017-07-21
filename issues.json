@@ -50,7 +50,7 @@
         "request": true,
         "response": false
       },
-      "detail": "HUNT located the <b>$param$</b> parameter inside of your application traffic. The <b>$param$</b> parameter is most often susceptible to File Inclusion or Path Traversal. HUNT recommends further manual analysis of the parameter in question.<br><br>For File Inclusion or Path Traversal HUNT recommends the following resources to aid in manual testing:<br><br>The Web Application Hacker's Handbook: Chapter 10<br><a href='https://highon.coffee/blog/lfi-cheat-sheet/'>Arr0way LFI Cheat Sheet</a><br><a href='https://www.gracefulsecurity.com/path-traversal-cheat-sheet-windows/'>Graceful's Path Traversal Cheat Sheet: Windows</a><br><a href='https://www.gracefulsecurity.com/path-traversal-cheat-sheet-linux/'>Graceful's Path Traversal Cheat Sheet: Linux</a><br>",
+      "detail": "HUNT located the <b>$param$</b> parameter inside of your application traffic. The <b>$param$</b> parameter is most often susceptible to File Inclusion or Path Traversal. HUNT recommends further manual analysis of the parameter in question. Also note that several parameters from this section and SSRF might overlap or need testing for both vulnerability categories.<br><br>For File Inclusion or Path Traversal HUNT recommends the following resources to aid in manual testing:<br><br>The Web Application Hacker's Handbook: Chapter 10<br><a href='https://highon.coffee/blog/lfi-cheat-sheet/'>Arr0way LFI Cheat Sheet</a><br><a href='https://www.gracefulsecurity.com/path-traversal-cheat-sheet-windows/'>Graceful's Path Traversal Cheat Sheet: Windows</a><br><a href='https://www.gracefulsecurity.com/path-traversal-cheat-sheet-linux/'>Graceful's Path Traversal Cheat Sheet: Linux</a><br>",
       "enabled": true,
       "level": "Information",
       "name": "Possible File Inclusion or Path Traversal",
@@ -114,7 +114,7 @@
         "request": true,
         "response": false
       },
-      "detail": "HUNT located the <b>$param$</b> parameter inside of your application traffic. The <b>$param$</b> parameter is most often susceptible to Server Side Request Forgery. HUNT recommends further manual analysis of the parameter in question.<br><br>For Server Side Request Forgery HUNT recommends the following resources to aid in manual testing:<br><br><a href='      http://www.agarri.fr/docs/AppSecEU15-Server_side_browsing_considered_harmful.pdf'>Server-side browsing considered harmful - Nicolas Grégoire</a><br><a href='https://www.hackerone.com/blog-How-To-Server-Side-Request-Forgery-SSRF'>How To: Server-Side Request Forgery (SSRF) - Jobert Abma</a><br><a href='https://github.com/ngalongc/bug-bounty-reference#server-side-request-forgery-ssrf'>IDOR Examples from ngalongc/bug-bounty-reference</a><br><a href='http://blog.safebuff.com/2016/07/03/SSRF-Tips/'>safebuff SSRF Tips</a><br><a href='https://docs.google.com/document/d/1v1TkWZtrhzRLy0bYXBcdLUedXGb9njTNIJXa3u9akHM/edit'>The SSRF Bible</a>",
+      "detail": "HUNT located the <b>$param$</b> parameter inside of your application traffic. The <b>$param$</b> parameter is most often susceptible to Server Side Request Forgery (and sometimes URL redirects). HUNT recommends further manual analysis of the parameter in question.<br><br>For Server Side Request Forgery HUNT recommends the following resources to aid in manual testing:<br><br><a href='      http://www.agarri.fr/docs/AppSecEU15-Server_side_browsing_considered_harmful.pdf'>Server-side browsing considered harmful - Nicolas Grégoire</a><br><a href='https://www.hackerone.com/blog-How-To-Server-Side-Request-Forgery-SSRF'>How To: Server-Side Request Forgery (SSRF) - Jobert Abma</a><br><a href='https://github.com/ngalongc/bug-bounty-reference#server-side-request-forgery-ssrf'>IDOR Examples from ngalongc/bug-bounty-reference</a><br><a href='http://blog.safebuff.com/2016/07/03/SSRF-Tips/'>safebuff SSRF Tips</a><br><a href='https://docs.google.com/document/d/1v1TkWZtrhzRLy0bYXBcdLUedXGb9njTNIJXa3u9akHM/edit'>The SSRF Bible</a>",
       "enabled": true,
       "level": "Information",
       "name": "Possible Servier Side Request Forgery",
@@ -140,7 +140,14 @@
         "feed",
         "host",
         "port",
-        "to"
+        "to",
+        "out",
+        "view",
+        "dir",
+        "show",
+        "navigation",
+        "open"
+        
       ]
     },
     "Server Side Template Injection": {
@@ -148,7 +155,7 @@
         "request": true,
         "response": false
       },
-      "detail": "HUNT located the <b>$param$</b> parameter inside of your application traffic. The <b>$param$</b> parameter is most often susceptible to Template Injection.",
+      "detail": "HUNT located the <b>$param$</b> parameter inside of your application traffic. The <b>$param$</b> parameter is most often susceptible to Server Side Template Injection. HUNT recommends further manual analysis of the parameter in question.",
       "enabled": true,
       "level": "Information",
       "name": "Possible Server Side Template Injection",
@@ -161,6 +168,41 @@
         "name",
         "content",
         "redirect"
+      ]
+    },
+    "Debug & Logic Parameters": {
+      "check_location": {
+        "request": true,
+        "response": false
+      },
+      "detail": "HUNT located the <b>$param$</b> parameter inside of your application traffic. The <b>$param$</b> parameter is most often associated to debug,  access, or critical functionality in applications. HUNT recommends further manual analysis of the parameter in question.",
+      "enabled": true,
+      "level": "Information",
+      "name": "Debug",
+      "params": [
+        "access",
+        "admin",
+        "dbg",
+        "debug",
+        "edit",
+        "grant",
+        "test",
+        "alter",
+        "clone",
+        "create",
+        "delete",
+        "disable",
+        "enable",
+        "exec",
+        "execute",
+        "load",
+        "make",
+        "modify",
+        "rename",
+        "reset",
+        "shell",
+        "toggle",
+        "adm"
       ]
     }
   }
