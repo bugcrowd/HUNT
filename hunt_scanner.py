@@ -8,6 +8,7 @@ from burp import IContextMenuInvocation
 from burp import IScanIssue
 from burp import IScannerCheck
 from burp import ITab
+from java.awt import Desktop
 from java.awt import EventQueue
 from java.awt.event import ActionListener
 from java.awt.event import ItemListener
@@ -34,6 +35,8 @@ from javax.swing import JTextArea
 from javax.swing import JTree
 from javax.swing import ListSelectionModel
 from javax.swing import SwingUtilities
+from javax.swing.event import HyperlinkEvent
+from javax.swing.event import HyperlinkListener
 from javax.swing.event import ListSelectionListener
 from javax.swing.event import PopupMenuListener
 from javax.swing.event import TableModelListener
@@ -317,7 +320,10 @@ class View:
     def set_advisory_tab_pane(self, scanner_issue):
         advisory_pane = JEditorPane()
         advisory_pane.setEditable(False)
+        advisory_pane.setEnabled(True)
         advisory_pane.setContentType("text/html")
+        link_listener = LinkListener()
+        advisory_pane.addHyperlinkListener(link_listener)
         advisory_pane.setText("<html>" +
             "<b>Location</b>: " + scanner_issue.getUrl() + "<br><br>" +
             scanner_issue.getIssueDetail() + "</html>"
@@ -371,6 +377,15 @@ class View:
 
         context_menu_listener = ContextMenuListener(component, context_menu)
         component.addMouseListener(context_menu_listener)
+
+class LinkListener(HyperlinkListener):
+    def __init__(self):
+        return
+
+    def hyperlinkUpdate(self, hle):
+        if hle.EventType.ACTIVATED == hle.getEventType():
+            desktop = Desktop.getDesktop()
+            desktop.browse(hle.getURL().toURI())
 
 class ScannerTableModel(DefaultTableModel):
     def getColumnClass(self, col):
