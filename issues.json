@@ -139,7 +139,8 @@
         "page",
         "feed",
         "host",
-        "port"
+        "port",
+        "to"
       ]
     },
     "Server Side Template Injection": {
@@ -152,7 +153,14 @@
       "level": "Information",
       "name": "Possible Server Side Template Injection",
       "params": [
-        "template"
+        "template",
+        "preview",
+        "id",
+        "view",
+        "activity",
+        "name",
+        "content",
+        "redirect"
       ]
     }
   }
