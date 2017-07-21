@@ -153,13 +153,13 @@
       "level": "Information",
       "name": "Possible Server Side Template Injection",
       "params": [
-        "template"
+        "template",
         "preview"
-        "id"
-        "view"
-        "activity"
-        "name"
-        "content"
+        "id",
+        "view",
+        "activity",
+        "name",
+        "content",
         "redirect"
       ]
     }
