@@ -43,11 +43,7 @@ class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, 
     EXTENSION_NAME = "HUNT - Methodology"
 
     def __init__(self):
-        data = Data()
-        self.checklist = data.get_checklist()
-        self.issues = data.get_issues()
-
-        self.view = View(self.checklist, self.issues)
+        self.view = View()
 
     def registerExtenderCallbacks(self, callbacks):
         self.callbacks = callbacks
@@ -154,12 +150,16 @@ class Data():
 
     def __init__(self):
         self.__dict__ = self.shared_state
-        self.set_checklist()
+        self.set_checklist(None)
         self.set_issues()
 
-    # Use callbacks.saveToTempFile()
-    def set_checklist(self):
-        with open("checklist.json") as data_file:
+    def set_checklist(self, file_name):
+        is_empty = file_name == None
+
+        if is_empty:
+            file_name = "checklist.json"
+
+        with open(file_name) as data_file:
             data = json.load(data_file)
             self.checklist = data["checklist"]
 
@@ -185,9 +185,10 @@ class Data():
         self.checklist["Functionality"][functionality_name]["tests"][test_name]["notes"] = notes
 
 class View:
-    def __init__(self, checklist, issues):
-        self.checklist = checklist
-        self.issues = issues
+    def __init__(self):
+        self.data = Data()
+        self.checklist = self.data.get_checklist()
+        self.issues = self.data.get_issues()
 
         self.set_checklist_tree()
         self.set_tree()
@@ -196,6 +197,10 @@ class View:
         self.set_settings()
 
         self.set_tsl()
+
+    def set_checklist(self, file_name):
+        self.data.set_checklist(file_name)
+        self.checklist = self.data.get_checklist()
 
     def get_checklist(self):
         return self.checklist
@@ -229,6 +234,9 @@ class View:
 
             functionality_node.add(node)
 
+    def get_checklist_tree(self):
+        return self.checklist_tree
+
     # Creates a JTree object from the checklist
     def set_tree(self):
         self.tree = JTree(self.checklist_tree)
@@ -239,7 +247,6 @@ class View:
     def get_tree(self):
         return self.tree
 
-    # TODO: Figure out how to use JCheckboxTree instead of a simple JTree
     # TODO: Change to briefcase icon for brief, P1-P5 icons for vulns,
     #       bullseye icon for Targets, etc
     # Create a JSplitPlane with a JTree to the left and JTabbedPane to right
@@ -325,10 +332,13 @@ class View:
         return notes_textarea
 
     def set_tsl(self):
-        tsl = TSL(self)
-        self.tree.addTreeSelectionListener(tsl)
+        self.tsl = TSL(self)
+        self.tree.addTreeSelectionListener(self.tsl)
 
         return
+
+    def get_tsl(self):
+        return self.tsl
 
     def set_settings(self):
         self.settings = JPanel()
@@ -338,10 +348,10 @@ class View:
 
         load_file_button = JButton("Load JSON File")
         load_file_button.setActionCommand("load")
-        load_file_button.addActionListener(SettingsAction(load_file_button, None))
+        load_file_button.addActionListener(SettingsAction(self, load_file_button, None))
         save_file_button = JButton("Save JSON File")
         save_file_button.setActionCommand("save")
-        save_file_button.addActionListener(SettingsAction(save_file_button, self.tabbed_panes))
+        save_file_button.addActionListener(SettingsAction(None, save_file_button, self.tabbed_panes))
 
         horizontal_group1 = layout.createParallelGroup(GroupLayout.Alignment.LEADING)
         horizontal_group1.addComponent(load_file_button)
@@ -395,7 +405,8 @@ class View:
         return bugs_tabbed_pane
 
 class SettingsAction(ActionListener):
-    def __init__(self, file_button, tabbed_panes):
+    def __init__(self, view, file_button, tabbed_panes):
+        self.view = view
         self.file_button = file_button
         self.tabbed_panes = tabbed_panes
 
@@ -404,12 +415,18 @@ class SettingsAction(ActionListener):
         is_load_file = str(e.getActionCommand()) == "load"
         is_save_file = str(e.getActionCommand()) == "save"
 
-        '''
         if is_load_file:
             file_chooser.setDialogTitle("Load JSON File")
-            file_chooser.setDialogType(JFileChooser.LOAD_DIALOG)
-            file_chooser.showOpenDialog(self.file_button)
-        '''
+            file_chooser.setDialogType(JFileChooser.OPEN_DIALOG)
+            open_dialog = file_chooser.showOpenDialog(self.file_button)
+            is_approve = open_dialog == JFileChooser.APPROVE_OPTION
+
+            if is_approve:
+                load_file = file_chooser.getSelectedFile()
+                file_name = str(load_file)
+                self.load_data(file_name)
+            else:
+                print "JSON file load cancelled"
 
         if is_save_file:
             file_chooser.setDialogTitle("Save JSON File")
@@ -423,10 +440,33 @@ class SettingsAction(ActionListener):
             else:
                 print "JSON file save cancelled"
 
+    # TODO: This function is gross and hacked together. Move everything to View class and
+    #       possibly refactor setter functions.
+    def load_data(self, file_name):
+        self.view.set_checklist(file_name)
+        checklist = self.view.get_checklist()
+        self.view.set_checklist_tree()
+        checklist_tree = self.view.get_checklist_tree()
+
+        new_tree = JTree(checklist_tree)
+        model = new_tree.getModel()
+        old_tree = self.view.get_tree()
+        old_tree.setModel(model)
+
+        tabbed_panes = self.view.get_tabbed_panes()
+        del tabbed_panes
+        self.view.set_tabbed_panes()
+
+        old_tsl = self.view.get_tsl()
+        old_tree.removeTreeSelectionListener(old_tsl)
+        tsl = TSL(self.view)
+        old_tree.addTreeSelectionListener(tsl)
+
     def save_data(self, save_file):
         data = Data()
         tabbed_panes = self.tabbed_panes.iteritems()
 
+        # Grabs all of the Notes and Bugs and saves them into the JSON file
         for key, tabbed_pane in tabbed_panes:
             bugs_tabs_count = tabbed_pane.getComponentAt(1).getTabCount()
             key = key.split(".")
