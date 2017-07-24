@@ -379,9 +379,6 @@ class View:
         component.addMouseListener(context_menu_listener)
 
 class LinkListener(HyperlinkListener):
-    def __init__(self):
-        return
-
     def hyperlinkUpdate(self, hle):
         if hle.EventType.ACTIVATED == hle.getEventType():
             desktop = Desktop.getDesktop()
