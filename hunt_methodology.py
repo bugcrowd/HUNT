@@ -261,6 +261,8 @@ class View:
                     JTabbedPane()
         )
 
+        self.pane.setDividerLocation(300)
+
     def get_pane(self):
         return self.pane
 

@@ -93,9 +93,6 @@ class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, 
         # Do not show any Bugcrowd found issues in the Scanner window
         return []
 
-    def createMenuItems(self, invocation):
-        return self.view.get_context_menu()
-
     def getTabCaption(self):
         return self.EXTENSION_NAME
 
@@ -238,6 +235,8 @@ class View:
                     JScrollPane(self.tree),
                     scanner_pane
         )
+
+        self.pane.setDividerLocation(300)
 
     def get_pane(self):
         return self.pane
