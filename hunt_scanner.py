@@ -503,19 +503,24 @@ class TSL(TreeSelectionListener):
                 key = issue_name + "." + issue_param
                 scanner_pane = self.scanner_panes[key]
 
-                # Check if empty
+                # Check there are any scanner panes.
                 is_scanner_panes = self.view.get_is_scanner_panes()
 
+                # Create scanner pane for the first time.
                 if not is_scanner_panes:
                     self.view.create_scanner_pane(scanner_pane, issue_name, issue_param)
                     self.view.set_is_scanner_pane(scanner_pane)
                 else:
+                    # Check if the scanner pane exists.
                     is_scanner_pane = self.view.get_is_scanner_pane(scanner_pane)
 
+                    # If the scanner pane exists, go ahead and show it.
                     if is_scanner_pane:
                         self.view.set_scanner_pane(scanner_pane)
+                    # Else, create a new scanner pane and keep track of it.
                     else:
                         self.view.create_scanner_pane(scanner_pane, issue_name, issue_param)
+                        self.view.set_is_scanner_pane(scanner_pane)
 
                 pane.setRightComponent(scanner_pane)
             else:
@@ -679,7 +684,6 @@ class Issues:
             is_issue_name = re.search(issue_name, tree_issue_name)
 
             if is_issue_name:
-                total_issues = 0
                 child_count = node.getChildCount()
 
                 # TODO: Refactor into one function that just takes nodes
@@ -713,7 +717,7 @@ class Issues:
         issues = self.get_issues()
         scanner_issues = self.get_scanner_issues()
 
-        tree = view.get_pane().getLeftComponent().getViewport().getView()
+        tree = view.get_tree()
         model = tree.getModel()
         root = model.getRoot()
         count = int(root.getChildCount())
@@ -725,7 +729,6 @@ class Issues:
             is_issue_name = re.search(issue_name, tree_issue_name)
 
             if is_issue_name:
-                total_issues = 0
                 child_count = node.getChildCount()
 
                 # TODO: Refactor into one function that just takes nodes
@@ -748,6 +751,8 @@ class Issues:
 
                         child.setUserObject(param_text)
                         model.nodeChanged(child)
+                        model.reload(child)
+
                         break
 
                 total_count = int(re.search(r'(\d+)', tree_issue_name).group(1))
@@ -760,6 +765,7 @@ class Issues:
                 node.setUserObject(issue_text)
                 model.nodeChanged(node)
                 model.reload(node)
+
                 break
 
 # TODO: Fill out all the getters with proper returns
