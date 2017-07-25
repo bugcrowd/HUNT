@@ -1,5 +1,6 @@
 import json
 import re
+import urllib2
 import urlparse
 from burp import IBurpExtender
 from burp import IExtensionStateListener
@@ -597,15 +598,28 @@ class Issues:
             else:
                 continue
 
-            # TODO: Use regex at the beginning and end of the string for params like "id".
-            #       Example: id_param, param_id, paramID, etc
+            # TODO: Clean up the gross nested if statements
             # Check to see if the current parameter is a potentially vuln parameter
             for issue in issues:
                 vuln_param = issue["param"]
-                is_vuln_found = parameter_decoded == vuln_param
+                is_vuln_found = re.search(vuln_param, parameter_decoded, re.IGNORECASE)
 
                 if is_vuln_found:
-                    vuln_params.append(issue)
+                    is_same_vuln_name = vuln_param == parameter_decoded
+
+                    if is_same_vuln_name:
+                        vuln_params.append(issue)
+                    else:
+                        url = "http://api.pearson.com/v2/dictionaries/ldoce5/entries?headword=" + parameter_decoded
+                        response = urllib2.urlopen(url)
+                        data = json.load(response)
+                        is_real_word = int(data["count"]) > 0
+
+                        # Checks an English dictionary if parameter is a real word. If it isn't, add it.
+                        # Catches: id_param, param_id, paramID, etc.
+                        # Does not catch: idea, ideology, identify, etc.
+                        if not is_real_word:
+                            vuln_params.append(issue)
 
         return vuln_params
 
