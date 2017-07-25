@@ -10,6 +10,7 @@ from burp import IScanIssue
 from burp import IScannerCheck
 from burp import ITab
 from java.awt import Desktop
+from java.awt import Dimension
 from java.awt import EventQueue
 from java.awt.event import ActionListener
 from java.awt.event import ItemListener
@@ -240,7 +241,8 @@ class View:
                     scanner_pane
         )
 
-        self.pane.setDividerLocation(300)
+        self.pane.setDividerLocation(310)
+        self.pane.getLeftComponent().setMinimumSize(Dimension(310, 300))
 
     def get_pane(self):
         return self.pane

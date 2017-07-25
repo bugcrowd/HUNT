@@ -4,6 +4,7 @@ from burp import IExtensionStateListener
 from burp import IContextMenuFactory
 from burp import IContextMenuInvocation
 from burp import ITab
+from java.awt import Dimension
 from java.awt import EventQueue
 from java.awt import GridBagLayout
 from java.awt import GridBagConstraints
@@ -261,7 +262,8 @@ class View:
                     JTabbedPane()
         )
 
-        self.pane.setDividerLocation(300)
+        self.pane.setDividerLocation(310)
+        self.pane.getLeftComponent().setMinimumSize(Dimension(310, 300))
 
     def get_pane(self):
         return self.pane
@@ -498,6 +500,7 @@ class TSL(TreeSelectionListener):
 
     def valueChanged(self, tse):
         pane = self.pane
+        pane.setDividerLocation(300)
         node = self.tree.getLastSelectedPathComponent()
 
         # Check if node is root. If it is, don't display anything
