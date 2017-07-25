@@ -66,7 +66,7 @@ class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, 
 
         request_response = invocation.getSelectedMessages()[0]
 
-        functionality = self.checklist["Functionality"]
+        functionality = self.view.get_checklist()["Functionality"]
 
         # Create the menu item for the Burp context menu
         bugcatcher_menu = JMenu("Send to HUNT - Methodology")
