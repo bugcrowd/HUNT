@@ -93,6 +93,9 @@ class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, 
         # Do not show any Bugcrowd found issues in the Scanner window
         return []
 
+    def createMenuItems(self, invocation):
+        return self.view.get_context_menu()
+
     def getTabCaption(self):
         return self.EXTENSION_NAME
 
@@ -361,7 +364,7 @@ class View:
 
     # Pass scanner_issue as argument
     def set_context_menu(self, component, scanner_issue):
-        context_menu = JPopupMenu()
+        self.context_menu = JPopupMenu()
 
         repeater = JMenuItem("Send to Repeater")
         repeater.addActionListener(PopupListener(scanner_issue, self.callbacks))
@@ -371,11 +374,14 @@ class View:
 
         hunt = JMenuItem("Send to HUNT")
 
-        context_menu.add(repeater)
-        context_menu.add(intruder)
+        self.context_menu.add(repeater)
+        self.context_menu.add(intruder)
 
-        context_menu_listener = ContextMenuListener(component, context_menu)
+        context_menu_listener = ContextMenuListener(component, self.context_menu)
         component.addMouseListener(context_menu_listener)
+
+    def get_context_menu(self):
+        return self.context_menu
 
 class LinkListener(HyperlinkListener):
     def hyperlinkUpdate(self, hle):
