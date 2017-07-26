@@ -1,37 +1,66 @@
-# Burp Suite Bug Hunter Plugin
+# HUNT Burp Suite Plugin
 
-The Burp Suite Bug Hunter Plugin (working title) is a Burp extension to identify common parameters vulnerable to certain vulnerability classes. This extention does not test these parameters but rather alerts on them so that a bug hunter can test them manually (thoroughly). For each class of vulnerability, Bugcrowd has identified common parameters or functions associated with that vulnerability class. We also provide curated resources in the issue description to do thorough manual testing of these vulnerability classes.
+HUNT is a Burp extension to:
 
-## Getting Started
+1. Identify common parameters vulnerable to certain vulnerability classes. 
+2. Organize testing methodologies inside of Burp Suite.
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
+## HUNT Scanner (hunt_scanner.py)
 
-### Prerequisites
+This extension does not test these parameters but rather alerts on them so that a bug hunter can test them manually (thoroughly). For each class of vulnerability, Bugcrowd has identified common parameters or functions associated with that vulnerability class. We also provide curated resources in the issue description to do thorough manual testing of these vulnerability classes.
 
-loading the jython exe into burp, under the extender -> options tab.
-```
-Give examples
-```
+## HUNT Methodology (hunt_methodology.py)
 
-### Installing
+This extension XXX 
 
+## Getting Started with HUNT Scanner
 
-### Vulnerability Classes
+1. First ensure you have the Jython standalone jar set up under "Extender" -> "Options"
+2. Add HUNT via "Extender" -> "Extensions"
+3. HUNT Scanner will begin to run across traffic that flows through the proxy.
+
+Important to note, HUNT Scanner leverages the passive scanning API. Here are the conditions under which passive scan checks are run: 
+
+* First request of an active scan
+* Proxy requests
+* Any time 'Do a passive scan' is selected from the context menu
+
+*Passive scans are not run:*
+
+* On every active scan response
+* On Repeater responses
+* On Intruder responses
+* On Sequencer responses
+* On Spider responses
+
+### HUNT Scanner Vulnerability Classes
 
 * SQL Injection
-* Local & Remote File Inclusion
-* Open Redirect
-* Cross Site Scripting
+* Local/Remote File Inclusion & Path Traversal
+* Insecure Direct Object Reference
+* Server Side Request Forgery & Open Redirect
 * Command Injection
-* External Entity Injection
-* Malicious File Upload
-* *Insecure Direct Object Reference* ?
+* ~~Cross Site Scripting~~
+* ~~Template Injection~~
+* ~~External Entity Injection~~
+* ~~Malicious File Upload~~
 
+
+### TODO
+* Implement script name checking, REST URL support, JSON & XML post-body params.
+* Highlight param in scanner window
+* Search in scanner window
+* Support normal convention of Request tab: Raw, Params, Headers, Hex sub-tabs inside scanner
+* Change regex for parameter names to include user_id instead of just id
+* Add PCI and WAHH methodology JSON files
+* ~~Add more text for advisory in scanner window~~
+* ~~Add more description and resources in methodology window~~
+* ~~Add functionality to send request/response to other Burp tabs like Repeater~~
 
 ## Authors
 
-* **Jason Haddix** - *Initial work* 
 * **JP Villanueva** - *Initial work* 
+* **Jason Haddix** - *Initial work* 
 * **Ryan Black** - *Initial work* 
 * **Fatih Egbatan** - *Initial work*
 * **Vishal Shah** - *Initial work*
