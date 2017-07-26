@@ -41,7 +41,7 @@ Important to note, HUNT Scanner leverages the passive scanning API. Here are the
 * Server Side Request Forgery & Open Redirect
 * Command Injection
 * ~~Cross Site Scripting~~
-* ~~Template Injection~~
+* Template Injection
 * ~~External Entity Injection~~
 * ~~Malicious File Upload~~
 
@@ -59,11 +59,11 @@ Important to note, HUNT Scanner leverages the passive scanning API. Here are the
 
 ## Authors
 
-* **JP Villanueva** - *Initial work* 
-* **Jason Haddix** - *Initial work* 
-* **Ryan Black** - *Initial work* 
-* **Fatih Egbatan** - *Initial work*
-* **Vishal Shah** - *Initial work*
+* **JP Villanueva**
+* **Jason Haddix**
+* **Ryan Black**
+* **Fatih Egbatan**
+* **Vishal Shah**
 
 
 ## License
