@@ -11,7 +11,7 @@ This extension does not test these parameters but rather alerts on them so that 
 
 ## HUNT Methodology (hunt_methodology.py)
 
-This extension XXX 
+This extension allows testers to send requests and responses to 
 
 ## Getting Started with HUNT Scanner
 
@@ -68,10 +68,4 @@ Important to note, HUNT Scanner leverages the passive scanning API. Here are the
 
 ## License
 
-
-
-## Acknowledgments
-
-* Hat tip to anyone who's code was used
-* Inspiration
-* etc
+Licesed with the apache 2.0 license here: https://choosealicense.com/licenses/apache-2.0/
