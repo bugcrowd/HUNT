@@ -11,9 +11,9 @@ This extension does not test these parameters but rather alerts on them so that 
 
 ## HUNT Methodology (hunt_methodology.py)
 
-This extension allows testers to send requests and responses to 
+This extension allows testers to send requests and responses to a Burp tab called "HUNT Methodology". This tab contains a tree on the left side that is a visual representation of your testing methodology. By sending request/responses here testers can organize or attest to having done manual testing in that section of the application or having completed a certain methodology step.
 
-## Getting Started with HUNT Scanner
+## Getting Started with HUNT
 
 1. First ensure you have the Jython standalone jar set up under "Extender" -> "Options"
 2. Add HUNT via "Extender" -> "Extensions"
