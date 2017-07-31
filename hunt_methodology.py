@@ -1,23 +1,24 @@
+from __future__ import print_function
 import json
 from burp import IBurpExtender
 from burp import IExtensionStateListener
 from burp import IContextMenuFactory
-from burp import IContextMenuInvocation
+# from burp import IContextMenuInvocation
 from burp import ITab
 from java.awt import Dimension
 from java.awt import EventQueue
 from java.awt import GridBagLayout
-from java.awt import GridBagConstraints
+# from java.awt import GridBagConstraints
 from java.awt.event import ActionListener
-from java.awt.event import ItemListener
-from java.io import FileWriter
+# from java.awt.event import ItemListener
+# from java.io import FileWriter
 from java.lang import Runnable
 from javax.swing import GroupLayout
 from javax.swing import JButton
-from javax.swing import JCheckBox
+# from javax.swing import JCheckBox
 from javax.swing import JFileChooser
 from javax.swing import JMenu
-from javax.swing import JMenuBar
+# from javax.swing import JMenuBar
 from javax.swing import JMenuItem
 from javax.swing import JLabel
 from javax.swing import JPanel
@@ -26,7 +27,7 @@ from javax.swing import JScrollPane
 from javax.swing import JTabbedPane
 from javax.swing import JTextArea
 from javax.swing import JTree
-from javax.swing.event import TreeSelectionEvent
+# from javax.swing.event import TreeSelectionEvent
 from javax.swing.event import TreeSelectionListener
 from javax.swing.tree import DefaultMutableTreeNode
 from javax.swing.tree import TreeSelectionModel
@@ -99,7 +100,7 @@ class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, 
         return self.view.get_pane()
 
     def extensionUnloaded(self):
-        print "HUNT - Methodology plugin unloaded"
+        print("HUNT - Methodology plugin unloaded")
         return
 
 class MenuActionListener(ActionListener):
@@ -142,7 +143,7 @@ class CloseTab(ActionListener):
     def actionPerformed(self, e):
         selected = self.bugs_tab.getSelectedComponent()
 
-        if selected != None:
+        if selected is not None:
             self.bugs_tab.remove(selected)
 
 # Singleton/Borg
@@ -155,7 +156,7 @@ class Data():
         self.set_issues()
 
     def set_checklist(self, file_name):
-        is_empty = file_name == None
+        is_empty = file_name is None
 
         if is_empty:
             file_name = "checklist.json"
@@ -258,9 +259,8 @@ class View:
         self.status = status
 
         self.pane = JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
-                    JScrollPane(self.tree),
-                    JTabbedPane()
-        )
+                               JScrollPane(self.tree),
+                               JTabbedPane())
 
         self.pane.setDividerLocation(310)
         self.pane.getLeftComponent().setMinimumSize(Dimension(310, 300))
@@ -430,7 +430,7 @@ class SettingsAction(ActionListener):
                 file_name = str(load_file)
                 self.load_data(file_name)
             else:
-                print "JSON file load cancelled"
+                print("JSON file load cancelled")
 
         if is_save_file:
             file_chooser.setDialogTitle("Save JSON File")
@@ -442,7 +442,7 @@ class SettingsAction(ActionListener):
                 save_file = str(file_chooser.getSelectedFile())
                 self.save_data(save_file)
             else:
-                print "JSON file save cancelled"
+                print("JSON file save cancelled")
 
     # TODO: This function is gross and hacked together. Move everything to View class and
     #       possibly refactor setter functions.
@@ -504,7 +504,7 @@ class TSL(TreeSelectionListener):
         node = self.tree.getLastSelectedPathComponent()
 
         # Check if node is root. If it is, don't display anything
-        if node == None or node.getParent() == None:
+        if node is None or node.getParent() is None:
             return
 
         test_name = node.toString()
@@ -523,10 +523,10 @@ class TSL(TreeSelectionListener):
             elif is_settings:
                 pane.setRightComponent(self.settings)
             else:
-                print "No description for " + test_name
+                print("No description for " + test_name)
         else:
-            print "Cannot set a pane for " + test_name
+            print("Cannot set a pane for " + test_name)
 
 
-if __name__ in [ '__main__', 'main' ] :
+if __name__ in ('__main__', 'main'):
     EventQueue.invokeLater(Run(BurpExtender))
