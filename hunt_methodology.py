@@ -3,22 +3,16 @@ import json
 from burp import IBurpExtender
 from burp import IExtensionStateListener
 from burp import IContextMenuFactory
-# from burp import IContextMenuInvocation
 from burp import ITab
 from java.awt import Dimension
 from java.awt import EventQueue
 from java.awt import GridBagLayout
-# from java.awt import GridBagConstraints
 from java.awt.event import ActionListener
-# from java.awt.event import ItemListener
-# from java.io import FileWriter
 from java.lang import Runnable
 from javax.swing import GroupLayout
 from javax.swing import JButton
-# from javax.swing import JCheckBox
 from javax.swing import JFileChooser
 from javax.swing import JMenu
-# from javax.swing import JMenuBar
 from javax.swing import JMenuItem
 from javax.swing import JLabel
 from javax.swing import JPanel
@@ -27,7 +21,6 @@ from javax.swing import JScrollPane
 from javax.swing import JTabbedPane
 from javax.swing import JTextArea
 from javax.swing import JTree
-# from javax.swing.event import TreeSelectionEvent
 from javax.swing.event import TreeSelectionListener
 from javax.swing.tree import DefaultMutableTreeNode
 from javax.swing.tree import TreeSelectionModel

@@ -6,7 +6,6 @@ import urlparse
 from burp import IBurpExtender
 from burp import IExtensionStateListener
 from burp import IContextMenuFactory
-# from burp import IContextMenuInvocation
 from burp import IScanIssue
 from burp import IScannerCheck
 from burp import ITab
@@ -14,21 +13,13 @@ from java.awt import Desktop
 from java.awt import Dimension
 from java.awt import EventQueue
 from java.awt.event import ActionListener
-# from java.awt.event import ItemListener
 from java.awt.event import MouseAdapter
-# from java.awt.event import MouseEvent
 from java.lang import Runnable
-# from javax.swing import DefaultListModel
 from javax.swing import DefaultCellEditor
 from javax.swing import JCheckBox
-# from javax.swing import JComponent
 from javax.swing import JEditorPane
-# from javax.swing import JLabel
 from javax.swing import JList
-# from javax.swing import JMenu
-# from javax.swing import JMenuBar
 from javax.swing import JMenuItem
-# from javax.swing import JPanel
 from javax.swing import JPopupMenu
 from javax.swing import JSplitPane
 from javax.swing import JScrollPane
@@ -36,19 +27,13 @@ from javax.swing import JTable
 from javax.swing import JTabbedPane
 from javax.swing import JTextArea
 from javax.swing import JTree
-# from javax.swing import ListSelectionModel
 from javax.swing import SwingUtilities
-# from javax.swing.event import HyperlinkEvent
 from javax.swing.event import HyperlinkListener
 from javax.swing.event import ListSelectionListener
-# from javax.swing.event import PopupMenuListener
 from javax.swing.event import TableModelListener
-# from javax.swing.event import TreeSelectionEvent
 from javax.swing.event import TreeSelectionListener
 from javax.swing.table import DefaultTableModel
 from javax.swing.tree import DefaultMutableTreeNode
-# from javax.swing.tree import DefaultTreeCellRenderer
-# from javax.swing.tree import DefaultTreeModel
 from javax.swing.tree import TreeSelectionModel
 from org.python.core.util import StringUtil
 
