@@ -152,7 +152,7 @@ class Data():
         is_empty = file_name is None
 
         if is_empty:
-            file_name = "checklist.json"
+            file_name = "./conf/checklist.json"
 
         with open(file_name) as data_file:
             data = json.load(data_file)
@@ -162,7 +162,7 @@ class Data():
         return self.checklist
 
     def set_issues(self):
-        with open("issues.json") as data_file:
+        with open("./conf/issues.json") as data_file:
             self.issues = json.load(data_file)
 
     def get_issues(self):

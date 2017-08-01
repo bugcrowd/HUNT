@@ -533,7 +533,7 @@ class Issues:
         self.set_issues()
 
     def set_json(self):
-        with open("issues.json") as data_file:
+        with open("./conf/issues.json") as data_file:
             self.json = json.load(data_file)
 
     def get_json(self):
