@@ -5,11 +5,15 @@ from burp import IExtensionStateListener
 from burp import IContextMenuFactory
 from burp import ITab
 from burp import ITextEditor
+from java.awt import Color
 from java.awt import Dimension
 from java.awt import EventQueue
 from java.awt import GridBagLayout
+from java.awt import Insets
 from java.awt.event import ActionListener
+from java.awt.event import MouseListener
 from java.lang import Runnable
+from javax.swing import BorderFactory
 from javax.swing import GroupLayout
 from javax.swing import JButton
 from javax.swing import JFileChooser
@@ -121,27 +125,41 @@ class MenuActionListener(ActionListener):
         panel_tab = JPanel(GridBagLayout())
         panel_tab.setOpaque(False)
         label_title = JLabel(tab_count)
+
+        # Create a button to close tab
         button_close = JButton("x")
-        button_close.setBorder(None)
+        button_close.setToolTipText("Close tab")
+        button_close.setOpaque(False);
+        button_close.setContentAreaFilled(False);
+        button_close.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0))
+        button_close.setPreferredSize(Dimension(18, 18))
+        button_close.setMargin(Insets(0, 0, 0, 0))
+        button_close.setForeground(Color.gray)
 
         panel_tab.add(label_title)
         panel_tab.add(button_close)
 
         bugs_tab.setTabComponentAt(index, panel_tab)
 
-        button_close.addActionListener(CloseTab(bugs_tab))
+        button_close.addMouseListener(CloseTab(button_close, bugs_tab))
 
-class CloseTab(ActionListener):
-    def __init__(self, bugs_tab):
+class CloseTab(MouseListener):
+    def __init__(self, button, bugs_tab):
+        self.button = button
         self.bugs_tab = bugs_tab
 
-    def actionPerformed(self, e):
+    def mouseClicked(self, e):
         selected = self.bugs_tab.getSelectedComponent()
 
         if selected is not None:
             self.bugs_tab.remove(selected)
 
-# Singleton/Borg
+    def mouseEntered(self, e):
+        self.button.setForeground(Color.black)
+
+    def mouseExited(self, e):
+        self.button.setForeground(Color.gray)
+
 class Data():
     shared_state = {}
 
