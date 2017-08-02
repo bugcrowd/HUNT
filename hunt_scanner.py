@@ -1,3 +1,4 @@
+from __future__ import print_function
 import json
 import re
 import urllib2
@@ -5,30 +6,22 @@ import urlparse
 from burp import IBurpExtender
 from burp import IExtensionStateListener
 from burp import IContextMenuFactory
-from burp import IContextMenuInvocation
 from burp import IScanIssue
 from burp import IScannerCheck
 from burp import ITab
 from burp import IMessageEditorController
+from burp import ITextEditor
 from java.awt import Desktop
 from java.awt import Dimension
 from java.awt import EventQueue
 from java.awt.event import ActionListener
-from java.awt.event import ItemListener
 from java.awt.event import MouseAdapter
-from java.awt.event import MouseEvent
 from java.lang import Runnable
-from javax.swing import DefaultListModel
 from javax.swing import DefaultCellEditor
 from javax.swing import JCheckBox
-from javax.swing import JComponent
 from javax.swing import JEditorPane
-from javax.swing import JLabel
 from javax.swing import JList
-from javax.swing import JMenu
-from javax.swing import JMenuBar
 from javax.swing import JMenuItem
-from javax.swing import JPanel
 from javax.swing import JPopupMenu
 from javax.swing import JSplitPane
 from javax.swing import JScrollPane
@@ -36,19 +29,13 @@ from javax.swing import JTable
 from javax.swing import JTabbedPane
 from javax.swing import JTextArea
 from javax.swing import JTree
-from javax.swing import ListSelectionModel
 from javax.swing import SwingUtilities
-from javax.swing.event import HyperlinkEvent
 from javax.swing.event import HyperlinkListener
 from javax.swing.event import ListSelectionListener
-from javax.swing.event import PopupMenuListener
 from javax.swing.event import TableModelListener
-from javax.swing.event import TreeSelectionEvent
 from javax.swing.event import TreeSelectionListener
 from javax.swing.table import DefaultTableModel
 from javax.swing.tree import DefaultMutableTreeNode
-from javax.swing.tree import DefaultTreeCellRenderer
-from javax.swing.tree import DefaultTreeModel
 from javax.swing.tree import TreeSelectionModel
 from org.python.core.util import StringUtil
 
@@ -60,7 +47,7 @@ class Run(Runnable):
     def run(self):
         self.runner()
 
-class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, IScannerCheck, ITab):
+class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, IScannerCheck, ITab, ITextEditor):
     EXTENSION_NAME = "HUNT - Scanner"
 
     def __init__(self):
@@ -106,7 +93,7 @@ class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, 
         return self.view.get_pane()
 
     def extensionUnloaded(self):
-        print "HUNT - Scanner plugin unloaded"
+        print("HUNT - Scanner plugin unloaded")
         return
 
 
@@ -255,14 +242,12 @@ class View:
         request_list_pane = JScrollPane()
 
         scanner_pane = JSplitPane(JSplitPane.VERTICAL_SPLIT,
-                       request_list_pane,
-                       self.tabbed_pane
-        )
+                                  request_list_pane,
+                                  self.tabbed_pane)
 
         self.pane = JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
-                    JScrollPane(self.tree),
-                    scanner_pane
-        )
+                               JScrollPane(self.tree),
+                               scanner_pane)
 
         self.pane.setDividerLocation(310)
         self.pane.getLeftComponent().setMinimumSize(Dimension(310, 300))
@@ -352,10 +337,9 @@ class View:
         advisory_pane.setContentType("text/html")
         link_listener = LinkListener()
         advisory_pane.addHyperlinkListener(link_listener)
-        advisory_pane.setText("<html>" +
-            "<b>Location</b>: " + scanner_issue.getUrl() + "<br><br>" +
-            scanner_issue.getIssueDetail() + "</html>"
-        )
+        fmt = "<html><b>Location</b>: {}<br><br>{}</html>"
+        advisory_pane.setText(fmt.format(scanner_issue.getUrl(),
+                                         scanner_issue.getIssueDetail()))
 
         # Set a context menu
         self.set_context_menu(advisory_pane, scanner_issue)
@@ -380,8 +364,8 @@ class View:
         msgEditor = self.callbacks.createMessageEditor(controller, True)
         msgEditor.setMessage(request_response.getResponse(), False)
 
+        self.set_context_menu(msgEditor, scanner_issue)
         return msgEditor.getComponent()
-
     # Pass scanner_issue as argument
     def set_context_menu(self, component, scanner_issue):
         self.context_menu = JPopupMenu()
@@ -411,10 +395,7 @@ class LinkListener(HyperlinkListener):
 
 class ScannerTableModel(DefaultTableModel):
     def getColumnClass(self, col):
-        if col == 0:
-            return True.__class__
-        else:
-            return "".__class__
+        return True.__class__ if col == 0 else "".__class__
 
     def isCellEditable(self, row, col):
         return col == 0
@@ -447,7 +428,7 @@ class ContextMenuListener(MouseAdapter):
             self.check(e)
 
     def check(self, e):
-        is_list = type(self.component) == type(JList())
+        is_list = isinstance(self.component, JList)
 
         if is_list:
             is_selection = self.component.getSelectedValue() is not None
@@ -508,8 +489,8 @@ class TSL(TreeSelectionListener):
         issue_name_match = re.search("\(", issue_name)
         issue_param_match = re.search("\(", issue_param)
 
-        is_name_match = issue_name_match != None
-        is_param_match = issue_param_match != None
+        is_name_match = issue_name_match is not None
+        is_param_match = issue_param_match is not None
 
         if is_name_match:
             issue_name = issue_name.split(" (")[0]
@@ -545,9 +526,9 @@ class TSL(TreeSelectionListener):
 
                 pane.setRightComponent(scanner_pane)
             else:
-                print "No description for " + issue_name + " " + issue_param
+                print("No description for " + issue_name + " " + issue_param)
         else:
-            print "Cannot set a pane for " + issue_name + " " + issue_param
+            print("Cannot set a pane for " + issue_name + " " + issue_param)
 
 class IssueListener(ListSelectionListener):
     def __init__(self, view, table, scanner_pane, issue_name, issue_param):
@@ -571,7 +552,7 @@ class Issues:
         self.set_issues()
 
     def set_json(self):
-        with open("issues.json") as data_file:
+        with open("./conf/issues.json") as data_file:
             self.json = json.load(data_file)
 
     def get_json(self):
@@ -855,5 +836,5 @@ class ScannerIssue(IScanIssue):
     def getHttpService(self):
         return self.http_service
 
-if __name__ in [ '__main__', 'main' ] :
+if __name__ in ('__main__', 'main'):
     EventQueue.invokeLater(Run(BurpExtender))
