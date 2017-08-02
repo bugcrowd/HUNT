@@ -9,6 +9,8 @@ HUNT is a Burp extension to:
 
 ## HUNT Scanner (hunt_scanner.py)
 
+![HUNT Scanner](/images/scanner.png)
+
 This extension does not test these parameters but rather alerts on them so that a bug hunter can test them manually (thoroughly). For each class of vulnerability, Bugcrowd has identified common parameters or functions associated with that vulnerability class. We also provide curated resources in the issue description to do thorough manual testing of these vulnerability classes.
 
 ## HUNT Methodology (hunt_methodology.py)
@@ -55,9 +57,9 @@ Important to note, HUNT Scanner leverages the passive scanning API. Here are the
 * Support normal convention of Request tab: Raw, Params, Headers, Hex sub-tabs inside scanner
 * Change regex for parameter names to include user_id instead of just id
 * Add PCI and WAHH methodology JSON files
-* ~~Add more text for advisory in scanner window~~
-* ~~Add more description and resources in methodology window~~
-* ~~Add functionality to send request/response to other Burp tabs like Repeater~~
+* Add more text for advisory in scanner window
+* Add more description and resources in methodology window
+* Add functionality to send request/response to other Burp tabs like Repeater
 
 ## Authors
 
