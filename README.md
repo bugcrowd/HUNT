@@ -1,4 +1,4 @@
-# HUNT Burp Suite Extentsion
+# HUNT Burp Suite Extension
 
 ![HUNT Logo](/images/logo.png)
 
