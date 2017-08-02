@@ -9,6 +9,7 @@ from burp import IContextMenuFactory
 from burp import IScanIssue
 from burp import IScannerCheck
 from burp import ITab
+from burp import ITextEditor
 from java.awt import Desktop
 from java.awt import Dimension
 from java.awt import EventQueue
@@ -45,7 +46,7 @@ class Run(Runnable):
     def run(self):
         self.runner()
 
-class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, IScannerCheck, ITab):
+class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, IScannerCheck, ITab, ITextEditor):
     EXTENSION_NAME = "HUNT - Scanner"
 
     def __init__(self):
@@ -327,26 +328,31 @@ class View:
         request_body = StringUtil.fromBytes(raw_request)
         request_body = request_body.encode("utf-8")
 
-        request_tab_textarea = JTextArea(request_body)
-        request_tab_textarea.setLineWrap(True)
+        request_tab_textarea = self.callbacks.createTextEditor()
+        component = request_tab_textarea.getComponent()
+        request_tab_textarea.setText(request_body)
+        request_tab_textarea.setEditable(False)
+        request_tab_textarea.setSearchExpression(scanner_issue.getParameter())
 
         # Set a context menu
-        self.set_context_menu(request_tab_textarea, scanner_issue)
+        self.set_context_menu(component, scanner_issue)
 
-        return JScrollPane(request_tab_textarea)
+        return component
 
     def set_response_tab_pane(self, scanner_issue):
         raw_response = scanner_issue.getRequestResponse().getResponse()
         response_body = StringUtil.fromBytes(raw_response)
         response_body = response_body.encode("utf-8")
 
-        response_tab_textarea = JTextArea(response_body)
-        response_tab_textarea.setLineWrap(True)
+        response_tab_textarea = self.callbacks.createTextEditor()
+        component = response_tab_textarea.getComponent()
+        response_tab_textarea.setText(response_body)
+        response_tab_textarea.setEditable(False)
 
         # Set a context menu
-        self.set_context_menu(response_tab_textarea, scanner_issue)
+        self.set_context_menu(component, scanner_issue)
 
-        return JScrollPane(response_tab_textarea)
+        return component
 
     # Pass scanner_issue as argument
     def set_context_menu(self, component, scanner_issue):
@@ -533,7 +539,7 @@ class Issues:
         self.set_issues()
 
     def set_json(self):
-        with open("issues.json") as data_file:
+        with open("./conf/issues.json") as data_file:
             self.json = json.load(data_file)
 
     def get_json(self):

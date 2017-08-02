@@ -4,6 +4,7 @@ from burp import IBurpExtender
 from burp import IExtensionStateListener
 from burp import IContextMenuFactory
 from burp import ITab
+from burp import ITextEditor
 from java.awt import Dimension
 from java.awt import EventQueue
 from java.awt import GridBagLayout
@@ -34,7 +35,7 @@ class Run(Runnable):
     def run(self):
         self.runner()
 
-class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, ITab):
+class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, ITab, ITextEditor):
     EXTENSION_NAME = "HUNT - Methodology"
 
     def __init__(self):
@@ -42,6 +43,7 @@ class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, 
 
     def registerExtenderCallbacks(self, callbacks):
         self.callbacks = callbacks
+        self.view.set_callbacks(callbacks)
         self.helpers = callbacks.getHelpers()
         self.callbacks.registerExtensionStateListener(self)
         self.callbacks.setExtensionName(self.EXTENSION_NAME)
@@ -152,7 +154,7 @@ class Data():
         is_empty = file_name is None
 
         if is_empty:
-            file_name = "checklist.json"
+            file_name = "./conf/checklist.json"
 
         with open(file_name) as data_file:
             data = json.load(data_file)
@@ -162,7 +164,7 @@ class Data():
         return self.checklist
 
     def set_issues(self):
-        with open("issues.json") as data_file:
+        with open("./conf/issues.json") as data_file:
             self.issues = json.load(data_file)
 
     def get_issues(self):
@@ -190,8 +192,10 @@ class View:
         self.set_pane()
         self.set_tabbed_panes()
         self.set_settings()
-
         self.set_tsl()
+
+    def set_callbacks(self, callbacks):
+        self.callbacks = callbacks
 
     def set_checklist(self, file_name):
         self.data.set_checklist(file_name)
@@ -378,20 +382,24 @@ class View:
         request_body = StringUtil.fromBytes(raw_request)
         request_body = request_body.encode("utf-8")
 
-        request_tab_textarea = JTextArea(request_body)
-        request_tab_textarea.setLineWrap(True)
+        request_tab_textarea = self.callbacks.createTextEditor()
+        component = request_tab_textarea.getComponent()
+        request_tab_textarea.setText(request_body)
+        request_tab_textarea.setEditable(False)
 
-        return JScrollPane(request_tab_textarea)
+        return component
 
     def set_response_tab_pane(self, request_response):
         raw_response = request_response.getResponse()
         response_body = StringUtil.fromBytes(raw_response)
         response_body = response_body.encode("utf-8")
 
-        response_tab_textarea = JTextArea(response_body)
-        response_tab_textarea.setLineWrap(True)
+        response_tab_textarea = self.callbacks.createTextEditor()
+        component = response_tab_textarea.getComponent()
+        response_tab_textarea.setText(response_body)
+        response_tab_textarea.setEditable(False)
 
-        return JScrollPane(response_tab_textarea)
+        return component
 
     def set_bugs_tabbed_pane(self, request_tab, response_tab):
         bugs_tabbed_pane = JTabbedPane()
