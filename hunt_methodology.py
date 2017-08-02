@@ -1,5 +1,6 @@
 from __future__ import print_function
 import json
+import os
 from burp import IBurpExtender
 from burp import IExtensionStateListener
 from burp import IContextMenuFactory
@@ -172,7 +173,7 @@ class Data():
         is_empty = file_name is None
 
         if is_empty:
-            file_name = "./conf/checklist.json"
+            file_name = os.getcwd() + os.sep + "conf" + os.sep + "checklist.json"
 
         with open(file_name) as data_file:
             data = json.load(data_file)
@@ -182,7 +183,9 @@ class Data():
         return self.checklist
 
     def set_issues(self):
-        with open("./conf/issues.json") as data_file:
+        file_name = os.getcwd() + os.sep + "conf" + os.sep + "issues.json"
+
+        with open(file_name) as data_file:
             self.issues = json.load(data_file)
 
     def get_issues(self):
