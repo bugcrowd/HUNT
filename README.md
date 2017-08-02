@@ -1,6 +1,6 @@
 # HUNT Burp Suite Extentsion
 
-![HUNT Logo](/logo.png)
+![HUNT Logo](/images/logo.png)
 
 HUNT is a Burp extension to:
 
