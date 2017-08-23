@@ -85,4 +85,4 @@ Instead, the standard workflow would be to set your scope, run Burp Spider from 
 
 ## License
 
-Licensed with the Apache 2.0 License here: https://choosealicense.com/licenses/apache-2.0/
+Licensed with the Apache 2.0 License [here](https://github.com/bugcrowd/HUNT/blob/master/license)
