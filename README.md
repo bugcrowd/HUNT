@@ -85,7 +85,7 @@ Important to note, HUNT Scanner leverages the passive scanning API. Here are the
 
 Instead, the standard workflow would be to set your scope, run Burp Spider from Target tab, then right-click "Passively scan selected items".
 
-# HUNT Scanner for ZAP Proxy (Alpha - Contributed by Ricardo Lobo @sbzo)
+# HUNT Scanner for ZAP Proxy (Alpha - Contributed by Ricardo Lobo @_sbzo)
 
 1. Find the "Manage Addons" icon, ensure you have ``` Python Scripting ``` installed.
 2. Ensure "show All Tabs" icon is clicked
