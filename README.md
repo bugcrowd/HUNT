@@ -1,11 +1,13 @@
-# HUNT Burp Suite Extension
+# HUNT Proxy Extension
 
 ![HUNT Logo](/images/logo.png)
 
-HUNT is a Burp Suite extension to:
+HUNT is a proxy extension to:
 
-1. Identify common parameters vulnerable to certain vulnerability classes. 
-2. Organize testing methodologies inside of Burp Suite.
+1. Identify common parameters vulnerable to certain vulnerability classes (HUNT Scanner, availible for Burp Suite and ZAProxy). 
+2. Organize testing methodologies (currently avalible only inside of Burp Suite).
+
+# HUNT for Burp Suite
 
 ## HUNT Scanner (hunt_scanner.py)
 
@@ -40,6 +42,18 @@ Important to note, HUNT Scanner leverages the passive scanning API. Here are the
 * On Spider responses
 
 Instead, the standard workflow would be to set your scope, run Burp Spider from Target tab, then right-click "Passively scan selected items".
+
+# HUNT Scanner for ZAP Proxy (Alpha - Contributed by Ricardo Lobo @sbzo)
+
+1. Find the "Manage Addons" icon, ensure you have ``` Python Scripting ``` installed.
+2. Ensure "show All Tabs" icon is clicked
+3. Click the ```Tools``` menu, navigate to the ```Options``` section. Select ```Passive Scanner``` and check the box ```Scan messages only in scope``` and then ```OK```
+4. Click into the ``` Scripts ``` tab (next to the  ``` Sites ``` tab)
+5. Click the ```load script``` icon and load each python script into ZAP. They should appear under ```passive rules```
+6. Right click on each script under ```passive rules``` and enable them and save them
+7. Broswe sites and recieve alerts!
+
+
 
 ### HUNT Scanner Vulnerability Classes
 
