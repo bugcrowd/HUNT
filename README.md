@@ -93,7 +93,7 @@ Instead, the standard workflow would be to set your scope, run Burp Spider from 
 4. Click into the ``` Scripts ``` tab (next to the  ``` Sites ``` tab)
 5. Click the ```load script``` icon and load each python script into ZAP. They should appear under ```passive rules```
 6. Right click on each script under ```passive rules``` and enable them and save them
-7. Broswe sites and recieve alerts!
+7. Browse sites and recieve alerts!
 
 
 
