@@ -244,12 +244,20 @@ class View:
 
         functionality = self.checklist["Functionality"]
 
-        # TODO: Sort the functionality by name and by test name
+        # Sorts the functionality by name and by test name
+        functionality_list = []
         for functionality_name in functionality:
+            functionality_list.append(functionality_name)
+
+        for functionality_name in sorted(functionality_list):
             tests = functionality[functionality_name]["tests"]
             node = DefaultMutableTreeNode(functionality_name)
 
+            tests_list = []
             for test_name in tests:
+                tests_list.append(test_name)
+
+            for test_name in sorted(tests_list):
                 node.add(DefaultMutableTreeNode(test_name))
 
             functionality_node.add(node)
