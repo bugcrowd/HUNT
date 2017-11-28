@@ -1,4 +1,3 @@
-from __future__ import print_function
 import json
 import os
 from burp import IBurpExtender
@@ -41,7 +40,7 @@ class Run(Runnable):
         self.runner()
 
 class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, ITab, ITextEditor):
-    EXTENSION_NAME = "HUNT - Methodology"
+    EXTENSION_NAME = "HUNT Methodology"
 
     def __init__(self):
         self.view = View()
@@ -71,7 +70,7 @@ class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, 
         functionality = self.view.get_checklist()["Functionality"]
 
         # Create the menu item for the Burp context menu
-        bugcatcher_menu = JMenu("Send to HUNT - Methodology")
+        bugcatcher_menu = JMenu("Send to HUNT Methodology")
 
         # TODO: Sort the functionality by name and by vuln class
         for functionality_name in functionality:
@@ -100,7 +99,7 @@ class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, 
         return self.view.get_pane()
 
     def extensionUnloaded(self):
-        print("HUNT - Methodology plugin unloaded")
+        print "HUNT Methodology plugin unloaded"
         return
 
 class MenuActionListener(ActionListener):
