@@ -117,14 +117,20 @@ class View:
         self.issues = issues.get_issues()
         self.scanner_issues = issues.get_scanner_issues()
         self.scanner_panes = {}
+        self.scanner_table_models = {}
         self.scanner_tables = {}
         self.is_scanner_panes = []
 
         self.set_vuln_tree()
         self.set_tree()
+        self.set_scanner_table_models()
         self.set_scanner_panes()
         self.set_pane()
+        self.set_settings()
         self.set_tsl()
+
+    def get_issues_object(self):
+        return self.issues_object
 
     def set_callbacks(self, callbacks):
         self.callbacks = callbacks
@@ -141,9 +147,6 @@ class View:
     def get_scanner_issues(self):
         return self.scanner_issues
 
-    def set_scanner_count(self, is_checked, issue_name, issue_param):
-        self.issues_object.set_scanner_count(self, is_checked, issue_name, issue_param)
-
     def set_is_scanner_pane(self, scanner_pane):
         self.is_scanner_panes.append(scanner_pane)
 
@@ -158,28 +161,22 @@ class View:
         return self.is_scanner_panes
 
     def set_vuln_tree(self):
-        self.vuln_tree = DefaultMutableTreeNode("Vulnerability Classes")
+        self.vuln_tree = DefaultMutableTreeNode("HUNT Scanner")
 
         vulns = self.json["issues"]
 
-        # Sort the functionality by name and by vuln class
-        vulns_list = []
+        # TODO: Sort the functionality by name and by vuln class
         for vuln_name in vulns:
-            vulns_list.append(vuln_name)
-
-        for vuln_name in sorted(vulns_list):
             vuln = DefaultMutableTreeNode(vuln_name)
             self.vuln_tree.add(vuln)
 
             parameters = self.json["issues"][vuln_name]["params"]
 
-            parameters_list = []
             for parameter in parameters:
-                parameters_list.append(parameter)
-            
-            for parameter in sorted(parameters_list):
                 param_node = DefaultMutableTreeNode(parameter)
                 vuln.add(param_node)
+
+        self.vuln_tree.add(DefaultMutableTreeNode("Settings"))
 
     # Creates a JTree object from the checklist
     def set_tree(self):
@@ -191,21 +188,26 @@ class View:
     def get_tree(self):
         return self.tree
 
-    # Creates the tabs dynamically using data from the JSON file
-    def set_scanner_panes(self):
+    def set_scanner_table_models(self):
         issues = self.issues
 
         for issue in issues:
             issue_name = issue["name"]
             issue_param = issue["param"]
 
+            self.create_scanner_table_model(issue_name, issue_param)
+
+    # Creates the tabs dynamically using data from the JSON file
+    def set_scanner_panes(self):
+        for issue in self.issues:
+            issue_name = issue["name"]
+            issue_param = issue["param"]
             key = issue_name + "." + issue_param
 
             top_pane = self.create_request_list_pane(issue_name)
             bottom_pane = self.create_tabbed_pane()
 
             scanner_pane = JSplitPane(JSplitPane.VERTICAL_SPLIT, top_pane, bottom_pane)
-
             self.scanner_panes[key] = scanner_pane
 
     def get_scanner_panes(self):
@@ -276,86 +278,87 @@ class View:
         self.status = status
 
         request_list_pane = JScrollPane()
-
-        scanner_pane = JSplitPane(JSplitPane.VERTICAL_SPLIT,
-                                  request_list_pane,
-                                  self.tabbed_pane)
-
-        self.pane = JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
-                               JScrollPane(self.tree),
-                               scanner_pane)
-
+        scanner_pane = JSplitPane(JSplitPane.VERTICAL_SPLIT, request_list_pane, self.tabbed_pane)
+        self.pane = JSplitPane(JSplitPane.HORIZONTAL_SPLIT, JScrollPane(self.tree), scanner_pane)
         self.pane.setDividerLocation(310)
         self.pane.getLeftComponent().setMinimumSize(Dimension(310, 300))
 
     def get_pane(self):
         return self.pane
 
-    def set_scanner_table(self, scanner_pane, scanner_table):
-        self.scanner_tables[scanner_pane] = scanner_table
+    # TODO: Move all scanner table functions into its own ScannerTable class
+    #       as well as ScannerTableModel for all scanner table model functions
+    def create_scanner_table_model(self, issue_name, issue_param):
+        key = issue_name + "." + issue_param
+        is_model_exists = key in self.scanner_table_models
 
-    def get_scanner_table(self, scanner_pane):
-        return self.scanner_tables[scanner_pane]
+        if is_model_exists:
+            return
 
-    def set_scanner_pane(self, scanner_pane):
+        scanner_table_model = ScannerTableModel()
+        scanner_table_model.addColumn("")
+        scanner_table_model.addColumn("Parameter")
+        scanner_table_model.addColumn("Host")
+        scanner_table_model.addColumn("Path")
+        scanner_table_model.addColumn("ID")
+
+        self.scanner_table_models[key] = scanner_table_model
+
+    def set_scanner_table_model(self, scanner_issue, issue_name, issue_param, vuln_param):
+        key = issue_name + "." + vuln_param
+        scanner_issue_id = str(scanner_issue.getRequestResponse()).split("@")[1]
+        scanner_table_model = self.scanner_table_models[key]
+
+        # Using the addRow() method requires that the data type being passed to be of type
+        # Vector() or Object(). Passing a Python object of type list in addRow causes a type
+        # conversion error of sorts which presents as an ArrayOutOfBoundsException. Therefore,
+        # row is an instantiation of Object() to avoid this error.
+        row = Object()
+        row = [False, issue_param, scanner_issue.getHttpService().getHost(), scanner_issue.getPath(), scanner_issue_id]
+        scanner_table_model.addRow(row)
+
+        # Wait for ScannerTableModel to update as to not get an ArrayOutOfBoundsException.
+        Thread.sleep(500)
+
+        scanner_table_model.fireTableDataChanged()
+        scanner_table_model.fireTableStructureChanged()
+
+    def get_scanner_table_model(self, issue_name, issue_param):
+        key = issue_name + "." + issue_param
+        return self.scanner_table_models[key]
+
+    def set_scanner_pane(self, scanner_pane, issue_name, issue_param):
+        key = issue_name + "." + issue_param
         request_table_pane = scanner_pane.getTopComponent()
-        scanner_table = self.get_scanner_table(scanner_pane)
+
+        if key in self.scanner_tables:
+            scanner_table = self.scanner_tables[key]
+        else:
+            scanner_table = self.create_scanner_table(scanner_pane, issue_name, issue_param)
+            self.scanner_tables[key] = scanner_table
 
         request_table_pane.getViewport().setView(scanner_table)
         request_table_pane.revalidate()
         request_table_pane.repaint()
 
-    def create_scanner_pane(self, scanner_pane, issue_name, issue_param):
-        scanner_issues = self.get_scanner_issues()
-        request_table_pane = scanner_pane.getTopComponent()
-
-        scanner_table_model = ScannerTableModel()
-        scanner_table_model.addColumn("Checked")
-        scanner_table_model.addColumn("Host")
-        scanner_table_model.addColumn("Path")
-
-        # Search all issues for the correct issue. Once found, add it into
-        # the scanner table model to be showed in the UI.
-        for scanner_issue in scanner_issues:
-            is_same_name = scanner_issue.getIssueName() == issue_name
-            is_same_param = scanner_issue.getParameter() == issue_param
-            is_same_issue = is_same_name and is_same_param
-
-            if is_same_issue:
-                scanner_table_model.addRow([
-                    False,
-                    scanner_issue.getHttpService().getHost(),
-                    scanner_issue.getUrl()
-                ])
+    def create_scanner_table(self, scanner_pane, issue_name, issue_param):
+        scanner_table_model = self.get_scanner_table_model(issue_name, issue_param)
 
         scanner_table = JTable(scanner_table_model)
-        scanner_table.getColumnModel().getColumn(0).setCellEditor(DefaultCellEditor(JCheckBox()))
+        scanner_table.getColumnModel().getColumn(0).setMaxWidth(10)
         scanner_table.putClientProperty("terminateEditOnFocusLost", True)
         scanner_table_listener = ScannerTableListener(self, scanner_table, issue_name, issue_param)
         scanner_table_model.addTableModelListener(scanner_table_listener)
         scanner_table_list_listener = IssueListener(self, scanner_table, scanner_pane, issue_name, issue_param)
         scanner_table.getSelectionModel().addListSelectionListener(scanner_table_list_listener)
 
-        self.set_scanner_table(scanner_pane, scanner_table)
+        return scanner_table
 
-        request_table_pane.getViewport().setView(scanner_table)
-        request_table_pane.revalidate()
-        request_table_pane.repaint()
-
-    def set_tabbed_pane(self, scanner_pane, request_list, issue_url, issue_name, issue_param):
+    # Takes into account if there are more than one scanner issues that share the same hostname, path, name, param, and id
+    def set_tabbed_pane(self, scanner_pane, request_list, issue_hostname, issue_path, issue_name, issue_param, scanner_issue_id):
         tabbed_pane = scanner_pane.getBottomComponent()
         scanner_issues = self.get_scanner_issues()
-
-        for scanner_issue in scanner_issues:
-            is_same_url = scanner_issue.getUrl() == issue_url
-            is_same_name = scanner_issue.getIssueName() == issue_name
-            is_same_param = scanner_issue.getParameter() == issue_param
-            is_same_issue = is_same_url and is_same_name and is_same_param
-
-            if is_same_issue:
-                current_issue = scanner_issue
-                self.set_context_menu(request_list, scanner_issue)
-                break
+        current_issue = self.set_current_issue(scanner_issues, issue_hostname, issue_path, issue_name, issue_param, scanner_issue_id)
 
         advisory_tab_pane = self.set_advisory_tab_pane(current_issue)
         tabbed_pane.setComponentAt(0, advisory_tab_pane)
@@ -366,6 +369,18 @@ class View:
         response_tab_pane = self.set_response_tab_pane(current_issue)
         tabbed_pane.setComponentAt(2, response_tab_pane)
 
+    def set_current_issue(self, scanner_issues, issue_hostname, issue_path, issue_name, issue_param, scanner_issue_id):
+        for scanner_issue in scanner_issues:
+            is_same_hostname = scanner_issue.getHostname() == issue_hostname
+            is_same_path = scanner_issue.getPath() == issue_path
+            is_same_name = scanner_issue.getIssueName() == issue_name
+            is_same_param = scanner_issue.getParameter() == issue_param
+            is_same_id = str(scanner_issue.getRequestResponse()).split("@")[1] == scanner_issue_id
+            is_same_issue = is_same_hostname and is_same_path and is_same_name and is_same_param and is_same_id
+
+            if is_same_issue:
+                return scanner_issue
+
     def set_advisory_tab_pane(self, scanner_issue):
         advisory_pane = JEditorPane()
         advisory_pane.setEditable(False)
@@ -373,66 +388,141 @@ class View:
         advisory_pane.setContentType("text/html")
         link_listener = LinkListener()
         advisory_pane.addHyperlinkListener(link_listener)
-        fmt = "<html><b>Location</b>: {}<br><br>{}</html>"
-        advisory_pane.setText(fmt.format(scanner_issue.getUrl(),
-                                         scanner_issue.getIssueDetail()))
-
-        # Set a context menu
-        self.set_context_menu(advisory_pane, scanner_issue)
+        advisory = "<html><b>Location</b>: {}<br><br>{}</html>"
+        advisory_pane.setText(advisory.format(scanner_issue.getUrl().encode("utf-8"), scanner_issue.getIssueDetail()))
 
         return JScrollPane(advisory_pane)
 
     def set_request_tab_pane(self, scanner_issue):
-        raw_request = scanner_issue.getRequestResponse().getRequest()
-        request_body = StringUtil.fromBytes(raw_request)
-        request_body = request_body.encode("utf-8")
-
-        request_tab_textarea = self.callbacks.createTextEditor()
-        component = request_tab_textarea.getComponent()
-        request_tab_textarea.setText(request_body)
-        request_tab_textarea.setEditable(False)
-        request_tab_textarea.setSearchExpression(scanner_issue.getParameter())
-
-        # Set a context menu
-        self.set_context_menu(component, scanner_issue)
+        request_response = scanner_issue.getRequestResponse()
+        controller = MessageController(request_response)
+        message_editor = self.callbacks.createMessageEditor(controller, True)
+        message_editor.setMessage(request_response.getRequest(), True)
+        component = message_editor.getComponent()
 
         return component
 
     def set_response_tab_pane(self, scanner_issue):
-        raw_response = scanner_issue.getRequestResponse().getResponse()
-        response_body = StringUtil.fromBytes(raw_response)
-        response_body = response_body.encode("utf-8")
-
-        response_tab_textarea = self.callbacks.createTextEditor()
-        component = response_tab_textarea.getComponent()
-        response_tab_textarea.setText(response_body)
-        response_tab_textarea.setEditable(False)
-
-        # Set a context menu
-        self.set_context_menu(component, scanner_issue)
+        request_response = scanner_issue.getRequestResponse()
+        controller = MessageController(request_response)
+        message_editor = self.callbacks.createMessageEditor(controller, True)
+        message_editor.setMessage(request_response.getResponse(), False)
+        component = message_editor.getComponent()
 
         return component
 
-    # Pass scanner_issue as argument
-    def set_context_menu(self, component, scanner_issue):
-        self.context_menu = JPopupMenu()
+    def traverse_tree(self, tree, model, issue_name, issue_param, issue_count, total_count):
+        root = model.getRoot()
+        count = int(root.getChildCount())
+        traverse = {}
 
-        repeater = JMenuItem("Send to Repeater")
-        repeater.addActionListener(PopupListener(scanner_issue, self.callbacks))
+        for i in range(count):
+            node = model.getChild(root, i)
+            traverse["node"] = node
+            tree_issue_name = node.toString()
 
-        intruder = JMenuItem("Send to Intruder")
-        intruder.addActionListener(PopupListener(scanner_issue, self.callbacks))
+            is_issue_name = re.search(issue_name, tree_issue_name)
 
-        hunt = JMenuItem("Send to HUNT")
+            if is_issue_name:
+                child_count = node.getChildCount()
 
-        self.context_menu.add(repeater)
-        self.context_menu.add(intruder)
+                for j in range(child_count):
+                    child = node.getChildAt(j)
+                    traverse["child"] = child
+                    tree_param_name = child.toString()
 
-        context_menu_listener = ContextMenuListener(component, self.context_menu)
-        component.addMouseListener(context_menu_listener)
+                    is_param_name = re.search(issue_param, tree_param_name)
 
-    def get_context_menu(self):
-        return self.context_menu
+                    if is_param_name:
+                        traverse["param_text"] = issue_param + " (" + str(issue_count) + ")"
+                        break
+
+                traverse["issue_text"] = issue_name + " (" + str(total_count) + ")"
+                break
+
+        return traverse
+
+    def set_scanner_count(self, issue_name, issue_param, issue_count, total_count):
+        tree = self.get_tree()
+        model = tree.getModel()
+        traverse = self.traverse_tree(tree, model, issue_name, issue_param, issue_count, total_count)
+        node = traverse["node"]
+        child = traverse["child"]
+
+        child.setUserObject(traverse["param_text"])
+        model.nodeChanged(child)
+        model.reload(node)
+
+        node.setUserObject(traverse["issue_text"])
+        model.nodeChanged(node)
+        model.reload(node)
+
+class SettingsAction(ActionListener):
+    def __init__(self, view, file_button, scanner_panes):
+        self.view = view
+        self.file_button = file_button
+        self.scanner_panes = scanner_panes
+
+    def actionPerformed(self, e):
+        file_chooser = JFileChooser()
+        is_load_file = str(e.getActionCommand()) == "load"
+        is_save_file = str(e.getActionCommand()) == "save"
+
+        if is_load_file:
+            file_chooser.setDialogTitle("Load JSON File")
+            file_chooser.setDialogType(JFileChooser.OPEN_DIALOG)
+            open_dialog = file_chooser.showOpenDialog(self.file_button)
+            is_approve = open_dialog == JFileChooser.APPROVE_OPTION
+
+            if is_approve:
+                load_file = file_chooser.getSelectedFile()
+                file_name = str(load_file)
+                self.load_data(file_name)
+            else:
+                print "JSON file load cancelled"
+
+        if is_save_file:
+            file_chooser.setDialogTitle("Save JSON File")
+            file_chooser.setDialogType(JFileChooser.SAVE_DIALOG)
+            save_dialog = file_chooser.showSaveDialog(self.file_button)
+            is_approve = save_dialog == JFileChooser.APPROVE_OPTION
+
+            if is_approve:
+                save_file = str(file_chooser.getSelectedFile())
+                self.save_data(save_file)
+            else:
+                print "JSON file save cancelled"
+
+    #def load_data(self):
+
+    def save_data(self, save_file):
+        data = {}
+        data["issues"] = {}
+        scanner_issues = self.view.get_scanner_issues()
+
+        for scanner_issue in scanner_issues:
+            issue_name = scanner_issue.getIssueName()
+            issue_param = scanner_issue.getParameter()
+            data["issues"][issue_name][issue_param] = {
+                "vuln_param": scanner_issue.getVulnParameter()
+            }
+
+        print data
+
+class MessageController(IMessageEditorController):
+    def __init__(self, request_response):
+        self._http_service = request_response.getHttpService()
+        self._request = request_response.getRequest()
+        self._response = request_response.getResponse()
+
+    def getHttpService(self):
+        return self._http_service
+
+    def getRequest(self):
+        return self._request
+
+    def getResponse(self):
+        return self._response
 
 class LinkListener(HyperlinkListener):
     def hyperlinkUpdate(self, hle):
@@ -442,7 +532,7 @@ class LinkListener(HyperlinkListener):
 
 class ScannerTableModel(DefaultTableModel):
     def getColumnClass(self, col):
-        return True.__class__ if col == 0 else "".__class__
+        return [Boolean, String, String, String, String][col]
 
     def isCellEditable(self, row, col):
         return col == 0
@@ -461,58 +551,11 @@ class ScannerTableListener(TableModelListener):
         is_changed = e.getType() == e.UPDATE
 
         if is_changed:
-            self.view.set_scanner_count(is_checked, self.issue_name, self.issue_param)
-
-class ContextMenuListener(MouseAdapter):
-    def __init__(self, component, context_menu):
-        self.component = component
-        self.context_menu = context_menu
-
-    def mousePressed(self, e):
-        is_right_click = SwingUtilities.isRightMouseButton(e)
-
-        if is_right_click:
-            self.check(e)
-
-    def check(self, e):
-        is_list = isinstance(self.component, JList)
-
-        if is_list:
-            is_selection = self.component.getSelectedValue() is not None
-            is_trigger = e.isPopupTrigger()
-            is_context_menu = is_selection and is_trigger
-            index = self.component.locationToIndex(e.getPoint())
-            self.component.setSelectedIndex(index)
-
-        self.context_menu.show(self.component, e.getX(), e.getY())
-
-class PopupListener(ActionListener):
-    def __init__(self, scanner_issue, callbacks):
-        self.host = scanner_issue.getHttpService().getHost()
-        self.port = scanner_issue.getHttpService().getPort()
-        self.protocol = scanner_issue.getHttpService().getProtocol()
-        self.request = scanner_issue.getRequestResponse().getRequest()
-        self.callbacks = callbacks
-
-        if self.protocol == "https":
-            self.use_https = True
-        else:
-            self.use_https = False
-
-    def actionPerformed(self, e):
-        action = str(e.getActionCommand())
-
-        repeater_match = re.search("Repeater", action)
-        intruder_match = re.search("Intruder", action)
-
-        is_repeater_match = repeater_match is not None
-        is_intruder_match = intruder_match is not None
-
-        if is_repeater_match:
-            self.callbacks.sendToRepeater(self.host, self.port, self.use_https, self.request, None)
-
-        if is_intruder_match:
-            self.callbacks.sendToIntruder(self.host, self.port, self.use_https, self.request)
+            self.view.get_issues_object().change_total_count(self.issue_name, is_checked)
+            self.view.get_issues_object().change_issues_count(self.issue_name, self.issue_param, is_checked)
+            issue_count = self.view.get_issues_object().get_issues_count(self.issue_name, self.issue_param)
+            total_count = self.view.get_issues_object().get_total_count(self.issue_name)
+            self.view.set_scanner_count(self.issue_name, self.issue_param, issue_count, total_count)
 
 class TSL(TreeSelectionListener):
     def __init__(self, view):
@@ -521,7 +564,7 @@ class TSL(TreeSelectionListener):
         self.pane = view.get_pane()
         self.scanner_issues = view.get_scanner_issues()
         self.scanner_panes = view.get_scanner_panes()
-        print("works")
+        self.settings = view.get_settings()
 
     def valueChanged(self, tse):
         pane = self.pane
@@ -546,39 +589,22 @@ class TSL(TreeSelectionListener):
             issue_param = issue_param.split(" (")[0]
 
         is_leaf = node.isLeaf()
+        is_settings = is_leaf and (issue_param == "Settings")
+        is_param = is_leaf and not is_settings
 
         if node:
-            if is_leaf:
+            if is_param:
                 key = issue_name + "." + issue_param
                 scanner_pane = self.scanner_panes[key]
 
-                # Check there are any scanner panes.
-                is_scanner_panes = self.view.get_is_scanner_panes()
-
-                # Create scanner pane for the first time.
-                if not is_scanner_panes:
-                    self.view.create_scanner_pane(scanner_pane, issue_name, issue_param)
-                    self.view.set_is_scanner_pane(scanner_pane)
-                    print("Create first scanner pane")
-                else:
-                    # Check if the scanner pane exists.
-                    is_scanner_pane = self.view.get_is_scanner_pane(scanner_pane)
-
-                    # If the scanner pane exists, go ahead and show it.
-                    if is_scanner_pane:
-                        self.view.set_scanner_pane(scanner_pane)
-                        print("Scanner pane exists")
-                    # Else, create a new scanner pane and keep track of it.
-                    else:
-                        self.view.create_scanner_pane(scanner_pane, issue_name, issue_param)
-                        self.view.set_is_scanner_pane(scanner_pane)
-                        print("Scanner pane does not exist so make one")
-
+                self.view.set_scanner_pane(scanner_pane, issue_name, issue_param)
                 pane.setRightComponent(scanner_pane)
+            elif is_settings:
+                pane.setRightComponent(self.settings)
             else:
-                print("No description for " + issue_name + " " + issue_param)
+                print "No description for " + issue_name + " " + issue_param
         else:
-            print("Cannot set a pane for " + issue_name + " " + issue_param)
+            print "Cannot set a pane for " + issue_name + " " + issue_param
 
 class IssueListener(ListSelectionListener):
     def __init__(self, view, table, scanner_pane, issue_name, issue_param):
@@ -590,17 +616,22 @@ class IssueListener(ListSelectionListener):
 
     def valueChanged(self, e):
         row = self.table.getSelectedRow()
-        url = self.table.getModel().getValueAt(row, 2)
-        self.view.set_tabbed_pane(self.scanner_pane, self.table, url, self.issue_name, self.issue_param)
+        issue_param = self.table.getModel().getValueAt(row, 1)
+        hostname = self.table.getModel().getValueAt(row, 2)
+        path = self.table.getModel().getValueAt(row, 3)
+        scanner_issue_id = self.table.getModel().getValueAt(row, 4)
+        self.view.set_tabbed_pane(self.scanner_pane, self.table, hostname, path, self.issue_name, issue_param, scanner_issue_id)
 
 class Issues:
     scanner_issues = []
     total_count = {}
+    issues_count = {}
 
     def __init__(self):
         self.set_json()
         self.set_issues()
 
+    # TODO: Add try/catch
     def set_json(self):
         data_file = os.getcwd() + os.sep + "conf" + os.sep + "issues.json"
 
@@ -614,13 +645,13 @@ class Issues:
         self.issues = []
         issues = self.json["issues"]
 
-        for vuln_name in issues:
-            parameters = issues[vuln_name]["params"]
+        for issue_name in issues:
+            parameters = issues[issue_name]["params"]
 
             for parameter in parameters:
                 issue = {
-                    "name": str(vuln_name),
-                    "param": str(parameter),
+                    "name": issue_name.encode("utf-8").strip(),
+                    "param": parameter.encode("utf-8").strip(),
                     "count": 0
                 }
 
@@ -637,7 +668,6 @@ class Issues:
 
     def check_parameters(self, helpers, parameters):
         vuln_params = []
-        issues = self.get_issues()
 
         for parameter in parameters:
             # Make sure that the parameter is not from the cookies
@@ -648,45 +678,71 @@ class Issues:
                 # Handle double URL encoding just in case
                 parameter_decoded = helpers.urlDecode(parameter.getName())
                 parameter_decoded = helpers.urlDecode(parameter_decoded)
-            else:
-                continue
 
-            # TODO: Clean up the gross nested if statements
-            # Check to see if the current parameter is a potentially vuln parameter
-            for issue in issues:
-                vuln_param = issue["param"]
-                is_vuln_found = re.search(vuln_param, parameter_decoded, re.IGNORECASE)
-
-                if is_vuln_found:
-                    is_same_vuln_name = vuln_param == parameter_decoded
-
-                    if is_same_vuln_name:
-                        vuln_params.append(issue)
-                    else:
-                        url = "http://api.pearson.com/v2/dictionaries/ldoce5/entries?headword=" + parameter_decoded
-                        response = urllib2.urlopen(url)
-                        data = json.load(response)
-                        is_real_word = int(data["count"]) > 0
-
-                        # Checks an English dictionary if parameter is a real word. If it isn't, add it.
-                        # Catches: id_param, param_id, paramID, etc.
-                        # Does not catch: idea, ideology, identify, etc.
-                        if not is_real_word:
-                            vuln_params.append(issue)
+                self.check_vuln_params(vuln_params, parameter_decoded, parameter)
 
         return vuln_params
 
+    def check_vuln_params(self, vuln_params, parameter_decoded, parameter):
+        for issue in self.issues:
+            vuln_name = issue["name"]
+            vuln_param = issue["param"]
+            is_vuln_found = re.search(vuln_param, parameter_decoded, re.IGNORECASE)
+
+            if is_vuln_found:
+                self.vuln_param_found(vuln_params, vuln_name, vuln_param, parameter_decoded, parameter)
+            else:
+                continue
+
+    def vuln_param_found(self, vuln_params, vuln_name, vuln_param, parameter_decoded, parameter):
+        is_same_vuln_name = vuln_param == parameter_decoded
+
+        if is_same_vuln_name:
+            self.vuln_param_add(vuln_params, vuln_name, vuln_param, parameter_decoded, parameter)
+        else:
+            self.vuln_param_lookup(vuln_params, vuln_name, vuln_param, parameter_decoded, parameter)
+
+    def vuln_param_lookup(self, vuln_params, vuln_name, vuln_param, parameter_decoded, parameter):
+        # Put try catch
+        url = "http://api.pearson.com/v2/dictionaries/ldoce5/entries?headword=" + parameter_decoded
+        response = urllib2.urlopen(url)
+
+        # Wait a second for response to come back
+        Thread.sleep(1000)
+
+        data = json.load(response)
+
+        # Checks an English dictionary if parameter is a real word. If it isn't, add it.
+        # Catches: id_param, param_id, paramID, etc.
+        # Does not catch: idea, ideology, identify, etc.
+        is_real_word = int(data["count"]) > 0
+
+        if not is_real_word:
+            self.vuln_param_add(vuln_params, vuln_name, vuln_param, parameter_decoded, parameter.getValue())
+
+    def vuln_param_add(self, vuln_params, vuln_name, vuln_param, param, value):
+        vuln_params.append({
+            "vuln_name": vuln_name,
+            "vuln_param": vuln_param,
+            "param": param,#.encode("utf-8").strip(),
+            "value": value#.encode("utf-8").strip(),
+        })
+
     def create_scanner_issues(self, view, callbacks, helpers, vuln_parameters, request_response):
+        issues = self.issues
+        json = self.json
+
         # Takes into account if there is more than one vulnerable parameter
         for vuln_parameter in vuln_parameters:
-            issues = self.get_issues()
-            json = self.get_json()
-
-            issue_name = vuln_parameter["name"]
-            issue_param = vuln_parameter["param"]
+            issue_name = vuln_parameter["vuln_name"]
+            vuln_param = vuln_parameter["vuln_param"]
+            param_name = vuln_parameter["param"]
+            param_value = vuln_parameter["value"]
 
             url = helpers.analyzeRequest(request_response).getUrl()
             url = urlparse.urlsplit(str(url))
+            hostname = url.hostname
+            path = url.path
             url = url.scheme + "://" + url.hostname + url.path
 
             http_service = request_response.getHttpService()
@@ -694,199 +750,150 @@ class Issues:
             detail = json["issues"][issue_name]["detail"]
             severity = "Medium"
 
-            is_not_dupe = self.check_duplicate_issue(url, issue_param, issue_name)
+            scanner_issue = ScannerIssue(url, issue_name, param_name, vuln_param, param_value, hostname, path, http_service, http_messages, detail, severity, request_response)
+            is_scanner_issue_dupe = self.check_duplicate_issue(scanner_issue)
 
-            if is_not_dupe:
-                for issue in issues:
-                    is_name = issue["name"] == issue_name
-                    is_param = issue["param"] == issue_param
-                    is_issue = is_name and is_param
-
-                    if is_issue:
-                        issue["count"] += 1
-                        issue_count = issue["count"]
-                        is_key_exists = issue_name in self.total_count
-
-                        if is_key_exists:
-                            self.total_count[issue_name] += 1
-                        else:
-                            self.total_count[issue_name] = issue_count
-
-                        break
-
-                scanner_issue = ScannerIssue(url, issue_name, issue_param, http_service, http_messages, detail, severity, request_response)
+            if is_scanner_issue_dupe:
+                continue
+            else:
                 self.set_scanner_issues(scanner_issue)
-                self.add_scanner_count(view, issue_name, issue_param, issue_count, self.total_count[issue_name])
 
-    def check_duplicate_issue(self, url, parameter, issue_name):
-        issues = self.get_scanner_issues()
+            issue_count = self.set_issue_count(issue_name, vuln_param)
+            total_count = self.total_count[issue_name]
 
-        for issue in issues:
-            is_same_url = url == issue.getUrl()
-            is_same_parameter = parameter == issue.getParameter()
-            is_same_issue_name = issue_name == issue.getIssueName()
-            is_dupe = is_same_url and is_same_parameter and is_same_issue_name
+            view.set_scanner_count(issue_name, vuln_param, issue_count, total_count)
+            view.set_scanner_table_model(scanner_issue, issue_name, param_name, vuln_param)
+
+    def check_duplicate_issue(self, scanner_issue_local):
+        scanner_issues = self.get_scanner_issues()
+
+        for scanner_issue in scanner_issues:
+            is_same_issue_name = scanner_issue_local.getIssueName() == scanner_issue.getIssueName()
+            is_same_parameter = scanner_issue_local.getParameter() == scanner_issue.getParameter()
+            is_same_vuln_parameter = scanner_issue_local.getVulnParameter() == scanner_issue.getVulnParameter()
+            is_same_hostname = scanner_issue_local.getHostname() == scanner_issue.getHostname()
+            is_same_path = scanner_issue_local.getPath() == scanner_issue.getPath()
+            is_dupe = is_same_issue_name and is_same_parameter and is_same_vuln_parameter
 
             if is_dupe:
-                return False
+                return True
 
-        return True
+        return False
 
-    # Refactor as same code is used in set_scanner_count()
-    def add_scanner_count(self, view, issue_name, issue_param, issue_count, total_count):
-        issues = self.get_issues()
-        scanner_issues = self.get_scanner_issues()
+    def set_issue_count(self, issue_name, issue_param):
+        for issue in self.issues:
+            is_name = issue["name"] == issue_name
+            is_param = issue["param"] == issue_param
+            is_issue = is_name and is_param
 
-        tree = view.get_pane().getLeftComponent().getViewport().getView()
-        model = tree.getModel()
-        root = model.getRoot()
-        count = int(root.getChildCount())
+            if is_issue:
+                issue["count"] += 1
+                is_total_key_exists = issue_name in self.total_count
 
-        # TODO: Refactor into one function that just takes nodes
-        # Iterates through each vulnerability class leaf node in tree
-        for i in range(count):
-            node = model.getChild(root, i)
-            tree_issue_name = node.toString()
-
-            is_issue_name = re.search(issue_name, tree_issue_name)
-
-            if is_issue_name:
-                child_count = node.getChildCount()
-
-                # TODO: Refactor into one function that just takes nodes
-                # Iterates through each parameter leaf node vulnerability class
-                for j in range(child_count):
-                    child = node.getChildAt(j)
-                    tree_param_name = child.toString()
-
-                    is_param_name = re.search(issue_param, tree_param_name)
-
-                    # Change the display of each parameter leaf node based on
-                    # how many issues are found
-                    if is_param_name:
-                        param_text = issue_param + " (" + str(issue_count) + ")"
-
-                        child.setUserObject(param_text)
-                        model.nodeChanged(child)
-                        model.reload(node)
-
-                        break
-
-                issue_text = issue_name + " (" + str(total_count) + ")"
-
-                node.setUserObject(issue_text)
-                model.nodeChanged(node)
-                model.reload(node)
-
-                break
-
-    def set_scanner_count(self, view, is_checked, issue_name, issue_param):
-        issues = self.get_issues()
-        scanner_issues = self.get_scanner_issues()
-
-        tree = view.get_tree()
-        model = tree.getModel()
-        root = model.getRoot()
-        count = int(root.getChildCount())
-
-        for i in range(count):
-            node = model.getChild(root, i)
-            tree_issue_name = node.toString()
-
-            is_issue_name = re.search(issue_name, tree_issue_name)
-
-            if is_issue_name:
-                child_count = node.getChildCount()
-
-                # TODO: Refactor into one function that just takes nodes
-                # Iterates through each parameter leaf node vulnerability class
-                for j in range(child_count):
-                    child = node.getChildAt(j)
-                    tree_param_name = child.toString()
-
-                    is_param_name = re.search(issue_param, tree_param_name)
-
-                    # Change the display of each parameter leaf node based on
-                    # how many issues are found
-                    if is_param_name:
-                        param_count = int(re.search(r'(\d+)', tree_param_name).group(1))
-
-                        if is_checked:
-                            param_text = issue_param + " (" + str(param_count - 1) + ")"
-                        else:
-                            param_text = issue_param + " (" + str(param_count + 1) + ")"
-
-                        child.setUserObject(param_text)
-                        model.nodeChanged(child)
-                        model.reload(child)
-
-                        break
-
-                total_count = int(re.search(r'(\d+)', tree_issue_name).group(1))
-
-                if is_checked:
-                    issue_text = issue_name + " (" + str(total_count - 1) + ")"
+                if is_total_key_exists:
+                    self.total_count[issue_name] += 1
                 else:
-                    issue_text = issue_name + " (" + str(total_count + 1) + ")"
+                    self.total_count[issue_name] = 1
 
-                node.setUserObject(issue_text)
-                model.nodeChanged(node)
-                model.reload(node)
+                key = issue_name + "." + issue_param
+                is_issue_key_exists = key in self.issues_count
 
-                break
+                if is_issue_key_exists:
+                    self.issues_count[key] += 1
+                else:
+                    self.issues_count[key] = 1
 
-# TODO: Fill out all the getters with proper returns
+                return issue["count"]
+
+    def get_issues_count(self, issue_name, issue_param):
+        key = issue_name + "." + issue_param
+        return self.issues_count[key]
+
+    def change_issues_count(self, issue_name, issue_param, is_checked):
+        key = issue_name + "." + issue_param
+
+        if is_checked:
+            self.issues_count[key] -= 1
+        else:
+            self.issues_count[key] += 1
+
+    def get_total_count(self, issue_name):
+        return self.total_count[issue_name]
+
+    def change_total_count(self, issue_name, is_checked):
+        if is_checked:
+            self.total_count[issue_name] -= 1
+        else:
+            self.total_count[issue_name] += 1
+
 class ScannerIssue(IScanIssue):
-    def __init__(self, url, issue_name, parameter, http_service, http_messages, detail, severity, request_response):
-        self.current_url = url
-        self.http_service = http_service
-        self.http_messages = http_messages
-        self.detail = detail.replace("$param$", parameter)
-        self.current_severity = severity
-        self.request_response = request_response
-        self.issue_background = "Bugcrowd"
-        self.issue_name = issue_name
-        self.parameter = parameter
-        self.remediation_background = ""
+    def __init__(self, url, issue_name, parameter, vuln_param, param_value, hostname, path, http_service, http_messages, detail, severity, request_response):
+        self._url = url
+        self._http_service = http_service
+        self._http_messages = http_messages
+        detail = detail.encode("utf-8")
+        self._detail = detail.replace("$param$", parameter.encode("utf-8"))
+        self._current_severity = severity
+        self._request_response = request_response
+        self._issue_background = ""
+        self._issue_name = issue_name
+        self._parameter = parameter
+        self._vuln_param = vuln_param
+        self._hostname = hostname
+        self._path = path
+        self._param_value = param_value
+        self._remediation_background = ""
 
     def getRequestResponse(self):
-        return self.request_response
+        return self._request_response
+
+    def getVulnParameter(self):
+        return self._vuln_param
 
     def getParameter(self):
-        return self.parameter
+        return self._parameter
+
+    def getParameterValue(self):
+        return self._param_value
+
+    def getHostname(self):
+        return self._hostname
+
+    def getPath(self):
+        return self._path
 
     def getUrl(self):
-        return self.current_url
+        return self._url
 
     def getIssueName(self):
-        return self.issue_name
+        return self._issue_name
 
     def getIssueType(self):
         return 0
 
     def getSeverity(self):
-        return self.current_severity
+        return self._current_severity
 
     def getConfidence(self):
         return "Certain"
 
     def getIssueBackground(self):
-        return self.issue_background
+        return self._issue_background
 
     def getRemediationBackground(self):
-        return self.remediation_background
+        return self._remediation_background
 
     def getIssueDetail(self):
-        return self.detail
+        return self._detail
 
     def getRemediationDetail(self):
         return None
 
     def getHttpMessages(self):
-        return self.http_messages
+        return self._http_messages
 
     def getHttpService(self):
-        return self.http_service
+        return self._http_service
 
 if __name__ in ('__main__', 'main'):
     EventQueue.invokeLater(Run(BurpExtender))
