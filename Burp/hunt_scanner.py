@@ -64,9 +64,11 @@ class Run(Runnable):
     def run(self):
         self.runner()
 
-class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, IScannerCheck, ITab, ITextEditor):
-    EXTENSION_NAME = "HUNT - Scanner"
+# TODO: Move other classes to different files
+class BurpExtender(IBurpExtender, IExtensionStateListener, IScannerCheck, ITab, ITextEditor):
+    EXTENSION_NAME = "HUNT Scanner"
 
+    # TODO: Figure out why this gets called twice
     def __init__(self):
         self.issues = Issues()
         self.view = View(self.issues)
@@ -79,7 +81,6 @@ class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, 
         self.callbacks.registerExtensionStateListener(self)
         self.callbacks.setExtensionName(self.EXTENSION_NAME)
         self.callbacks.addSuiteTab(self)
-        self.callbacks.registerContextMenuFactory(self)
         self.callbacks.registerScannerCheck(self)
 
     def doPassiveScan(self, request_response):
@@ -89,7 +90,6 @@ class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, 
         response = self.helpers.analyzeResponse(raw_response)
 
         parameters = request.getParameters()
-        url = self.helpers.analyzeRequest(request_response).getUrl()
         vuln_parameters = self.issues.check_parameters(self.helpers, parameters)
 
         is_not_empty = len(vuln_parameters) > 0
@@ -100,9 +100,6 @@ class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, 
         # Do not show any Bugcrowd found issues in the Scanner window
         return []
 
-    def createMenuItems(self, invocation):
-        return self.view.get_context_menu()
-
     def getTabCaption(self):
         return self.EXTENSION_NAME
 
@@ -110,7 +107,7 @@ class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, 
         return self.view.get_pane()
 
     def extensionUnloaded(self):
-        print("HUNT - Scanner plugin unloaded")
+        print "HUNT Scanner plugin unloaded"
         return
 
 class View:
