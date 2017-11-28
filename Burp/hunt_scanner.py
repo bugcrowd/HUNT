@@ -1,12 +1,12 @@
-from __future__ import print_function
 import json
 import os
 import re
 import urllib2
 import urlparse
 from burp import IBurpExtender
-from burp import IExtensionStateListener
 from burp import IContextMenuFactory
+from burp import IExtensionStateListener
+from burp import IMessageEditorController
 from burp import IScanIssue
 from burp import IScannerCheck
 from burp import ITab
@@ -14,12 +14,22 @@ from burp import ITextEditor
 from java.awt import Desktop
 from java.awt import Dimension
 from java.awt import EventQueue
+from java.awt import FlowLayout
+from java.awt import Component
 from java.awt.event import ActionListener
 from java.awt.event import MouseAdapter
+from java.lang import Boolean
 from java.lang import Runnable
+from java.lang import Object
+from java.lang import String
+from java.lang import Thread
+from javax.swing import BorderFactory
 from javax.swing import DefaultCellEditor
+from javax.swing import GroupLayout
+from javax.swing import JButton
 from javax.swing import JCheckBox
 from javax.swing import JEditorPane
+from javax.swing import JFileChooser
 from javax.swing import JList
 from javax.swing import JMenuItem
 from javax.swing import JPopupMenu
@@ -29,7 +39,14 @@ from javax.swing import JTable
 from javax.swing import JTabbedPane
 from javax.swing import JTextArea
 from javax.swing import JTree
+from javax.swing import JFileChooser
+from javax.swing import JFrame
+from javax.swing import JPanel
+from javax.swing import JLabel
+from javax.swing import JButton
+from javax.swing import BoxLayout
 from javax.swing import SwingUtilities
+from javax.swing import SwingConstants
 from javax.swing.event import HyperlinkListener
 from javax.swing.event import ListSelectionListener
 from javax.swing.event import TableModelListener
