@@ -227,6 +227,42 @@ class View:
 
         return tabbed_pane
 
+    def get_settings(self):
+        return self.settings
+
+    def set_settings(self):
+        self.settings = JPanel()
+        layout = GroupLayout(self.settings)
+        self.settings.setLayout(layout)
+        layout.setAutoCreateGaps(True)
+
+        load_file_button = JButton("Load JSON File")
+        load_file_button.setActionCommand("load")
+        load_file_button.addActionListener(SettingsAction(self, load_file_button, None))
+        save_file_button = JButton("Save JSON File")
+        save_file_button.setActionCommand("save")
+        save_file_button.addActionListener(SettingsAction(self, save_file_button, self.scanner_panes))
+
+        horizontal_group1 = layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+        horizontal_group1.addComponent(load_file_button)
+        horizontal_group1.addComponent(save_file_button)
+
+        horizontal_group = layout.createSequentialGroup()
+        horizontal_group.addGroup(horizontal_group1)
+
+        layout.setHorizontalGroup(horizontal_group)
+
+        vertical_group1 = layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+        vertical_group1.addComponent(load_file_button)
+        vertical_group2 = layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+        vertical_group2.addComponent(save_file_button)
+
+        vertical_group = layout.createSequentialGroup()
+        vertical_group.addGroup(vertical_group1)
+        vertical_group.addGroup(vertical_group2)
+
+        layout.setVerticalGroup(vertical_group)
+
     def set_tsl(self):
         tsl = TSL(self)
         self.tree.addTreeSelectionListener(tsl)
