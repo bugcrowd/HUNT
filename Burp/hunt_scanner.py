@@ -166,13 +166,13 @@ class View:
         vulns = self.json["issues"]
 
         # TODO: Sort the functionality by name and by vuln class
-        for vuln_name in vulns:
+        for vuln_name in sorted(vulns):
             vuln = DefaultMutableTreeNode(vuln_name)
             self.vuln_tree.add(vuln)
 
             parameters = self.json["issues"][vuln_name]["params"]
 
-            for parameter in parameters:
+            for parameter in sorted(parameters):
                 param_node = DefaultMutableTreeNode(parameter)
                 vuln.add(param_node)
 
