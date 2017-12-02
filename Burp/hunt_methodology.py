@@ -79,7 +79,7 @@ class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, 
 
             # Create a menu item and an action listener per vulnerability
             # class on each functionality
-            for test_name in tests:
+            for test_name in sorted(tests):
                 item_test = JMenuItem(test_name)
                 menu_action_listener = MenuActionListener(self.view, self.callbacks, request_response, functionality_name, test_name)
                 item_test.addActionListener(menu_action_listener)
