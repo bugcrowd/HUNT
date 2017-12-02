@@ -126,7 +126,7 @@ class View:
         self.set_scanner_table_models()
         self.set_scanner_panes()
         self.set_pane()
-        self.set_settings()
+        #self.set_settings()
         self.set_tsl()
 
     def get_issues_object(self):
