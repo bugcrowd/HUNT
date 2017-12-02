@@ -562,7 +562,7 @@ class TSL(TreeSelectionListener):
         self.pane = view.get_pane()
         self.scanner_issues = view.get_scanner_issues()
         self.scanner_panes = view.get_scanner_panes()
-        self.settings = view.get_settings()
+        #self.settings = view.get_settings()
 
     def valueChanged(self, tse):
         pane = self.pane
