@@ -515,8 +515,11 @@ class SettingsAction(ActionListener):
 
                 data.set_bugs(functionality_name, test_name, request, response)
 
-        with open(save_file, 'w') as out_file:
-            json.dump(data.get_checklist(), out_file, indent=2, sort_keys=True)
+        try:
+            with open(save_file, 'w') as out_file:
+                json.dump(data.get_checklist(), out_file, indent=2, sort_keys=True)
+        except SaveFileError as e:
+            print e
 
 class TSL(TreeSelectionListener):
     def __init__(self, view):
