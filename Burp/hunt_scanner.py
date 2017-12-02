@@ -688,7 +688,8 @@ class Issues:
             is_vuln_found = re.search(vuln_param, parameter_decoded, re.IGNORECASE)
 
             if is_vuln_found:
-                self.vuln_param_found(vuln_params, vuln_name, vuln_param, parameter_decoded, parameter)
+                self.vuln_param_add(vuln_params, vuln_name, vuln_param, parameter_decoded, parameter)
+                #self.vuln_param_found(vuln_params, vuln_name, vuln_param, parameter_decoded, parameter)
             else:
                 continue
 
