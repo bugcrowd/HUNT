@@ -126,7 +126,7 @@ class View:
         self.set_scanner_table_models()
         self.set_scanner_panes()
         self.set_pane()
-        #self.set_settings()
+        self.set_settings()
         self.set_tsl()
 
     def get_issues_object(self):
@@ -176,7 +176,7 @@ class View:
                 param_node = DefaultMutableTreeNode(parameter)
                 vuln.add(param_node)
 
-        #self.vuln_tree.add(DefaultMutableTreeNode("Settings"))
+        self.vuln_tree.add(DefaultMutableTreeNode("Settings"))
 
     # Creates a JTree object from the checklist
     def set_tree(self):
@@ -495,17 +495,33 @@ class SettingsAction(ActionListener):
 
     def save_data(self, save_file):
         data = {}
-        data["issues"] = {}
-        scanner_issues = self.view.get_scanner_issues()
+        data["hunt_issues"] = []
 
-        for scanner_issue in scanner_issues:
-            issue_name = scanner_issue.getIssueName()
-            issue_param = scanner_issue.getParameter()
-            data["issues"][issue_name][issue_param] = {
-                "vuln_param": scanner_issue.getVulnParameter()
-            }
+        for key in self.scanner_panes:
+            is_jtable = self.scanner_panes[key].getTopComponent().getViewport().getView()
 
-        print data
+            if is_jtable:
+                rows = self.scanner_panes[key].getTopComponent().getViewport().getView().getModel().getRowCount()
+
+                for row in range(rows):
+                    table = self.scanner_panes[key].getTopComponent().getViewport().getView().getModel()
+                    issue = key.split(".")
+
+                    hunt_issue = {
+                        "issue_name": issue[0],
+                        "issue_param": issue[1],
+                        "is_checked": table.getValueAt(row, 0),
+                        "vuln_param": table.getValueAt(row, 1),
+                        "host": table.getValueAt(row, 2),
+                        "path": table.getValueAt(row, 3)
+                    }
+
+                    data["hunt_issues"].append(hunt_issue)
+        try:
+            with open(save_file, 'w') as out_file:
+                json.dump(data, out_file, indent=2, sort_keys=True)
+        except SaveFileError as e:
+            print e
 
 class MessageController(IMessageEditorController):
     def __init__(self, request_response):
@@ -562,7 +578,7 @@ class TSL(TreeSelectionListener):
         self.pane = view.get_pane()
         self.scanner_issues = view.get_scanner_issues()
         self.scanner_panes = view.get_scanner_panes()
-        #self.settings = view.get_settings()
+        self.settings = view.get_settings()
 
     def valueChanged(self, tse):
         pane = self.pane
