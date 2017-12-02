@@ -629,12 +629,14 @@ class Issues:
         self.set_json()
         self.set_issues()
 
-    # TODO: Add try/catch
     def set_json(self):
         data_file = os.getcwd() + os.sep + "conf" + os.sep + "issues.json"
 
-        with open(data_file) as data:
-            self.json = json.load(data)
+        try:
+            with open(data_file) as data:
+                self.json = json.load(data)
+        except IssuesFileLoadingError as e:
+            print e
 
     def get_json(self):
         return self.json
