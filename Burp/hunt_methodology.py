@@ -174,9 +174,12 @@ class Data():
         if is_empty:
             file_name = os.getcwd() + os.sep + "conf" + os.sep + "checklist.json"
 
-        with open(file_name) as data_file:
-            data = json.load(data_file)
-            self.checklist = data["checklist"]
+        try:
+            with open(file_name) as data_file:
+                data = json.load(data_file)
+                self.checklist = data["checklist"]
+        except LoadMethodologyFileError as e:
+            print e
 
     def get_checklist(self):
         return self.checklist
@@ -518,7 +521,7 @@ class SettingsAction(ActionListener):
         try:
             with open(save_file, 'w') as out_file:
                 json.dump(data.get_checklist(), out_file, indent=2, sort_keys=True)
-        except SaveFileError as e:
+        except SaveMethodologyFileError as e:
             print e
 
 class TSL(TreeSelectionListener):
