@@ -181,9 +181,7 @@ class View:
     # Creates a JTree object from the checklist
     def set_tree(self):
         self.tree = JTree(self.vuln_tree)
-        self.tree.getSelectionModel().setSelectionMode(
-            TreeSelectionModel.SINGLE_TREE_SELECTION
-        )
+        self.tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION)
 
     def get_tree(self):
         return self.tree
@@ -724,8 +722,8 @@ class Issues:
         vuln_params.append({
             "vuln_name": vuln_name,
             "vuln_param": vuln_param,
-            "param": param,#.encode("utf-8").strip(),
-            "value": value#.encode("utf-8").strip(),
+            "param": param,
+            "value": value
         })
 
     def create_scanner_issues(self, view, callbacks, helpers, vuln_parameters, request_response):
