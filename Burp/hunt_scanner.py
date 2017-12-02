@@ -176,7 +176,7 @@ class View:
                 param_node = DefaultMutableTreeNode(parameter)
                 vuln.add(param_node)
 
-        self.vuln_tree.add(DefaultMutableTreeNode("Settings"))
+        #self.vuln_tree.add(DefaultMutableTreeNode("Settings"))
 
     # Creates a JTree object from the checklist
     def set_tree(self):
