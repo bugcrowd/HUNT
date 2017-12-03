@@ -523,12 +523,6 @@ class SettingsAction(ActionListener):
         except SaveIssuesFileError as e:
             print e
 
-class LinkListener(HyperlinkListener):
-    def hyperlinkUpdate(self, hle):
-        if hle.EventType.ACTIVATED == hle.getEventType():
-            desktop = Desktop.getDesktop()
-            desktop.browse(hle.getURL().toURI())
-
 class ScannerTableModel(DefaultTableModel):
     def getColumnClass(self, col):
         return [Boolean, String, String, String, String][col]
