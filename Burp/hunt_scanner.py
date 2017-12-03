@@ -19,7 +19,6 @@ from java.awt import Dimension
 from java.awt import EventQueue
 from java.awt import FlowLayout
 from java.awt import Component
-from java.awt.event import ActionListener
 from java.awt.event import MouseAdapter
 from java.lang import Runnable
 from java.lang import Object
@@ -30,7 +29,6 @@ from javax.swing import GroupLayout
 from javax.swing import JButton
 from javax.swing import JCheckBox
 from javax.swing import JEditorPane
-from javax.swing import JFileChooser
 from javax.swing import JList
 from javax.swing import JMenuItem
 from javax.swing import JPopupMenu
@@ -40,7 +38,6 @@ from javax.swing import JTable
 from javax.swing import JTabbedPane
 from javax.swing import JTextArea
 from javax.swing import JTree
-from javax.swing import JFileChooser
 from javax.swing import JFrame
 from javax.swing import JPanel
 from javax.swing import JLabel
@@ -452,147 +449,6 @@ class View:
         node.setUserObject(traverse["issue_text"])
         model.nodeChanged(node)
         model.reload(node)
-
-class SettingsAction(ActionListener):
-    def __init__(self, view, file_button, scanner_panes):
-        self.view = view
-        self.file_button = file_button
-        self.scanner_panes = scanner_panes
-
-    def actionPerformed(self, e):
-        file_chooser = JFileChooser()
-        is_load_file = str(e.getActionCommand()) == "load"
-        is_save_file = str(e.getActionCommand()) == "save"
-
-        if is_load_file:
-            file_chooser.setDialogTitle("Load JSON File")
-            file_chooser.setDialogType(JFileChooser.OPEN_DIALOG)
-            open_dialog = file_chooser.showOpenDialog(self.file_button)
-            is_approve = open_dialog == JFileChooser.APPROVE_OPTION
-
-            if is_approve:
-                load_file = file_chooser.getSelectedFile()
-                file_name = str(load_file)
-                self.scanner_panes = self.view.get_scanner_panes()
-                self.load_data(file_name)
-            else:
-                print "HUNT issues file load cancelled"
-
-        if is_save_file:
-            file_chooser.setDialogTitle("Save JSON File")
-            file_chooser.setDialogType(JFileChooser.SAVE_DIALOG)
-            save_dialog = file_chooser.showSaveDialog(self.file_button)
-            is_approve = save_dialog == JFileChooser.APPROVE_OPTION
-
-            if is_approve:
-                save_file = str(file_chooser.getSelectedFile())
-                self.save_data(save_file)
-            else:
-                print "HUNT issues file save cancelled"
-
-    def load_data(self, file_name):
-        try:
-            with open(file_name) as data_file:
-                data = json.load(data_file)
-        except LoadHuntIssuesFileError as e:
-            print e
-
-        is_empty_scanner_panes = self.scanner_panes == None
-
-        if is_empty_scanner_panes:
-            print "No scanner panes to load data into"
-            return
-
-        for issue in data["hunt_issues"]:
-            key = issue["issue_name"] + "." + issue["issue_param"]
-            is_scanner_pane = key in self.scanner_panes
-
-            if is_scanner_pane:
-                is_table = self.scanner_panes[key].getTopComponent().getViewport().getView()
-
-                if is_table:
-                    print key
-            else:
-                continue
-
-    def save_data(self, save_file):
-        data = {}
-        data["hunt_issues"] = []
-
-        for key in self.scanner_panes:
-            is_jtable = self.scanner_panes[key].getTopComponent().getViewport().getView()
-
-            if is_jtable:
-                rows = self.scanner_panes[key].getTopComponent().getViewport().getView().getModel().getRowCount()
-
-                for row in range(rows):
-                    table = self.scanner_panes[key].getTopComponent().getViewport().getView().getModel()
-                    issue = key.split(".")
-
-                    hunt_issue = {
-                        "issue_name": issue[0],
-                        "issue_param": issue[1],
-                        "is_checked": table.getValueAt(row, 0),
-                        "vuln_param": table.getValueAt(row, 1),
-                        "host": table.getValueAt(row, 2),
-                        "path": table.getValueAt(row, 3)
-                    }
-
-                    data["hunt_issues"].append(hunt_issue)
-        try:
-            with open(save_file, 'w') as out_file:
-                json.dump(data, out_file, indent=2, sort_keys=True)
-        except SaveIssuesFileError as e:
-            print e
-
-class TSL(TreeSelectionListener):
-    def __init__(self, view):
-        self.view = view
-        self.tree = view.get_tree()
-        self.pane = view.get_pane()
-        self.scanner_issues = view.get_scanner_issues()
-        self.scanner_panes = view.get_scanner_panes()
-        self.settings = view.get_settings()
-
-    def valueChanged(self, tse):
-        pane = self.pane
-        node = self.tree.getLastSelectedPathComponent()
-
-        if node is None:
-            return
-
-        issue_name = node.getParent().toString()
-        issue_param = node.toString()
-
-        issue_name_match = re.search("\(", issue_name)
-        issue_param_match = re.search("\(", issue_param)
-
-        is_name_match = issue_name_match is not None
-        is_param_match = issue_param_match is not None
-
-        if is_name_match:
-            issue_name = issue_name.split(" (")[0]
-
-        if is_param_match:
-            issue_param = issue_param.split(" (")[0]
-
-        is_leaf = node.isLeaf()
-        is_settings = is_leaf and (issue_param == "Settings")
-        is_param = is_leaf and not is_settings
-
-        if node:
-            if is_param:
-                key = issue_name + "." + issue_param
-                scanner_pane = self.scanner_panes[key]
-
-                self.view.set_scanner_pane(scanner_pane, issue_name, issue_param)
-                pane.setRightComponent(scanner_pane)
-            elif is_settings:
-                pane.setRightComponent(self.settings)
-            else:
-                print "No description for " + issue_name + " " + issue_param
-        else:
-            print "Cannot set a pane for " + issue_name + " " + issue_param
 
 class IssueListener(ListSelectionListener):
     def __init__(self, view, table, scanner_pane, issue_name, issue_param):
