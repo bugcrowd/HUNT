@@ -3,10 +3,10 @@ import os
 import re
 import urllib2
 import urlparse
+from lib.message_controller import MessageController
 from burp import IBurpExtender
 from burp import IContextMenuFactory
 from burp import IExtensionStateListener
-from burp import IMessageEditorController
 from burp import IScanIssue
 from burp import IScannerCheck
 from burp import ITab
@@ -520,23 +520,8 @@ class SettingsAction(ActionListener):
         try:
             with open(save_file, 'w') as out_file:
                 json.dump(data, out_file, indent=2, sort_keys=True)
-        except SaveFileError as e:
+        except SaveIssuesFileError as e:
             print e
-
-class MessageController(IMessageEditorController):
-    def __init__(self, request_response):
-        self._http_service = request_response.getHttpService()
-        self._request = request_response.getRequest()
-        self._response = request_response.getResponse()
-
-    def getHttpService(self):
-        return self._http_service
-
-    def getRequest(self):
-        return self._request
-
-    def getResponse(self):
-        return self._response
 
 class LinkListener(HyperlinkListener):
     def hyperlinkUpdate(self, hle):
