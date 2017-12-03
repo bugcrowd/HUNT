@@ -473,9 +473,10 @@ class SettingsAction(ActionListener):
             if is_approve:
                 load_file = file_chooser.getSelectedFile()
                 file_name = str(load_file)
+                self.scanner_panes = self.view.get_scanner_panes()
                 self.load_data(file_name)
             else:
-                print "JSON file load cancelled"
+                print "HUNT issues file load cancelled"
 
         if is_save_file:
             file_chooser.setDialogTitle("Save JSON File")
@@ -487,9 +488,32 @@ class SettingsAction(ActionListener):
                 save_file = str(file_chooser.getSelectedFile())
                 self.save_data(save_file)
             else:
-                print "JSON file save cancelled"
+                print "HUNT issues file save cancelled"
 
-    #def load_data(self):
+    def load_data(self, file_name):
+        try:
+            with open(file_name) as data_file:
+                data = json.load(data_file)
+        except LoadHuntIssuesFileError as e:
+            print e
+
+        is_empty_scanner_panes = self.scanner_panes == None
+
+        if is_empty_scanner_panes:
+            print "No scanner panes to load data into"
+            return
+
+        for issue in data["hunt_issues"]:
+            key = issue["issue_name"] + "." + issue["issue_param"]
+            is_scanner_pane = key in self.scanner_panes
+
+            if is_scanner_pane:
+                is_table = self.scanner_panes[key].getTopComponent().getViewport().getView()
+
+                if is_table:
+                    print key
+            else:
+                continue
 
     def save_data(self, save_file):
         data = {}
