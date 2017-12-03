@@ -188,8 +188,11 @@ class Data():
     def set_issues(self):
         file_name = os.getcwd() + os.sep + "conf" + os.sep + "issues.json"
 
-        with open(file_name) as data_file:
-            self.issues = json.load(data_file)
+        try:
+            with open(file_name) as data_file:
+                self.issues = json.load(data_file)
+        except LoadIssuesFileError as e:
+            print e
 
     def get_issues(self):
         return self.issues
