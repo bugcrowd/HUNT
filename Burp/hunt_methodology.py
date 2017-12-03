@@ -1,5 +1,6 @@
 import json
 import os
+from lib.message_controller import MessageController
 from burp import IBurpExtender
 from burp import IExtensionStateListener
 from burp import IContextMenuFactory
@@ -409,26 +410,18 @@ class View:
         return self.settings
 
     def set_request_tab_pane(self, request_response):
-        raw_request = request_response.getRequest()
-        request_body = StringUtil.fromBytes(raw_request)
-        request_body = request_body.encode("utf-8")
-
-        request_tab_textarea = self.callbacks.createTextEditor()
-        component = request_tab_textarea.getComponent()
-        request_tab_textarea.setText(request_body)
-        request_tab_textarea.setEditable(False)
+        controller = MessageController(request_response)
+        message_editor = self.callbacks.createMessageEditor(controller, True)
+        message_editor.setMessage(request_response.getRequest(), True)
+        component = message_editor.getComponent()
 
         return component
 
     def set_response_tab_pane(self, request_response):
-        raw_response = request_response.getResponse()
-        response_body = StringUtil.fromBytes(raw_response)
-        response_body = response_body.encode("utf-8")
-
-        response_tab_textarea = self.callbacks.createTextEditor()
-        component = response_tab_textarea.getComponent()
-        response_tab_textarea.setText(response_body)
-        response_tab_textarea.setEditable(False)
+        controller = MessageController(request_response)
+        message_editor = self.callbacks.createMessageEditor(controller, True)
+        message_editor.setMessage(request_response.getResponse(), False)
+        component = message_editor.getComponent()
 
         return component
 
