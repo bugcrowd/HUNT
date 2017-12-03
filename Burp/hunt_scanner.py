@@ -6,6 +6,7 @@ import urlparse
 from lib.link_listener import LinkListener
 from lib.message_controller import MessageController
 from lib.scanner_issue import ScannerIssue
+from lib.scanner_table_listener import ScannerTableListener
 from lib.scanner_table_model import ScannerTableModel
 from burp import IBurpExtender
 from burp import IContextMenuFactory
