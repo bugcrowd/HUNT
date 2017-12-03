@@ -3,11 +3,12 @@ import os
 import re
 import urllib2
 import urlparse
+from lib.link_listener import LinkListener
 from lib.message_controller import MessageController
+from lib.scanner_issue import ScannerIssue
 from burp import IBurpExtender
 from burp import IContextMenuFactory
 from burp import IExtensionStateListener
-from burp import IScanIssue
 from burp import IScannerCheck
 from burp import ITab
 from burp import ITextEditor
@@ -47,7 +48,6 @@ from javax.swing import JButton
 from javax.swing import BoxLayout
 from javax.swing import SwingUtilities
 from javax.swing import SwingConstants
-from javax.swing.event import HyperlinkListener
 from javax.swing.event import ListSelectionListener
 from javax.swing.event import TableModelListener
 from javax.swing.event import TreeSelectionListener
