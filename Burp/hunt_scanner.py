@@ -8,6 +8,8 @@ from lib.message_controller import MessageController
 from lib.scanner_issue import ScannerIssue
 from lib.scanner_table_listener import ScannerTableListener
 from lib.scanner_table_model import ScannerTableModel
+from lib.settings_action import SettingsAction
+from lib.tsl import TSL
 from burp import IBurpExtender
 from burp import IContextMenuFactory
 from burp import IExtensionStateListener
@@ -46,7 +48,6 @@ from javax.swing import BoxLayout
 from javax.swing import SwingUtilities
 from javax.swing import SwingConstants
 from javax.swing.event import ListSelectionListener
-from javax.swing.event import TreeSelectionListener
 from javax.swing.tree import DefaultMutableTreeNode
 from javax.swing.tree import TreeSelectionModel
 from org.python.core.util import StringUtil
