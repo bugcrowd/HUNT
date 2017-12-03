@@ -19,10 +19,8 @@ from java.awt import FlowLayout
 from java.awt import Component
 from java.awt.event import ActionListener
 from java.awt.event import MouseAdapter
-from java.lang import Boolean
 from java.lang import Runnable
 from java.lang import Object
-from java.lang import String
 from java.lang import Thread
 from javax.swing import BorderFactory
 from javax.swing import DefaultCellEditor
@@ -51,7 +49,6 @@ from javax.swing import SwingConstants
 from javax.swing.event import ListSelectionListener
 from javax.swing.event import TableModelListener
 from javax.swing.event import TreeSelectionListener
-from javax.swing.table import DefaultTableModel
 from javax.swing.tree import DefaultMutableTreeNode
 from javax.swing.tree import TreeSelectionModel
 from org.python.core.util import StringUtil
@@ -522,13 +519,6 @@ class SettingsAction(ActionListener):
                 json.dump(data, out_file, indent=2, sort_keys=True)
         except SaveIssuesFileError as e:
             print e
-
-class ScannerTableModel(DefaultTableModel):
-    def getColumnClass(self, col):
-        return [Boolean, String, String, String, String][col]
-
-    def isCellEditable(self, row, col):
-        return col == 0
 
 class ScannerTableListener(TableModelListener):
     def __init__(self, view, scanner_table, issue_name, issue_param):
