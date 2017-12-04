@@ -3,6 +3,7 @@ import os
 import re
 import urllib2
 import urlparse
+from lib.issue_listener import IssueListener
 from lib.link_listener import LinkListener
 from lib.message_controller import MessageController
 from lib.scanner_issue import ScannerIssue
