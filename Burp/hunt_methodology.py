@@ -71,9 +71,8 @@ class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, 
         functionality = self.view.get_checklist()["Functionality"]
 
         # Create the menu item for the Burp context menu
-        bugcatcher_menu = JMenu("Send to HUNT Methodology")
+        hunt_methodology_menu = JMenu("Send to HUNT Methodology")
 
-        # TODO: Sort the functionality by name and by vuln class
         for functionality_name in functionality:
             tests = functionality[functionality_name]["tests"]
             menu_test = JMenu(functionality_name)
@@ -86,10 +85,10 @@ class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, 
                 item_test.addActionListener(menu_action_listener)
                 menu_test.add(item_test)
 
-            bugcatcher_menu.add(menu_test)
+            hunt_methodology_menu.add(menu_test)
 
         burp_menu = []
-        burp_menu.append(bugcatcher_menu)
+        burp_menu.append(hunt_methodology_menu)
 
         return burp_menu
 
