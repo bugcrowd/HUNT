@@ -9,11 +9,8 @@ from burp import ITab
 from burp import ITextEditor
 from java.awt import Dimension
 from java.awt import EventQueue
-from java.awt import GridBagLayout
-from java.awt import Insets
 from java.awt.event import ActionListener
 from java.lang import Runnable
-from javax.swing import BorderFactory
 from javax.swing import GroupLayout
 from javax.swing import JButton
 from javax.swing import JFileChooser
