@@ -7,13 +7,11 @@ from burp import IExtensionStateListener
 from burp import IContextMenuFactory
 from burp import ITab
 from burp import ITextEditor
-from java.awt import Color
 from java.awt import Dimension
 from java.awt import EventQueue
 from java.awt import GridBagLayout
 from java.awt import Insets
 from java.awt.event import ActionListener
-from java.awt.event import MouseListener
 from java.lang import Runnable
 from javax.swing import BorderFactory
 from javax.swing import GroupLayout
@@ -101,23 +99,6 @@ class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, 
     def extensionUnloaded(self):
         print "HUNT Methodology plugin unloaded"
         return
-
-class CloseTab(MouseListener):
-    def __init__(self, button, bugs_tab):
-        self.button = button
-        self.bugs_tab = bugs_tab
-
-    def mouseClicked(self, e):
-        selected = self.bugs_tab.getSelectedComponent()
-
-        if selected is not None:
-            self.bugs_tab.remove(selected)
-
-    def mouseEntered(self, e):
-        self.button.setForeground(Color.black)
-
-    def mouseExited(self, e):
-        self.button.setForeground(Color.gray)
 
 class Data():
     shared_state = {}
