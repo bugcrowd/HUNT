@@ -68,7 +68,7 @@ class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, 
         # Create the menu item for the Burp context menu
         hunt_methodology_menu = JMenu("Send to HUNT Methodology")
 
-        for functionality_name in functionality:
+        for functionality_name in sorted(functionality):
             tests = functionality[functionality_name]["tests"]
             menu_test = JMenu(functionality_name)
 
