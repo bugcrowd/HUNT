@@ -2,6 +2,7 @@ from java.awt.event import ActionListener
 from javax.swing import JButton
 from javax.swing import JLabel
 from javax.swing import JPanel
+from close_tab import CloseTab
 
 class MenuActionListener(ActionListener):
     def __init__(self, view, callbacks, request_response, functionality_name, vuln_name):
