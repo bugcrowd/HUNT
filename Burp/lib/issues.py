@@ -148,7 +148,7 @@ class Issues:
             total_count = self.total_count[issue_name]
 
             view.set_scanner_count(issue_name, vuln_param, issue_count, total_count)
-            view.set_scanner_table_model(scanner_issue, issue_name, param_name, vuln_param)
+            view.scanner_table_models.set_scanner_table_model(scanner_issue, issue_name, param_name, vuln_param)
 
     def check_duplicate_issue(self, scanner_issue_local):
         scanner_issues = self.get_scanner_issues()
