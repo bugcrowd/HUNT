@@ -4,8 +4,6 @@ from java.awt import Dimension
 from java.awt import FlowLayout
 from java.awt import Component
 from java.awt.event import MouseAdapter
-from java.lang import Object
-from java.lang import Thread
 from javax.swing import BorderFactory
 from javax.swing import DefaultCellEditor
 from javax.swing import GroupLayout
@@ -36,7 +34,7 @@ from issues import Issues
 from link_listener import LinkListener
 from message_controller import MessageController
 from scanner_table_listener import ScannerTableListener
-from scanner_table_model import ScannerTableModel
+from scanner_table_models import ScannerTableModels
 from settings_action import SettingsAction
 from tsl import TSL
 
@@ -47,7 +45,6 @@ class View:
         self.issues = issues.get_issues()
         self.scanner_issues = issues.get_scanner_issues()
         self.scanner_panes = {}
-        self.scanner_table_models = {}
         self.scanner_tables = {}
         self.is_scanner_panes = []
 
@@ -95,7 +92,6 @@ class View:
 
         vulns = self.json["issues"]
 
-        # TODO: Sort the functionality by name and by vuln class
         for vuln_name in sorted(vulns):
             vuln = DefaultMutableTreeNode(vuln_name)
             self.vuln_tree.add(vuln)
@@ -117,13 +113,14 @@ class View:
         return self.tree
 
     def set_scanner_table_models(self):
+        self.scanner_table_models = ScannerTableModels()
         issues = self.issues
 
         for issue in issues:
             issue_name = issue["name"]
             issue_param = issue["param"]
 
-            self.create_scanner_table_model(issue_name, issue_param)
+            self.scanner_table_models.create_scanner_table_model(issue_name, issue_param)
 
     # Creates the tabs dynamically using data from the JSON file
     def set_scanner_panes(self):
@@ -214,47 +211,6 @@ class View:
     def get_pane(self):
         return self.pane
 
-    # TODO: Move all scanner table functions into its own ScannerTable class
-    #       as well as ScannerTableModel for all scanner table model functions
-    def create_scanner_table_model(self, issue_name, issue_param):
-        key = issue_name + "." + issue_param
-        is_model_exists = key in self.scanner_table_models
-
-        if is_model_exists:
-            return
-
-        scanner_table_model = ScannerTableModel()
-        scanner_table_model.addColumn("")
-        scanner_table_model.addColumn("Parameter")
-        scanner_table_model.addColumn("Host")
-        scanner_table_model.addColumn("Path")
-        scanner_table_model.addColumn("ID")
-
-        self.scanner_table_models[key] = scanner_table_model
-
-    def set_scanner_table_model(self, scanner_issue, issue_name, issue_param, vuln_param):
-        key = issue_name + "." + vuln_param
-        scanner_issue_id = str(scanner_issue.getRequestResponse()).split("@")[1]
-        scanner_table_model = self.scanner_table_models[key]
-
-        # Using the addRow() method requires that the data type being passed to be of type
-        # Vector() or Object(). Passing a Python object of type list in addRow causes a type
-        # conversion error of sorts which presents as an ArrayOutOfBoundsException. Therefore,
-        # row is an instantiation of Object() to avoid this error.
-        row = Object()
-        row = [False, issue_param, scanner_issue.getHttpService().getHost(), scanner_issue.getPath(), scanner_issue_id]
-        scanner_table_model.addRow(row)
-
-        # Wait for ScannerTableModel to update as to not get an ArrayOutOfBoundsException.
-        Thread.sleep(500)
-
-        scanner_table_model.fireTableDataChanged()
-        scanner_table_model.fireTableStructureChanged()
-
-    def get_scanner_table_model(self, issue_name, issue_param):
-        key = issue_name + "." + issue_param
-        return self.scanner_table_models[key]
-
     def set_scanner_pane(self, scanner_pane, issue_name, issue_param):
         key = issue_name + "." + issue_param
         request_table_pane = scanner_pane.getTopComponent()
@@ -270,13 +226,13 @@ class View:
         request_table_pane.repaint()
 
     def create_scanner_table(self, scanner_pane, issue_name, issue_param):
-        scanner_table_model = self.get_scanner_table_model(issue_name, issue_param)
+        current_model = self.scanner_table_models.get_scanner_table_model(issue_name, issue_param)
 
-        scanner_table = JTable(scanner_table_model)
+        scanner_table = JTable(current_model)
         scanner_table.getColumnModel().getColumn(0).setMaxWidth(10)
         scanner_table.putClientProperty("terminateEditOnFocusLost", True)
         scanner_table_listener = ScannerTableListener(self, scanner_table, issue_name, issue_param)
-        scanner_table_model.addTableModelListener(scanner_table_listener)
+        current_model.addTableModelListener(scanner_table_listener)
         scanner_table_list_listener = IssueListener(self, scanner_table, scanner_pane, issue_name, issue_param)
         scanner_table.getSelectionModel().addListSelectionListener(scanner_table_list_listener)
 
