@@ -17,7 +17,6 @@ class Run(Runnable):
     def run(self):
         self.runner()
 
-# TODO: Move other classes to different files
 class BurpExtender(IBurpExtender, IExtensionStateListener, IScannerCheck, ITab, ITextEditor):
     EXTENSION_NAME = "HUNT Scanner"
 
