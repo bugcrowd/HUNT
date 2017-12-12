@@ -5,11 +5,6 @@ from burp import ITab
 from burp import ITextEditor
 from java.awt import EventQueue
 from java.lang import Runnable
-from lib.message_controller import MessageController
-from lib.menu_action_listener import MenuActionListener
-from lib.methodology_settings_action import SettingsAction
-from lib.methodology_tsl import TSL
-from lib.data import Data
 from lib.methodology_view import View
 
 # Using the Runnable class for thread-safety with Swing

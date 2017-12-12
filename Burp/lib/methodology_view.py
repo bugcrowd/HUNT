@@ -12,6 +12,11 @@ from javax.swing import JTree
 from javax.swing.tree import DefaultMutableTreeNode
 from javax.swing.tree import TreeSelectionModel
 from org.python.core.util import StringUtil
+from data import Data
+from message_controller import MessageController
+from menu_action_listener import MenuActionListener
+from methodology_settings_action import SettingsAction
+from methodology_tsl import TSL
 
 class View:
     def __init__(self):
