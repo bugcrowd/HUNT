@@ -33,10 +33,15 @@ class ScannerTableModels:
         # row is an instantiation of Object() to avoid this error.
         row = Object()
         row = [False, issue_param, scanner_issue.getHttpService().getHost(), scanner_issue.getPath(), scanner_issue_id]
-        scanner_table_model.addRow(row)
+
+        try:
+            scanner_table_model.addRow(row)
+        except Exception as e:
+            print e
+            #print "Error inserting row: " + key + " " + scanner_issue.getHttpService().getHost() + " " + str(scanner_issue.getPath() + " " + scanner_issue_id)
 
         # Wait for ScannerTableModel to update as to not get an ArrayOutOfBoundsException.
-        Thread.sleep(500)
+        #Thread.sleep(500)
 
     def get_scanner_table_model(self, issue_name, issue_param):
         key = issue_name + "." + issue_param
