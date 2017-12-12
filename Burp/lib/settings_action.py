@@ -78,6 +78,10 @@ class SettingsAction(ActionListener):
                     table = self.scanner_panes[key].getTopComponent().getViewport().getView().getModel()
                     issue = key.split(".")
 
+                    # Only store issues that have been checked
+                    if table.getValueAt(row, 0) == False:
+                        continue
+
                     hunt_issue = {
                         "issue_name": issue[0],
                         "issue_param": issue[1],
