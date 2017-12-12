@@ -1,7 +1,8 @@
-import json
-import os
 from lib.message_controller import MessageController
 from lib.menu_action_listener import MenuActionListener
+from lib.methodology_settings_action import SettingsAction
+from lib.methodology_tsl import TSL
+from lib.data import Data
 from burp import IBurpExtender
 from burp import IExtensionStateListener
 from burp import IContextMenuFactory
@@ -9,11 +10,9 @@ from burp import ITab
 from burp import ITextEditor
 from java.awt import Dimension
 from java.awt import EventQueue
-from java.awt.event import ActionListener
 from java.lang import Runnable
 from javax.swing import GroupLayout
 from javax.swing import JButton
-from javax.swing import JFileChooser
 from javax.swing import JMenu
 from javax.swing import JMenuItem
 from javax.swing import JPanel
@@ -22,7 +21,6 @@ from javax.swing import JScrollPane
 from javax.swing import JTabbedPane
 from javax.swing import JTextArea
 from javax.swing import JTree
-from javax.swing.event import TreeSelectionListener
 from javax.swing.tree import DefaultMutableTreeNode
 from javax.swing.tree import TreeSelectionModel
 from org.python.core.util import StringUtil
