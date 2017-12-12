@@ -19,7 +19,7 @@ class Data():
             with open(file_name) as data_file:
                 data = json.load(data_file)
                 self.checklist = data["checklist"]
-        except LoadMethodologyFileError as e:
+        except Exception as e:
             print e
 
     def get_checklist(self):
@@ -31,7 +31,7 @@ class Data():
         try:
             with open(file_name) as data_file:
                 self.issues = json.load(data_file)
-        except LoadIssuesFileError as e:
+        except Exception as e:
             print e
 
     def get_issues(self):

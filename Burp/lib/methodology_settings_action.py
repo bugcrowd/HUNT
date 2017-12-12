@@ -81,7 +81,7 @@ class SettingsAction(ActionListener):
         try:
             with open(save_file, 'w') as out_file:
                 json.dump(data.get_checklist(), out_file, indent=2, sort_keys=True)
-        except SaveMethodologyFileError as e:
+        except Exception as e:
             print e
 
 

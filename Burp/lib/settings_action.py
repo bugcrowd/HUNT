@@ -42,7 +42,7 @@ class SettingsAction(ActionListener):
         try:
             with open(file_name) as data_file:
                 data = json.load(data_file)
-        except LoadHuntIssuesFileError as e:
+        except Exception as e:
             print e
 
         is_empty_scanner_panes = self.scanner_panes == None
@@ -90,6 +90,6 @@ class SettingsAction(ActionListener):
         try:
             with open(save_file, 'w') as out_file:
                 json.dump(data, out_file, indent=2, sort_keys=True)
-        except SaveIssuesFileError as e:
+        except Exception as e:
             print e
 

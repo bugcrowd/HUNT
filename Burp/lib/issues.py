@@ -20,7 +20,7 @@ class Issues:
         try:
             with open(data_file) as data:
                 self.json = json.load(data)
-        except IssuesFileLoadingError as e:
+        except Exception as e:
             print e
 
     def get_json(self):
