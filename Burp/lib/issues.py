@@ -159,7 +159,7 @@ class Issues:
             is_same_vuln_parameter = scanner_issue_local.getVulnParameter() == scanner_issue.getVulnParameter()
             is_same_hostname = scanner_issue_local.getHostname() == scanner_issue.getHostname()
             is_same_path = scanner_issue_local.getPath() == scanner_issue.getPath()
-            is_dupe = is_same_issue_name and is_same_parameter and is_same_vuln_parameter
+            is_dupe = is_same_issue_name and is_same_parameter and is_same_vuln_parameter and is_same_hostname and is_same_path
 
             if is_dupe:
                 return True
