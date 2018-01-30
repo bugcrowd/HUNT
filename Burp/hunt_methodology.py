@@ -5,6 +5,9 @@ from burp import ITab
 from burp import ITextEditor
 from java.awt import EventQueue
 from java.lang import Runnable
+from javax.swing import JMenuItem
+from javax.swing import JMenu
+from lib.menu_action_listener import MenuActionListener
 from lib.methodology_view import View
 
 # Using the Runnable class for thread-safety with Swing
