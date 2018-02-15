@@ -1,7 +1,9 @@
 import json
 from java.awt.event import ActionListener
 from javax.swing import JFileChooser
+from javax.swing import JTree
 from data import Data
+from methodology_tsl import TSL
 
 class SettingsAction(ActionListener):
     def __init__(self, view, file_button, tabbed_panes):
