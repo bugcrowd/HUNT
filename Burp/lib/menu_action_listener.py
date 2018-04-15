@@ -49,4 +49,3 @@ class MenuActionListener(ActionListener):
         bugs_tab.setTabComponentAt(index, panel_tab)
 
         button_close.addMouseListener(CloseTab(button_close, bugs_tab))
-

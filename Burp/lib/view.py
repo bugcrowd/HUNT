@@ -340,4 +340,3 @@ class View:
         node.setUserObject(traverse["issue_text"])
         model.nodeChanged(node)
         model.reload(node)
-

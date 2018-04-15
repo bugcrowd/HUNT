@@ -1,9 +1,12 @@
+from __future__ import print_function
 import json
 import re
 import os
 import urllib2
 import urlparse
+from java.lang import Thread
 from scanner_issue import ScannerIssue
+
 
 class Issues:
     scanner_issues = []
@@ -21,7 +24,7 @@ class Issues:
             with open(data_file) as data:
                 self.json = json.load(data)
         except Exception as e:
-            print e
+            print(e)
 
     def get_json(self):
         return self.json
@@ -211,5 +214,3 @@ class Issues:
             self.total_count[issue_name] -= 1
         else:
             self.total_count[issue_name] += 1
-
-

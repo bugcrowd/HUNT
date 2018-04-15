@@ -1,3 +1,4 @@
+from __future__ import print_function
 from burp import IBurpExtender
 from burp import IExtensionStateListener
 from burp import IContextMenuFactory
@@ -77,7 +78,7 @@ class BurpExtender(IBurpExtender, IExtensionStateListener, IContextMenuFactory, 
         return self.view.get_pane()
 
     def extensionUnloaded(self):
-        print "HUNT Methodology plugin unloaded"
+        print("HUNT Methodology plugin unloaded")
         return
 
 if __name__ in ('__main__', 'main'):

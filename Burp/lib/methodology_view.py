@@ -245,6 +245,3 @@ class View:
         bugs_tabbed_pane.add("Response", response_tab)
 
         return bugs_tabbed_pane
-
-
-
