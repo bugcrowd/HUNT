@@ -57,26 +57,26 @@
 
 ![HUNT Scanner](/images/scanner.png)
 
-This extension does not test these parameters but rather alerts on them so that a bug hunter can test them manually (thoroughly). For each class of vulnerability, Bugcrowd has identified common parameters or functions associated with that vulnerability class. We also provide curated resources in the issue description to do thorough manual testing of these vulnerability classes.
+This extension does not test these parameters, but rather alerts on them so that a bug hunter can test them manually. For each class of vulnerability, Bugcrowd has identified common parameters or functions associated with that vulnerability class. We also provide curated resources in the issue description to do thorough manual testing of these vulnerability classes.
 
 ## HUNT Testing Methodology (hunt_methodology.py)
 
 ![HUNT Methodology](/images/methodology.png)
 
-This extension allows testers to send requests and responses to a Burp tab called "HUNT Methodology". This tab contains a tree on the left side that is a visual representation of your testing methodology. By sending request/responses here testers can organize or attest to having done manual testing in that section of the application or having completed a certain methodology step.
+This extension allows testers to send requests and responses to a Burp Suite tab called "HUNT Methodology". This tab contains a tree on the left side that is a visual representation of your testing methodology. By sending request/responses here testers can organize or attest to having done manual testing in that section of the application or having completed a certain methodology step.
 
 # Installing HUNT Suite for Burp Suite Pro/Free
 
 ## Getting Started
 1. Download the [latest standalone](http://www.jython.org/downloads.html) Jython `jar`.
-2. Navigate to "Extender" -> "Options". 
+2. Navigate to *Extender -> Options*. 
   ![Adding Jython](/images/jython.png)
-  * Locate the section called "Python Environment".
-  * Add the location of the Jython `jar` by clicking "Select file...".
-3. Navigate to "Extender" -> "Extensions".
+  * Locate the section called *Python Environment*.
+  * Add the location of the Jython `jar` by clicking *Select file...*.
+3. Navigate to *Extender -> Extensions*.
   ![Adding Extension](/images/extension.png)
-  * Click `Add`.
-  * Locate "Extension Details".
+  * Click *Add*.
+  * Locate *Extension Details*.
     * Select "Python" as the *Extension Type*.
     * Click "Select file..." to select the location of where the extension is located in your filesystem.
     * Do this for both the HUNT Parameter Scanner and HUNT Testing Methodology
@@ -84,11 +84,11 @@ This extension allows testers to send requests and responses to a Burp tab calle
 
 ## Setting Scope
 This is an important step to set your testing scope as the passive scanner is incredibly noisy. Instead of polluting the Scanner window, the HUNT Parameter Scanner creates its own window with its own findings.
-1. Navigate to "Target" -> "Scope".
+1. Navigate to *Target -> Scope*.
   ![Target Scope](/images/target_scope.png)
   * Click the "Use advanced scope control" checkbox.
   * Click add to include to your scope.
-2. Navigate to "Scanner" -> "Live scanning".
+2. Navigate to *Scanner -> Live scanning*.
   ![Passive Scanner](/images/passive_scanner.png)
   * Under the "Live Passive Scanning" section, click "Use suite scope \[defined in the target tab\]".
 
