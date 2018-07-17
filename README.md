@@ -2,7 +2,8 @@
 
 ![HUNT Logo](/images/logo.png)
 
-HUNT is a Burp Suite and OWASP ZAP extension that:
+### What is HUNT Suite?
+* HUNT Suite is a collection of Burp Suite Pro/Free and OWASP ZAP extensions.
 * Identifies common parameters vulnerable to certain vulnerability classes (Burp Suite Pro and OWASP ZAP). 
 * Organize testing methodologies (Burp Suite Pro and Free).
 
@@ -69,11 +70,11 @@ This extension allows testers to send requests and responses to a Burp tab calle
 ## Getting Started
 1. Download the [latest standalone](http://www.jython.org/downloads.html) Jython `jar`.
 2. Navigate to "Extender" -> "Options". 
-  [Adding Jython](/images/jython.png)
+  ![Adding Jython](/images/jython.png)
   * Locate the section called "Python Environment".
   * Add the location of the Jython `jar` by clicking "Select file...".
 3. Navigate to "Extender" -> "Extensions".
-  [Adding Extension](/images/extension.png)
+  ![Adding Extension](/images/extension.png)
   * Click `Add`.
   * Locate "Extension Details".
     * Select "Python" as the *Extension Type*.
@@ -84,11 +85,11 @@ This extension allows testers to send requests and responses to a Burp tab calle
 ## Setting Scope
 This is an important step to set your testing scope as the passive scanner is incredibly noisy. Instead of polluting the Scanner window, the HUNT Parameter Scanner creates its own window with its own findings.
 1. Navigate to "Target" -> "Scope".
-  [Target Scope](/images/target_scope.png)
+  ![Target Scope](/images/target_scope.png)
   * Click the "Use advanced scope control" checkbox.
   * Click add to include to your scope.
 2. Navigate to "Scanner" -> "Live scanning".
-  [Passive Scanner](/images/passive_scanner.png)
+  ![Passive Scanner](/images/passive_scanner.png)
   * Under the "Live Passive Scanning" section, click "Use suite scope \[defined in the target tab\]".
 
 ## Important Notes
