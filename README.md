@@ -89,8 +89,8 @@ This is an important step to set your testing scope as the passive scanner is in
   * Click the "Use advanced scope control" checkbox.
   * Click add to include to your scope.
 2. Navigate to *Scanner -> Live scanning*.
-  ![Passive Scanner](/images/passive_scanner.png)
   * Under the "Live Passive Scanning" section, click "Use suite scope \[defined in the target tab\]".
+  ![Passive Scanner](/images/passive_scanner.png)
 
 ## Important Notes
 HUNT Parameter Scanner leverages the passive scanning API within Burp. Here are the conditions under which passive scan checks are run: 
@@ -98,7 +98,7 @@ HUNT Parameter Scanner leverages the passive scanning API within Burp. Here are 
 * Proxy requests
 * Any time "Do a passive scan" is selected from the context menu
 
-*Passive scans are not run on the following:*
+**Passive scans are not run on the following:**
 * On every active scan response
 * On Repeater responses
 * On Intruder responses
