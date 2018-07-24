@@ -38,8 +38,14 @@ class BurpExtender(IBurpExtender, IExtensionStateListener, IScannerCheck, ITab, 
     def doPassiveScan(self, request_response):
         raw_request = request_response.getRequest()
         raw_response = request_response.getResponse()
-        request = self.helpers.analyzeRequest(raw_request)
+        httpservice = request_response.getHttpService()
+        request = self.helpers.analyzeRequest(httpservice,raw_request)
         response = self.helpers.analyzeResponse(raw_response)
+
+        # Disregard all URLs out of scope
+        url = request.getUrl()
+        if (not self.callbacks.isInScope(url)):
+            return []
 
         parameters = request.getParameters()
         vuln_parameters = self.issues.check_parameters(self.helpers, parameters)
