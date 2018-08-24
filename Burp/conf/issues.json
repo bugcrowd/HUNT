@@ -46,7 +46,7 @@
         "cmd"
       ]
     },
-    "File Inclusion & Path Traversal": {
+    "File Inclusion and Path Traversal": {
       "check_location": {
         "request": true,
         "response": false
@@ -171,7 +171,7 @@
         "redirect"
       ]
     },
-    "Debug & Logic Parameters": {
+    "Debug and Logic Parameters": {
       "check_location": {
         "request": true,
         "response": false
