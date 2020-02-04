@@ -106,13 +106,15 @@ HUNT Parameter Scanner leverages the passive scanning API within Burp. Here are 
 * On Spider responses
 
 # HUNT Scanner for OWASP ZAP (Alpha - Contributed by Ricardo Lobo @_sbzo)
-1. Find the "Manage Addons" icon, ensure you have ``` Python Scripting ``` installed.
+Hunt scanner is included into community scripts for ZAP Proxy.
+
+1. Find the "Manage Addons" icon, ensure you have ``` Python Scripting ``` and ``` Community Scripts ``` installed.
 2. Ensure "show All Tabs" icon is clicked
 3. Click the ```Tools``` menu, navigate to the ```Options``` section. Select ```Passive Scanner``` and check the box ```Scan messages only in scope``` and then ```OK```
 4. Click into the ``` Scripts ``` tab (next to the  ``` Sites ``` tab)
-5. Click the ```load script``` icon and load each python script into ZAP. They should appear under ```passive rules```
-6. Right click on each script under ```passive rules``` and enable them and save them
-7. Browse sites and recieve alerts!
+5. Look for ``` Hunt.py ``` should appear under ```passive rules```
+6. Right click in the script under ```passive rules``` and enable it and save it
+7. Browse sites and recieve alerts from the sites included in contexts!
 
 ## License
 Licensed with the Apache 2.0 License [here](https://github.com/bugcrowd/HUNT/blob/master/license)
