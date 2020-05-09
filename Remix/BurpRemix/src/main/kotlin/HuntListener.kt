@@ -27,13 +27,25 @@ class HuntListener(private val callbacks: IBurpExtenderCallbacks) : IHttpListene
     private fun checkParameterName(name: String): Pair<String, String>? {
         val huntData = HuntData()
         return when {
-            huntData.insecureDirectObjectReference.contains(name) -> Pair(name, "Insecure Direct Object Reference")
-            huntData.osCommandInjection.contains(name) -> Pair(name, "OS Command Injection")
-            huntData.fileInclusionPathTraversal.contains(name) -> Pair(name, "File Inclusion and Path Traversal")
-            huntData.sqlInjection.contains(name) -> Pair(name, "SQL Injection")
-            huntData.serverSideRequestForgery.contains(name) -> Pair(name, "Server Side Request Forgery")
-            huntData.serverSideTemplateInjection.contains(name) -> Pair(name, "Server Side Template Injection")
-            huntData.debugLogicParameters.contains(name) -> Pair(name, "Debug and Logic Parameters")
+            huntData.insecureDirectObjectReference.params.contains(name) -> Pair(
+                name,
+                huntData.insecureDirectObjectReference.name
+            )
+            huntData.osCommandInjection.params.contains(name) -> Pair(name, huntData.osCommandInjection.name)
+            huntData.fileInclusionPathTraversal.params.contains(name) -> Pair(
+                name,
+                huntData.fileInclusionPathTraversal.name
+            )
+            huntData.sqlInjection.params.contains(name) -> Pair(name, huntData.sqlInjection.name)
+            huntData.serverSideRequestForgery.params.contains(name) -> Pair(
+                name,
+                huntData.serverSideRequestForgery.name
+            )
+            huntData.serverSideTemplateInjection.params.contains(name) -> Pair(
+                name,
+                huntData.serverSideTemplateInjection.name
+            )
+            huntData.debugLogicParameters.params.contains(name) -> Pair(name, huntData.debugLogicParameters.name)
             else -> null
         }
     }
