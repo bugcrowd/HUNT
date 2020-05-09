@@ -2,7 +2,7 @@ package burp
 
 class HuntData {
     val insecureDirectObjectReference =
-        HuntDetails(
+        HuntDetail(
             name = "Insecure Direct Object Reference",
             params = mutableSetOf(
                 "account",
@@ -38,7 +38,7 @@ class HuntData {
             level = "Information"
         )
 
-    val osCommandInjection = HuntDetails(
+    val osCommandInjection = HuntDetail(
         name = "OS Command Injection",
         params = mutableSetOf(
             "cli",
@@ -68,7 +68,7 @@ class HuntData {
         level = "Information"
     )
 
-    val fileInclusionPathTraversal = HuntDetails(
+    val fileInclusionPathTraversal = HuntDetail(
         name = "File Inclusion and Path Traversal",
         params = mutableSetOf(
             "doc",
@@ -98,7 +98,7 @@ class HuntData {
         level = "Information"
     )
 
-    val sqlInjection = HuntDetails(
+    val sqlInjection = HuntDetail(
         name = "SQL Injection",
         params = mutableSetOf(
             "column",
@@ -153,7 +153,7 @@ class HuntData {
         level = "Information"
     )
 
-    val serverSideRequestForgery = HuntDetails(
+    val serverSideRequestForgery = HuntDetail(
         name = "Server Side Request Forgery",
         params = mutableSetOf(
             "callback",
@@ -201,7 +201,7 @@ class HuntData {
     )
 
 
-    val serverSideTemplateInjection = HuntDetails(
+    val serverSideTemplateInjection = HuntDetail(
         name = "Server Side Template Injection",
         params = mutableSetOf(
             "activity",
@@ -222,7 +222,7 @@ class HuntData {
         level = "Information"
     )
 
-    val debugLogicParameters = HuntDetails(
+    val debugLogicParameters = HuntDetail(
         name = "Debug and Logic Parameters",
         params = mutableSetOf(
             "access",
@@ -275,7 +275,7 @@ class HuntData {
     val namesDetails = issues.map { mapOf(it.name to it.detail) }
 }
 
-data class HuntDetails(
+data class HuntDetail(
     val name: String,
     val params: Set<String>,
     val checkLocation: HuntLocation,
