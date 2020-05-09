@@ -4,14 +4,14 @@ import java.net.URL
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-class HuntListener(private val callbacks: IBurpExtenderCallbacks) : IHttpListener {
+class HuntListener(private val callbacks: IBurpExtenderCallbacks, val huntTab: HuntTab) : IHttpListener {
     override fun processHttpMessage(toolFlag: Int, messageIsRequest: Boolean, messageInfo: IHttpRequestResponse?) {
         val helpers = callbacks.helpers
         messageInfo?.let {
-            if (messageIsRequest && (toolFlag == IBurpExtenderCallbacks.TOOL_PROXY || toolFlag == IBurpExtenderCallbacks.TOOL_SPIDER)) {
+            if (messageIsRequest && (callbacks.isInScope(helpers.analyzeRequest(messageInfo).url)) && (toolFlag == IBurpExtenderCallbacks.TOOL_PROXY || toolFlag == IBurpExtenderCallbacks.TOOL_SPIDER)) {
                 val request = helpers.analyzeRequest(messageInfo) ?: return
                 val parameters = request.parameters
-                val parameterNames =
+                val huntIssues =
                     parameters.asSequence().map { it.name }.map { checkParameterName(it) }.filterNotNull().map {
                         makeHuntRequest(
                             requestResponse = messageInfo,
@@ -19,6 +19,8 @@ class HuntListener(private val callbacks: IBurpExtenderCallbacks) : IHttpListene
                             type = it.second
                         )
                     }.toList()
+
+                huntTab.huntTable.addHuntIssue(huntIssues)
             }
 
         }
@@ -54,7 +56,7 @@ class HuntListener(private val callbacks: IBurpExtenderCallbacks) : IHttpListene
         requestResponse: IHttpRequestResponse,
         parameter: String,
         type: String
-    ): HuntRequests {
+    ): HuntIssue {
         val savedRequestResponse = callbacks.saveBuffersToTempFiles(requestResponse)
         val now = LocalDateTime.now()
         val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
@@ -66,7 +68,7 @@ class HuntListener(private val callbacks: IBurpExtenderCallbacks) : IHttpListene
             null
         }
 
-        return HuntRequests(
+        return HuntIssue(
             requestResponse = savedRequestResponse,
             dateTime = dateTime,
             host = requestInfo.url.host,
@@ -93,7 +95,7 @@ class HuntListener(private val callbacks: IBurpExtenderCallbacks) : IHttpListene
     }
 }
 
-data class HuntRequests(
+data class HuntIssue(
     val requestResponse: IHttpRequestResponsePersisted,
     val dateTime: String,
     val host: String,
