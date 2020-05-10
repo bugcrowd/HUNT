@@ -99,7 +99,7 @@ class HuntActions(
     }
 
 
-    fun getSelectedHuntIssues(): MutableList<HuntIssue> {
+    private fun getSelectedHuntIssues(): MutableList<HuntIssue> {
         val selectedHuntIssue: MutableList<HuntIssue> = ArrayList()
         for (index in table.selectedRows) {
             selectedHuntIssue.add(huntIssues[index])

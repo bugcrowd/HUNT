@@ -36,7 +36,7 @@ class HuntOptions(
     }
 
 
-    fun searchHuntIssues() {
+    private fun searchHuntIssues() {
         val selectedType = typeComboBox.selectedItem
         SwingUtilities.invokeLater {
             val searchText = searchBar.text.toLowerCase()

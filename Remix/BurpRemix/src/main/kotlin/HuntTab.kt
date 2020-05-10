@@ -13,7 +13,7 @@ class HuntTab(callbacks: IBurpExtenderCallbacks) : ITab {
 }
 
 class HuntPanel(private val callbacks: IBurpExtenderCallbacks) {
-    val huntOptions = HuntOptions(this, callbacks)
+    private val huntOptions = HuntOptions(this, callbacks)
     val model = HuntModel(huntOptions)
     val table = JTable(model)
 

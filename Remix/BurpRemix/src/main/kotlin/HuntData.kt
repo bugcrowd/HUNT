@@ -261,7 +261,7 @@ class HuntData {
         level = "Information"
     )
 
-    val issues =
+    private val issues =
         mutableListOf(
             insecureDirectObjectReference,
             osCommandInjection,
