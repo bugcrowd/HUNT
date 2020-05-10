@@ -67,11 +67,11 @@ class HuntActions(
                     val url = selectedHuntIssue.url
                     when (source) {
                         sendToRepeater -> {
-                            var title = selectedHuntIssue.title
+                            var title = selectedHuntIssue.type
                             if (title.length > 10) {
                                 title = title.substring(0, 9) + "+"
                             } else if (title.isBlank()) {
-                                title = "${selectedHuntIssue.type}"
+                                title = selectedHuntIssue.type
                             }
                             callbacks.sendToRepeater(
                                 url.host,
