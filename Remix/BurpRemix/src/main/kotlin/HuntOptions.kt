@@ -19,8 +19,7 @@ class HuntOptions(
         val searchButton = JButton("Search")
         val resetButton = JButton("Reset")
         typeComboBox.selectedIndex = -1
-        typeComboBox.prototypeDisplayValue = "Select type"
-        typeComboBox.addItem("Select type")
+        typeComboBox.prototypeDisplayValue = "File Inclusion and Path Traversal"
         clearButton.addActionListener { clearHuntIssues() }
         searchBar.addActionListener { searchHuntIssues() }
         searchButton.addActionListener { searchHuntIssues() }
