@@ -4,21 +4,24 @@ import java.net.URL
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-class HuntListener(private val callbacks: IBurpExtenderCallbacks, val huntTab: HuntTab) : IHttpListener {
+
+class HuntListener(private val callbacks: IBurpExtenderCallbacks, private val huntTab: HuntTab) : IHttpListener {
+    private val helpers: IExtensionHelpers = callbacks.helpers
+
     override fun processHttpMessage(toolFlag: Int, messageIsRequest: Boolean, messageInfo: IHttpRequestResponse?) {
-        val helpers = callbacks.helpers
         messageInfo?.let {
-            if (messageIsRequest && (callbacks.isInScope(helpers.analyzeRequest(messageInfo).url)) && (toolFlag == IBurpExtenderCallbacks.TOOL_PROXY || toolFlag == IBurpExtenderCallbacks.TOOL_SPIDER)) {
+            if (!messageIsRequest && (callbacks.isInScope(helpers.analyzeRequest(messageInfo).url)) && (toolFlag == IBurpExtenderCallbacks.TOOL_PROXY || toolFlag == IBurpExtenderCallbacks.TOOL_SPIDER)) {
                 val request = helpers.analyzeRequest(messageInfo) ?: return
                 val parameters = request.parameters
                 val huntIssues =
-                    parameters.asSequence().map { it.name }.map { checkParameterName(it) }.filterNotNull().map {
-                        makeHuntRequest(
-                            requestResponse = messageInfo,
-                            parameter = it.first,
-                            type = it.second
-                        )
-                    }.toList()
+                    parameters.asSequence().map { it.name }.map { checkParameterName(it.toLowerCase()) }.filterNotNull()
+                        .map {
+                            makeHuntRequest(
+                                requestResponse = messageInfo,
+                                parameter = it.first,
+                                type = it.second
+                            )
+                        }.toList()
 
                 huntTab.huntTable.addHuntIssue(huntIssues)
             }
@@ -57,7 +60,6 @@ class HuntListener(private val callbacks: IBurpExtenderCallbacks, val huntTab: H
         parameter: String,
         type: String
     ): HuntIssue {
-        val savedRequestResponse = callbacks.saveBuffersToTempFiles(requestResponse)
         val now = LocalDateTime.now()
         val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
         val dateTime = now.format(dateFormatter) ?: ""
@@ -68,8 +70,9 @@ class HuntListener(private val callbacks: IBurpExtenderCallbacks, val huntTab: H
             null
         }
 
+
         return HuntIssue(
-            requestResponse = savedRequestResponse,
+            requestResponse = callbacks.saveBuffersToTempFiles(requestResponse),
             dateTime = dateTime,
             host = requestInfo.url.host,
             url = requestInfo.url,
