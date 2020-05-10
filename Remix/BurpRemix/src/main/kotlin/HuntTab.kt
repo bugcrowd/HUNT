@@ -1,6 +1,5 @@
 package burp
 
-import java.awt.FlowLayout
 import javax.swing.*
 import javax.swing.table.AbstractTableModel
 import javax.swing.table.TableRowSorter
@@ -32,10 +31,10 @@ class HuntPanel(private val callbacks: IBurpExtenderCallbacks) {
         table.columnModel.getColumn(0).preferredWidth = 30 // ID
         table.columnModel.getColumn(1).preferredWidth = 145 // date
         table.columnModel.getColumn(2).preferredWidth = 125 // host
-        table.columnModel.getColumn(3).preferredWidth = 380 // url
-        table.columnModel.getColumn(4).preferredWidth = 130 // title
-        table.columnModel.getColumn(5).preferredWidth = 75 // type
-        table.columnModel.getColumn(6).preferredWidth = 55 // parameter
+        table.columnModel.getColumn(3).preferredWidth = 250 // url
+        table.columnModel.getColumn(4).preferredWidth = 200 // type
+        table.columnModel.getColumn(5).preferredWidth = 75 // parameter
+        table.columnModel.getColumn(6).preferredWidth = 100 // title
         table.columnModel.getColumn(7).preferredWidth = 50 // method
         table.columnModel.getColumn(8).preferredWidth = 50 // status
         table.columnModel.getColumn(9).preferredWidth = 50 // length
@@ -57,21 +56,16 @@ class HuntPanel(private val callbacks: IBurpExtenderCallbacks) {
             }
         }
 
-        val repeatPanel = JPanel(FlowLayout(FlowLayout.LEFT))
-
         val huntTable = JScrollPane(table)
         val reqResSplit =
             JSplitPane(JSplitPane.HORIZONTAL_SPLIT, requestViewer?.component, responseViewer?.component)
         reqResSplit.resizeWeight = 0.5
 
-        val repeatReqSplit =
-            JSplitPane(JSplitPane.VERTICAL_SPLIT, repeatPanel, reqResSplit)
-
         val huntOptSplit =
             JSplitPane(JSplitPane.VERTICAL_SPLIT, huntOptions.panel, huntTable)
 
         panel.topComponent = huntOptSplit
-        panel.bottomComponent = repeatReqSplit
+        panel.bottomComponent = reqResSplit
         panel.resizeWeight = 0.5
         callbacks.customizeUiComponent(panel)
     }
@@ -109,9 +103,9 @@ class HuntModel(private val huntOptions: HuntOptions) : AbstractTableModel() {
             "Added",
             "Host",
             "URL",
-            "Title",
             "Type",
             "Param",
+            "Title",
             "Method",
             "Status",
             "Length",
@@ -161,9 +155,9 @@ class HuntModel(private val huntOptions: HuntOptions) : AbstractTableModel() {
             1 -> huntIssues.dateTime
             2 -> huntIssues.host
             3 -> huntIssues.url.toString()
-            4 -> huntIssues.title
-            5 -> huntIssues.type
-            6 -> huntIssues.parameter
+            4 -> huntIssues.type
+            5 -> huntIssues.parameter
+            6 -> huntIssues.title
             7 -> huntIssues.method
             8 -> huntIssues.statusCode
             9 -> huntIssues.length
