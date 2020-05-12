@@ -44,6 +44,7 @@ class HuntPanel(private val callbacks: IBurpExtenderCallbacks) {
         table.columnModel.getColumn(13).preferredWidth = 120 // comments
         table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION)
         table.rowSorter = TableRowSorter(model)
+        table.autoscrolls = true
 
         table.selectionModel.addListSelectionListener {
             if (table.selectedRow != -1) {
@@ -179,8 +180,8 @@ class HuntModel(private val huntOptions: HuntOptions) : AbstractTableModel() {
     fun addHuntDetails(huntIssue: HuntIssue) {
         huntIssues.add(huntIssue)
         displayedHuntIssues = huntIssues
-        refreshHunt()
         fireTableRowsInserted(displayedHuntIssues.lastIndex, displayedHuntIssues.lastIndex)
+        refreshHunt()
     }
 
     fun removeHuntIssues(selectedHuntIssues: MutableList<HuntIssue>) {
