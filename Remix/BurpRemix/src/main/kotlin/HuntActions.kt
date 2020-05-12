@@ -22,6 +22,7 @@ class HuntActions(
     private val deleteMenu = JMenuItem("Delete Hunt Issue(s)")
     private val clearMenu = JMenuItem("Clear Hunt Issues")
     private val comments = JMenuItem("Add comment")
+    private val details = JMenuItem("Details")
 
     init {
         sendToRepeater.addActionListener(this)
@@ -37,10 +38,11 @@ class HuntActions(
         actionsMenu.add(clearMenu)
         actionsMenu.addSeparator()
         comments.addActionListener(this)
+        details.addActionListener(this)
         actionsMenu.addSeparator()
         actionsMenu.add(comments)
+        actionsMenu.add(details)
         panel.table.componentPopupMenu = actionsMenu
-
     }
 
 
@@ -91,6 +93,11 @@ class HuntActions(
                             val newComments = JOptionPane.showInputDialog("Comments:", selectedHuntIssue.comments)
                             selectedHuntIssue.comments = newComments
                             panel.model.refreshHunt()
+                        }
+                        details -> {
+                            val details = HuntData().namesDetails.get(selectedHuntIssue.type)
+                                ?.replace("%PARAM%", "'${selectedHuntIssue.parameter}'")
+                            JOptionPane.showMessageDialog(null, details)
                         }
                     }
                 }

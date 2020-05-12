@@ -272,7 +272,7 @@ class HuntData {
             debugLogicParameters
         )
 
-    val namesDetails = issues.map { mapOf(it.name to it.detail) }
+    val namesDetails = issues.map { it.name to it.detail }.toMap()
 }
 
 data class HuntDetail(
