@@ -4,6 +4,7 @@ import javax.swing.*
 import javax.swing.table.AbstractTableModel
 import javax.swing.table.TableRowSorter
 
+
 class HuntTab(callbacks: IBurpExtenderCallbacks) : ITab {
     val huntTable = HuntPanel(callbacks)
 
@@ -40,8 +41,7 @@ class HuntPanel(private val callbacks: IBurpExtenderCallbacks) {
         table.columnModel.getColumn(9).preferredWidth = 50 // length
         table.columnModel.getColumn(10).preferredWidth = 50 // mime
         table.columnModel.getColumn(11).preferredWidth = 50 // protocol
-        table.columnModel.getColumn(12).preferredWidth = 80 // file
-        table.columnModel.getColumn(13).preferredWidth = 120 // comments
+        table.columnModel.getColumn(12).preferredWidth = 120 // comments
         table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION)
         table.rowSorter = TableRowSorter(model)
         table.autoscrolls = true
@@ -112,7 +112,6 @@ class HuntModel(private val huntOptions: HuntOptions) : AbstractTableModel() {
             "Length",
             "MIME",
             "Protocol",
-            "File",
             "Comments"
         )
     var huntIssues: MutableList<HuntIssue> = ArrayList()
@@ -143,7 +142,6 @@ class HuntModel(private val huntOptions: HuntOptions) : AbstractTableModel() {
             10 -> String::class.java
             11 -> String::class.java
             12 -> String::class.java
-            13 -> String::class.java
             else -> throw RuntimeException()
         }
     }
@@ -164,17 +162,26 @@ class HuntModel(private val huntOptions: HuntOptions) : AbstractTableModel() {
             9 -> huntIssues.length
             10 -> huntIssues.mimeType
             11 -> huntIssues.protocol
-            12 -> huntIssues.file
-            13 -> huntIssues.comments
+            12 -> huntIssues.comments
             else -> ""
         }
     }
 
+
     override fun isCellEditable(rowIndex: Int, columnIndex: Int): Boolean {
         return when (columnIndex) {
-            13 -> true
+            12 -> true
             else -> false
         }
+    }
+
+    override fun setValueAt(value: Any?, rowIndex: Int, colIndex: Int) {
+        val huntIssue: HuntIssue = huntIssues[rowIndex]
+        when (colIndex) {
+            12 -> huntIssue.comments = value.toString()
+            else -> return
+        }
+        refreshHunt()
     }
 
     fun addHuntDetails(huntIssue: HuntIssue) {
