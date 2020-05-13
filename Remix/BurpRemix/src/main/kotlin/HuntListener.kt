@@ -14,12 +14,11 @@ class HuntListener(private val callbacks: IBurpExtenderCallbacks, private val hu
                 val request = helpers.analyzeRequest(messageInfo) ?: return
                 val parameters = request.parameters
                 val huntIssues =
-                    parameters.asSequence().map { it.name }.map { checkParameterName(it.toLowerCase()) }.filterNotNull()
-                        .map {
+                        parameters.asSequence().flatMap { checkParameterName(it.name.toLowerCase()) }.filterNotNull().map {
                             makeHuntRequest(
-                                requestResponse = messageInfo,
-                                parameter = it.first,
-                                type = it.second
+                                    requestResponse = messageInfo,
+                                    parameter = it.first,
+                                    type = it.second
                             )
                         }.toList()
 
@@ -27,38 +26,15 @@ class HuntListener(private val callbacks: IBurpExtenderCallbacks, private val hu
             }
 
         }
+
     }
 
-    private fun checkParameterName(name: String): Pair<String, String>? {
-        val huntData = HuntData()
-        return when {
-            huntData.insecureDirectObjectReference.params.contains(name) -> Pair(
-                name,
-                huntData.insecureDirectObjectReference.name
-            )
-            huntData.osCommandInjection.params.contains(name) -> Pair(name, huntData.osCommandInjection.name)
-            huntData.fileInclusionPathTraversal.params.contains(name) -> Pair(
-                name,
-                huntData.fileInclusionPathTraversal.name
-            )
-            huntData.sqlInjection.params.contains(name) -> Pair(name, huntData.sqlInjection.name)
-            huntData.serverSideRequestForgery.params.contains(name) -> Pair(
-                name,
-                huntData.serverSideRequestForgery.name
-            )
-            huntData.serverSideTemplateInjection.params.contains(name) -> Pair(
-                name,
-                huntData.serverSideTemplateInjection.name
-            )
-            huntData.debugLogicParameters.params.contains(name) -> Pair(name, huntData.debugLogicParameters.name)
-            else -> null
-        }
-    }
+    private fun checkParameterName(param: String) = HuntData().huntParams.asSequence().filter { it.params.contains(param) }.map { Pair(param, it.name) }
 
     private fun makeHuntRequest(
-        requestResponse: IHttpRequestResponse,
-        parameter: String,
-        type: String
+            requestResponse: IHttpRequestResponse,
+            parameter: String,
+            type: String
     ): HuntIssue {
         val now = LocalDateTime.now()
         val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
@@ -72,20 +48,20 @@ class HuntListener(private val callbacks: IBurpExtenderCallbacks, private val hu
 
 
         return HuntIssue(
-            requestResponse = callbacks.saveBuffersToTempFiles(requestResponse),
-            dateTime = dateTime,
-            host = requestInfo.url.host,
-            url = requestInfo.url,
-            type = type,
-            parameter = parameter,
-            method = requestInfo?.method ?: "",
-            statusCode = response?.statusCode?.toString() ?: "",
-            title = getTitle(requestResponse.response),
-            length = requestResponse.response?.size?.toString() ?: "",
-            mimeType = response?.inferredMimeType ?: "",
-            protocol = requestInfo?.url?.protocol ?: "",
-            file = requestInfo?.url?.file ?: "",
-            comments = requestResponse.comment ?: ""
+                requestResponse = callbacks.saveBuffersToTempFiles(requestResponse),
+                dateTime = dateTime,
+                host = requestInfo.url.host,
+                url = requestInfo.url,
+                type = type,
+                parameter = parameter,
+                method = requestInfo?.method ?: "",
+                statusCode = response?.statusCode?.toString() ?: "",
+                title = getTitle(requestResponse.response),
+                length = requestResponse.response?.size?.toString() ?: "",
+                mimeType = response?.inferredMimeType ?: "",
+                protocol = requestInfo?.url?.protocol ?: "",
+                file = requestInfo?.url?.file ?: "",
+                comments = requestResponse.comment ?: ""
         )
     }
 
@@ -99,20 +75,20 @@ class HuntListener(private val callbacks: IBurpExtenderCallbacks, private val hu
 }
 
 data class HuntIssue(
-    val requestResponse: IHttpRequestResponsePersisted,
-    val dateTime: String,
-    val host: String,
-    val url: URL,
-    var type: String,
-    val parameter: String,
-    val method: String,
-    val statusCode: String,
-    val title: String,
-    val length: String,
-    val mimeType: String,
-    val protocol: String,
-    val file: String,
-    var comments: String
+        val requestResponse: IHttpRequestResponsePersisted,
+        val dateTime: String,
+        val host: String,
+        val url: URL,
+        var type: String,
+        val parameter: String,
+        val method: String,
+        val statusCode: String,
+        val title: String,
+        val length: String,
+        val mimeType: String,
+        val protocol: String,
+        val file: String,
+        var comments: String
 )
 
 
