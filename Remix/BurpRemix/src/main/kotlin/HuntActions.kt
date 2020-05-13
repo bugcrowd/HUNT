@@ -10,9 +10,9 @@ import javax.swing.JOptionPane
 import javax.swing.JPopupMenu
 
 class HuntActions(
-    private val panel: HuntPanel,
-    private val huntIssues: MutableList<HuntIssue>,
-    private val callbacks: IBurpExtenderCallbacks
+        private val panel: HuntPanel,
+        private val huntIssues: MutableList<HuntIssue>,
+        private val callbacks: IBurpExtenderCallbacks
 ) : ActionListener {
     private val table = panel.table
     private val actionsMenu = JPopupMenu()
@@ -76,17 +76,17 @@ class HuntActions(
                                 title = selectedHuntIssue.type
                             }
                             callbacks.sendToRepeater(
-                                url.host,
-                                url.port,
-                                https,
-                                selectedHuntIssue.requestResponse.request,
-                                title
+                                    url.host,
+                                    url.port,
+                                    https,
+                                    selectedHuntIssue.requestResponse.request,
+                                    title
                             )
                         }
                         sendToIntruder -> {
                             callbacks.sendToIntruder(
-                                url.host, url.port, https,
-                                selectedHuntIssue.requestResponse.request, null
+                                    url.host, url.port, https,
+                                    selectedHuntIssue.requestResponse.request, null
                             )
                         }
                         comments -> {
@@ -95,8 +95,8 @@ class HuntActions(
                             panel.model.refreshHunt()
                         }
                         details -> {
-                            val details = HuntData().namesDetails.get(selectedHuntIssue.type)
-                                ?.replace("%PARAM%", "'${selectedHuntIssue.parameter}'")
+                            val details = HuntData().namesDetails[selectedHuntIssue.type]
+                                    ?.replace("%PARAM%", "'${selectedHuntIssue.parameter}'")
                             JOptionPane.showMessageDialog(null, details)
                         }
                     }
