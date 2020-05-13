@@ -13,7 +13,7 @@ class HuntTab(callbacks: IBurpExtenderCallbacks) : ITab {
     override fun getUiComponent() = huntTable.panel
 }
 
-class HuntPanel(private val callbacks: IBurpExtenderCallbacks) {
+class HuntPanel(callbacks: IBurpExtenderCallbacks) {
     private val huntOptions = HuntOptions(this, callbacks)
     val model = HuntModel(huntOptions)
     val table = JTable(model)
@@ -59,11 +59,11 @@ class HuntPanel(private val callbacks: IBurpExtenderCallbacks) {
 
         val huntTable = JScrollPane(table)
         val reqResSplit =
-            JSplitPane(JSplitPane.HORIZONTAL_SPLIT, requestViewer?.component, responseViewer?.component)
+                JSplitPane(JSplitPane.HORIZONTAL_SPLIT, requestViewer?.component, responseViewer?.component)
         reqResSplit.resizeWeight = 0.5
 
         val huntOptSplit =
-            JSplitPane(JSplitPane.VERTICAL_SPLIT, huntOptions.panel, huntTable)
+                JSplitPane(JSplitPane.VERTICAL_SPLIT, huntOptions.panel, huntTable)
 
         panel.topComponent = huntOptSplit
         panel.bottomComponent = reqResSplit
@@ -99,21 +99,21 @@ class MessageEditor(callbacks: IBurpExtenderCallbacks) : IMessageEditorControlle
 
 class HuntModel(private val huntOptions: HuntOptions) : AbstractTableModel() {
     private val columns =
-        listOf(
-            "ID",
-            "Added",
-            "Host",
-            "URL",
-            "Type",
-            "Param",
-            "Title",
-            "Method",
-            "Status",
-            "Length",
-            "MIME",
-            "Protocol",
-            "Comments"
-        )
+            listOf(
+                    "ID",
+                    "Added",
+                    "Host",
+                    "URL",
+                    "Type",
+                    "Param",
+                    "Title",
+                    "Method",
+                    "Status",
+                    "Length",
+                    "MIME",
+                    "Protocol",
+                    "Comments"
+            )
     var huntIssues: MutableList<HuntIssue> = ArrayList()
     var types: List<String> = listOf()
     var displayedHuntIssues: MutableList<HuntIssue> = ArrayList()
