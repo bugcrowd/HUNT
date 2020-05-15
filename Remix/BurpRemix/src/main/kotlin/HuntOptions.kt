@@ -47,10 +47,9 @@ class HuntOptions(
 
     private fun filterHuntIssues() {
         val selectedType = typeComboBox.selectedItem ?: "All"
-        callbacks.stdout.write(selectedType.toString().toByteArray())
         SwingUtilities.invokeLater {
             val searchText = filterBar.text.toLowerCase()
-            var filteredHuntIssues = this.huntPanel.huntIssues
+            var filteredHuntIssues = this.huntPanel.model.huntIssues
             filteredHuntIssues = filterTypes(filteredHuntIssues)
             if (searchText.isNotEmpty()) {
                 filteredHuntIssues = filteredHuntIssues
