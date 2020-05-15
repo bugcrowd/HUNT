@@ -3,6 +3,7 @@ package burp
 import java.awt.FlowLayout
 import javax.swing.*
 
+
 class HuntOptions(
     private val huntPanel: HuntPanel,
     private val callbacks: IBurpExtenderCallbacks

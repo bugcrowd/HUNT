@@ -1,6 +1,9 @@
 package burp
 
-import javax.swing.*
+import javax.swing.JScrollPane
+import javax.swing.JSplitPane
+import javax.swing.JTable
+import javax.swing.ListSelectionModel
 import javax.swing.table.AbstractTableModel
 import javax.swing.table.TableRowSorter
 
@@ -59,11 +62,11 @@ class HuntPanel(callbacks: IBurpExtenderCallbacks) {
 
         val huntTable = JScrollPane(table)
         val reqResSplit =
-                JSplitPane(JSplitPane.HORIZONTAL_SPLIT, requestViewer?.component, responseViewer?.component)
+            JSplitPane(JSplitPane.HORIZONTAL_SPLIT, requestViewer?.component, responseViewer?.component)
         reqResSplit.resizeWeight = 0.5
 
         val huntOptSplit =
-                JSplitPane(JSplitPane.VERTICAL_SPLIT, huntOptions.panel, huntTable)
+            JSplitPane(JSplitPane.VERTICAL_SPLIT, huntOptions.panel, huntTable)
 
         panel.topComponent = huntOptSplit
         panel.bottomComponent = reqResSplit
@@ -94,21 +97,21 @@ class MessageEditor(callbacks: IBurpExtenderCallbacks) : IMessageEditorControlle
 
 class HuntModel(private val huntOptions: HuntOptions) : AbstractTableModel() {
     private val columns =
-            listOf(
-                    "ID",
-                    "Added",
-                    "Host",
-                    "URL",
-                    "Type",
-                    "Param",
-                    "Title",
-                    "Method",
-                    "Status",
-                    "Length",
-                    "MIME",
-                    "Protocol",
-                    "Comments"
-            )
+        listOf(
+            "ID",
+            "Added",
+            "Host",
+            "URL",
+            "Type",
+            "Param",
+            "Title",
+            "Method",
+            "Status",
+            "Length",
+            "MIME",
+            "Protocol",
+            "Comments"
+        )
     var huntIssues: MutableList<HuntIssue> = ArrayList()
     var types: List<String> = listOf()
     var displayedHuntIssues: MutableList<HuntIssue> = ArrayList()
@@ -142,22 +145,23 @@ class HuntModel(private val huntOptions: HuntOptions) : AbstractTableModel() {
     }
 
     override fun getValueAt(rowIndex: Int, columnIndex: Int): Any {
-        val huntIssues = displayedHuntIssues[rowIndex]
+
+        val huntIssue = displayedHuntIssues[rowIndex]
 
         return when (columnIndex) {
             0 -> rowIndex
-            1 -> huntIssues.dateTime
-            2 -> huntIssues.host
-            3 -> huntIssues.url.toString()
-            4 -> huntIssues.type
-            5 -> huntIssues.parameter
-            6 -> huntIssues.title
-            7 -> huntIssues.method
-            8 -> huntIssues.statusCode
-            9 -> huntIssues.length
-            10 -> huntIssues.mimeType
-            11 -> huntIssues.protocol
-            12 -> huntIssues.comments
+            1 -> huntIssue.dateTime
+            2 -> huntIssue.host
+            3 -> huntIssue.url.toString()
+            4 -> huntIssue.type
+            5 -> huntIssue.parameter
+            6 -> huntIssue.title
+            7 -> huntIssue.method
+            8 -> huntIssue.statusCode
+            9 -> huntIssue.length
+            10 -> huntIssue.mimeType
+            11 -> huntIssue.protocol
+            12 -> huntIssue.comments
             else -> ""
         }
     }
