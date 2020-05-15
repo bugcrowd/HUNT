@@ -23,12 +23,11 @@ class HuntPanel(callbacks: IBurpExtenderCallbacks) {
     val responseViewer: IMessageEditor? = messageEditor.responseViewer
 
     val panel = JSplitPane(JSplitPane.VERTICAL_SPLIT)
-    val huntIssues = model.huntIssues
-
+    private val rowSorter = TableRowSorter(model)
 
     init {
-        HuntActions(this, huntIssues, callbacks)
-        table.autoResizeMode = JTable.AUTO_RESIZE_OFF
+        HuntActions(this, callbacks)
+        table.autoResizeMode = JTable.AUTO_RESIZE_ALL_COLUMNS
         table.columnModel.getColumn(0).preferredWidth = 30 // ID
         table.columnModel.getColumn(1).preferredWidth = 145 // date
         table.columnModel.getColumn(2).preferredWidth = 125 // host
@@ -43,8 +42,9 @@ class HuntPanel(callbacks: IBurpExtenderCallbacks) {
         table.columnModel.getColumn(11).preferredWidth = 50 // protocol
         table.columnModel.getColumn(12).preferredWidth = 120 // comments
         table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION)
-        table.rowSorter = TableRowSorter(model)
+        table.rowSorter = rowSorter
         table.autoscrolls = true
+        table.autoCreateRowSorter = true
 
         table.selectionModel.addListSelectionListener {
             if (table.selectedRow != -1) {
