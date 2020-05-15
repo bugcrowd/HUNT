@@ -9,37 +9,47 @@ class HuntOptions(
 ) {
     val panel = JSplitPane(JSplitPane.HORIZONTAL_SPLIT)
     private val loadPanel = JPanel(FlowLayout(FlowLayout.RIGHT))
-    private val searchBar = JTextField("", 20)
-    private val searchPanel = JPanel(FlowLayout(FlowLayout.LEFT))
+    private val filterBar = JTextField("", 20)
+    private val filterPanel = JPanel(FlowLayout(FlowLayout.LEFT))
     private val typeComboBox = JComboBox(arrayOf<String>())
 
     init {
         val clearButton = JButton("Clear Hunt Issues")
-        val searchLabel = JLabel("Search Hunt Issues:")
-        val searchButton = JButton("Search")
+        val filterLabel = JLabel("Filter Hunt Issues:")
+        val filterButton = JButton("Filter")
         val resetButton = JButton("Reset")
-        typeComboBox.selectedIndex = -1
+        val typeLabel = JLabel("Types:")
         typeComboBox.prototypeDisplayValue = "File Inclusion and Path Traversal"
         clearButton.addActionListener { clearHuntIssues() }
-        searchBar.addActionListener { searchHuntIssues() }
-        searchButton.addActionListener { searchHuntIssues() }
-        resetButton.addActionListener { resetSearch() }
-        searchPanel.add(searchLabel)
-        searchPanel.add(searchBar)
-        searchPanel.add(typeComboBox)
-        searchPanel.add(searchButton)
-        searchPanel.add(resetButton)
+        filterBar.addActionListener { filterHuntIssues() }
+        filterButton.addActionListener { filterHuntIssues() }
+        resetButton.addActionListener { resetFilter() }
+        filterPanel.add(filterLabel)
+        filterPanel.add(filterBar)
+        filterPanel.add(typeLabel)
+        filterPanel.add(typeComboBox)
+        filterPanel.add(filterButton)
+        filterPanel.add(resetButton)
         loadPanel.add(clearButton)
-        panel.leftComponent = searchPanel
+        panel.leftComponent = filterPanel
         panel.rightComponent = loadPanel
         panel.dividerSize = 0
     }
 
+    fun filtered(): Boolean {
+        return if (typeComboBox.selectedItem != "All" || filterBar.text.isNotEmpty()) {
+            filterHuntIssues()
+            true
+        } else {
+            false
+        }
+    }
 
-    private fun searchHuntIssues() {
-        val selectedType = typeComboBox.selectedItem
+    private fun filterHuntIssues() {
+        val selectedType = typeComboBox.selectedItem ?: "All"
+        callbacks.stdout.write(selectedType.toString().toByteArray())
         SwingUtilities.invokeLater {
-            val searchText = searchBar.text.toLowerCase()
+            val searchText = filterBar.text.toLowerCase()
             var filteredHuntIssues = this.huntPanel.huntIssues
             filteredHuntIssues = filterTypes(filteredHuntIssues)
             if (searchText.isNotEmpty()) {
@@ -58,15 +68,15 @@ class HuntOptions(
                     }.toMutableList()
             }
             huntPanel.model.refreshHunt(filteredHuntIssues)
-            if (selectedType != "Select type") {
+            if (selectedType != "All") {
                 typeComboBox.selectedItem = selectedType
             }
-            rowSelection()
         }
     }
 
     private fun filterTypes(huntIssues: MutableList<HuntIssue>): MutableList<HuntIssue> {
-        return if (typeComboBox.selectedItem != "Select type" || typeComboBox.selectedItem == null) {
+        val selectedType = typeComboBox.selectedItem ?: "All"
+        return if (selectedType != "All") {
             val type = typeComboBox.selectedItem
             huntIssues
                 .filter {
@@ -77,11 +87,12 @@ class HuntOptions(
         }
     }
 
-    private fun resetSearch() {
-        searchBar.text = ""
+    private fun resetFilter() {
+        filterBar.text = ""
         huntPanel.model.refreshHunt()
-        rowSelection()
         updateTypes()
+        huntPanel.requestViewer?.setMessage(ByteArray(0), true)
+        huntPanel.responseViewer?.setMessage(ByteArray(0), false)
     }
 
     private fun clearHuntIssues() {
@@ -90,19 +101,9 @@ class HuntOptions(
         huntPanel.responseViewer?.setMessage(ByteArray(0), false)
     }
 
-    private fun rowSelection() {
-        val rowCount = huntPanel.table.rowCount
-        if (rowCount != -1) {
-            huntPanel.table.setRowSelectionInterval(rowCount - 1, rowCount - 1)
-        } else {
-            huntPanel.requestViewer?.setMessage(ByteArray(0), true)
-            huntPanel.responseViewer?.setMessage(ByteArray(0), false)
-        }
-    }
-
     fun updateTypes() {
         typeComboBox.removeAllItems()
-        typeComboBox.addItem("Select type")
+        typeComboBox.addItem("All")
         for (type in huntPanel.model.types.sorted()) {
             typeComboBox.addItem(type)
         }
