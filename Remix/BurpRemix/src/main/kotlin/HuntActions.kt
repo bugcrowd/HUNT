@@ -10,9 +10,8 @@ import javax.swing.JOptionPane
 import javax.swing.JPopupMenu
 
 class HuntActions(
-        private val panel: HuntPanel,
-        private val huntIssues: MutableList<HuntIssue>,
-        private val callbacks: IBurpExtenderCallbacks
+    private val panel: HuntPanel,
+    private val callbacks: IBurpExtenderCallbacks
 ) : ActionListener {
     private val table = panel.table
     private val actionsMenu = JPopupMenu()
@@ -109,7 +108,7 @@ class HuntActions(
     private fun getSelectedHuntIssues(): MutableList<HuntIssue> {
         val selectedHuntIssue: MutableList<HuntIssue> = ArrayList()
         for (index in table.selectedRows) {
-            selectedHuntIssue.add(huntIssues[index])
+            selectedHuntIssue.add(panel.model.displayedHuntIssues[index])
         }
         return selectedHuntIssue
     }
