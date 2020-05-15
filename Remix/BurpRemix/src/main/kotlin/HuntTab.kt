@@ -73,15 +73,10 @@ class HuntPanel(callbacks: IBurpExtenderCallbacks) {
 
     fun addHuntIssue(huntRequests: List<HuntIssue>) {
         for (huntRequest in huntRequests) {
-            model.addHuntDetails(huntRequest)
-
-            SwingUtilities.invokeLater {
-                table.scrollRectToVisible(table.getCellRect(table.rowCount - 1, 0, true))
-                table.setRowSelectionInterval(table.rowCount - 1, table.rowCount - 1)
-            }
+            model.huntIssues.add(huntRequest)
+            model.filterOrRefresh()
         }
     }
-
 }
 
 class MessageEditor(callbacks: IBurpExtenderCallbacks) : IMessageEditorController {
@@ -181,24 +176,23 @@ class HuntModel(private val huntOptions: HuntOptions) : AbstractTableModel() {
             12 -> huntIssue.comments = value.toString()
             else -> return
         }
-        refreshHunt()
-    }
-
-    fun addHuntDetails(huntIssue: HuntIssue) {
-        huntIssues.add(huntIssue)
-        displayedHuntIssues = huntIssues
-        fireTableRowsInserted(displayedHuntIssues.lastIndex, displayedHuntIssues.lastIndex)
-        refreshHunt()
+        filterOrRefresh()
     }
 
     fun removeHuntIssues(selectedHuntIssues: MutableList<HuntIssue>) {
         huntIssues.removeAll(selectedHuntIssues)
-        refreshHunt()
+        filterOrRefresh()
     }
 
     fun clearHunt() {
         huntIssues.clear()
-        refreshHunt()
+        filterOrRefresh()
+    }
+
+    fun filterOrRefresh() {
+        if (!huntOptions.filtered()) {
+            refreshHunt()
+        }
     }
 
     fun refreshHunt(updatedHuntIssues: MutableList<HuntIssue> = huntIssues) {
