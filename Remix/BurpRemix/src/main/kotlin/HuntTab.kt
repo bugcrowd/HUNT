@@ -26,7 +26,7 @@ class HuntPanel(callbacks: IBurpExtenderCallbacks) {
     val responseViewer: IMessageEditor? = messageEditor.responseViewer
 
     val panel = JSplitPane(JSplitPane.VERTICAL_SPLIT)
-    private val rowSorter = TableRowSorter(model)
+    val rowSorter = TableRowSorter(model)
 
     init {
         HuntActions(this, callbacks)
