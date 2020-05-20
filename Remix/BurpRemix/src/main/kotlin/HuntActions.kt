@@ -108,7 +108,7 @@ class HuntActions(
     private fun getSelectedHuntIssues(): MutableList<HuntIssue> {
         val selectedHuntIssue: MutableList<HuntIssue> = ArrayList()
         for (index in table.selectedRows) {
-            val row = panel.rowSorter.convertRowIndexToModel(index)
+            val row = table.convertRowIndexToModel(index)
             selectedHuntIssue.add(panel.model.displayedHuntIssues[row])
         }
         return selectedHuntIssue
