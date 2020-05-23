@@ -6,8 +6,9 @@ A complete rewrite of the HUNT scanner.
 The [Burp Suite](https://portswigger.net/burp) extension works in both the Community (Free) and Professional versions. 
 
 ## Features:
-* Passively scan for common parameters vulnerable to vulnerabilities 
+* Passively scan for potentially vulnerable parameters 
 
+#### Screenshot
 ![HUNT Remix](/Remix/images/huntremix.png)
 
 ## ToDo
