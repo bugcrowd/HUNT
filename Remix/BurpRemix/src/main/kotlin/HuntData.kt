@@ -4,6 +4,7 @@ class HuntData {
     private val insecureDirectObjectReference =
             HuntDetail(
                     name = "Insecure Direct Object Reference",
+                    shortName = "IDOR",
                     params = mutableSetOf(
                             "account",
                             "doc",
@@ -22,7 +23,7 @@ class HuntData {
                     checkLocation = HuntLocation.REQUEST,
                     enabled = true,
                     detail = """
-                    HUNT located the %PARAM% parameter inside of your application traffic.
+                    HUNT located the %PARAM% parameter on %URL% inside of your application traffic.
                     The %PARAM% parameter is most often susceptible to Insecure Direct Object Reference Vulnerabilities.
                     Direct object reference vulnerabilities occur when there are insufficient authorization checks performed against object identifiers used in requests. 
 |                   This could occur when database keys, filenames, or other identifiers are used to directly access resources within an application. 
@@ -40,6 +41,7 @@ class HuntData {
 
     private val osCommandInjection = HuntDetail(
             name = "OS Command Injection",
+            shortName = "OSCI",
             params = mutableSetOf(
                     "cli",
                     "cmd",
@@ -54,7 +56,7 @@ class HuntData {
             checkLocation = HuntLocation.REQUEST,
             enabled = true,
             detail = """
-|               HUNT located the %PARAM% parameter inside of your application traffic.
+                HUNT located the %PARAM% parameter on %URL% inside of your application traffic.
 |               The %PARAM% parameter is most often susceptible to OS Command Injection. 
 |               HUNT recommends further manual analysis of the parameter in question.
 |               For OS Command Injection HUNT recommends the following resources to aid in manual testing:
@@ -70,6 +72,7 @@ class HuntData {
 
     private val fileInclusionPathTraversal = HuntDetail(
             name = "File Inclusion and Path Traversal",
+            shortName = "FI/PT",
             params = mutableSetOf(
                     "doc",
                     "document",
@@ -85,7 +88,7 @@ class HuntData {
             ), checkLocation = HuntLocation.REQUEST,
             enabled = true,
             detail = """
-            HUNT located the %PARAM% parameter inside of your application traffic.
+            HUNT located the %PARAM% parameter on %URL% inside of your application traffic.
             The %PARAM% parameter is most often susceptible to File Inclusion or Path Traversal.
             HUNT recommends further manual analysis of the parameter in question. 
             Also note that several parameters from this section and SSRF might overlap or need testing for both vulnerability categories.
@@ -100,6 +103,7 @@ class HuntData {
 
     private val sqlInjection = HuntDetail(
             name = "SQL Injection",
+            shortName = "SQLI",
             params = mutableSetOf(
                     "column",
                     "delete",
@@ -133,7 +137,7 @@ class HuntData {
             ), checkLocation = HuntLocation.REQUEST,
             enabled = true,
             detail = """
-            HUNT located the %PARAM%  parameter inside of your application traffic. 
+            HUNT located the %PARAM% parameter on %URL% inside of your application traffic.
             The %PARAM%  parameter is most often susceptible to SQL Injection. 
             HUNT recommends further manual analysis of the parameter in question.
             For SQL Injection HUNT references The Bug Hunters Methodology SQL Injection references table:
@@ -155,6 +159,7 @@ class HuntData {
 
     private val serverSideRequestForgery = HuntDetail(
             name = "Server Side Request Forgery",
+            shortName = "SSRF",
             params = mutableSetOf(
                     "callback",
                     "continue",
@@ -187,7 +192,7 @@ class HuntData {
             ), checkLocation = HuntLocation.REQUEST,
             enabled = true,
             detail = """
-            HUNT located the %PARAM% parameter inside of your application traffic.
+            HUNT located the %PARAM% parameter on %URL% inside of your application traffic.
             The %PARAM% parameter is most often susceptible to Server Side Request Forgery (and sometimes URL redirects).
             HUNT recommends further manual analysis of the parameter in question.
             For Server Side Request Forgery HUNT recommends the following resources to aid in manual testing:
@@ -203,6 +208,7 @@ class HuntData {
 
     private val serverSideTemplateInjection = HuntDetail(
             name = "Server Side Template Injection",
+            shortName = "SSTI",
             params = mutableSetOf(
                     "activity",
                     "content",
@@ -215,7 +221,7 @@ class HuntData {
             ), checkLocation = HuntLocation.REQUEST,
             enabled = true,
             detail = """
-            HUNT located the %PARAM% parameter inside of your application traffic.
+            HUNT located the %PARAM% parameter on %URL% inside of your application traffic.
             The %PARAM% parameter is most often susceptible to Server Side Template Injection.
             HUNT recommends further manual analysis of the parameter in question.
         """.trimIndent(),
@@ -224,6 +230,7 @@ class HuntData {
 
     private val debugLogicParameters = HuntDetail(
             name = "Debug and Logic Parameters",
+            shortName = "DLP",
             params = mutableSetOf(
                     "access",
                     "adm",
@@ -254,7 +261,7 @@ class HuntData {
             ), checkLocation = HuntLocation.REQUEST,
             enabled = true,
             detail = """
-            HUNT located the %PARAM% parameter inside of your application traffic.
+            HUNT located the %PARAM% parameter on %URL% inside of your application traffic.
             The parameter is most often associated to debug,  access, or critical functionality in applications.
             HUNT recommends further manual analysis of the parameter in question.
         """.trimIndent(),
@@ -273,11 +280,16 @@ class HuntData {
             )
 
     val huntParams = issues.map { HuntParams(it.name, it.params) }
-    val namesDetails = issues.map { it.name to it.detail }.toMap()
+    val namesDetails = issues.map { it.shortName to it.detail }.toMap()
+    val nameToShortName = issues.map { it.name to it.shortName }.toMap()
+    val shortToName = issues.map { it.shortName to it.name }.toMap()
+
+
 }
 
 data class HuntDetail(
         val name: String,
+        val shortName: String?,
         val params: Set<String>,
         val checkLocation: HuntLocation,
         var enabled: Boolean = true,
