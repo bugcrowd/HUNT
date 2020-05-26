@@ -10,8 +10,8 @@ import javax.swing.JOptionPane
 import javax.swing.JPopupMenu
 
 class HuntActions(
-    private val panel: HuntPanel,
-    private val callbacks: IBurpExtenderCallbacks
+        private val panel: HuntPanel,
+        private val callbacks: IBurpExtenderCallbacks
 ) : ActionListener {
     private val table = panel.table
     private val actionsMenu = JPopupMenu()
@@ -68,24 +68,24 @@ class HuntActions(
                     val url = selectedHuntIssue.url
                     when (source) {
                         sendToRepeater -> {
-                            var title = selectedHuntIssue.type
+                            var title = selectedHuntIssue.types.first()
                             if (title.length > 10) {
                                 title = title.substring(0, 9) + "+"
                             } else if (title.isBlank()) {
-                                title = selectedHuntIssue.type
+                                title = selectedHuntIssue.types.first()
                             }
                             callbacks.sendToRepeater(
-                                url.host,
-                                url.port,
-                                https,
-                                selectedHuntIssue.requestResponse.request,
-                                title
+                                    url.host,
+                                    url.port,
+                                    https,
+                                    selectedHuntIssue.requestResponse.request,
+                                    title
                             )
                         }
                         sendToIntruder -> {
                             callbacks.sendToIntruder(
-                                url.host, url.port, https,
-                                selectedHuntIssue.requestResponse.request, null
+                                    url.host, url.port, https,
+                                    selectedHuntIssue.requestResponse.request, null
                             )
                         }
                         comments -> {

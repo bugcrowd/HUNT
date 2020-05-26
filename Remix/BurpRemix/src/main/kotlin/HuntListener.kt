@@ -13,11 +13,12 @@ class HuntListener(private val callbacks: IBurpExtenderCallbacks, private val hu
             if (!messageIsRequest && (callbacks.isInScope(helpers.analyzeRequest(messageInfo).url)) && (toolFlag == IBurpExtenderCallbacks.TOOL_PROXY || toolFlag == IBurpExtenderCallbacks.TOOL_SPIDER)) {
                 val request = helpers.analyzeRequest(messageInfo) ?: return
                 val parameters = request.parameters
+                val types = mutableSetOf<String>()
                 val huntIssues =
-                        parameters.asSequence().flatMap { checkParameterName(it.name.toLowerCase()) }.filterNotNull().map {
+                        parameters.asSequence().map { param -> Pair(param, checkParameterName(param.name.toLowerCase())) }.filterNotNull().map {
                             makeHuntRequest(
                                     requestResponse = messageInfo,
-                                    parameter = it.first,
+                                    parameter = it.first.name,
                                     type = it.second
                             )
                         }.toList()
@@ -26,19 +27,19 @@ class HuntListener(private val callbacks: IBurpExtenderCallbacks, private val hu
             }
 
         }
-
     }
 
-    private fun checkParameterName(param: String) = HuntData().huntParams.asSequence().filter { it.params.contains(param) }.map { Pair(param, it.name) }
+    private fun checkParameterName(param: String) = HuntData().huntParams.asSequence().filter { it.params.contains(param) }.map { it.name }.toSet()
 
     private fun makeHuntRequest(
             requestResponse: IHttpRequestResponse,
             parameter: String,
-            type: String
+            type: Set<String>
     ): HuntIssue {
         val now = LocalDateTime.now()
         val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
         val dateTime = now.format(dateFormatter) ?: ""
+        val typeNames = type.map { HuntData().nameToShortName[it] ?: it }.toSet()
         val requestInfo = callbacks.helpers.analyzeRequest(requestResponse)
         val response = if (requestResponse.response != null) {
             callbacks.helpers.analyzeResponse(requestResponse.response)
@@ -52,7 +53,7 @@ class HuntListener(private val callbacks: IBurpExtenderCallbacks, private val hu
                 dateTime = dateTime,
                 host = requestInfo.url.host,
                 url = requestInfo.url,
-                type = type,
+                types = type,
                 parameter = parameter,
                 method = requestInfo?.method ?: "",
                 statusCode = response?.statusCode?.toString() ?: "",
@@ -79,7 +80,7 @@ data class HuntIssue(
         val dateTime: String,
         val host: String,
         val url: URL,
-        var type: String,
+        val types: Set<String>,
         val parameter: String,
         val method: String,
         val statusCode: String,

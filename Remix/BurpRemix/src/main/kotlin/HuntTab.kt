@@ -26,7 +26,7 @@ class HuntPanel(callbacks: IBurpExtenderCallbacks) {
     val responseViewer: IMessageEditor? = messageEditor.responseViewer
 
     val panel = JSplitPane(JSplitPane.VERTICAL_SPLIT)
-    val rowSorter = TableRowSorter(model)
+    private val rowSorter = TableRowSorter(model)
 
     init {
         HuntActions(this, callbacks)
@@ -62,11 +62,11 @@ class HuntPanel(callbacks: IBurpExtenderCallbacks) {
 
         val huntTable = JScrollPane(table)
         val reqResSplit =
-            JSplitPane(JSplitPane.HORIZONTAL_SPLIT, requestViewer?.component, responseViewer?.component)
+                JSplitPane(JSplitPane.HORIZONTAL_SPLIT, requestViewer?.component, responseViewer?.component)
         reqResSplit.resizeWeight = 0.5
 
         val huntOptSplit =
-            JSplitPane(JSplitPane.VERTICAL_SPLIT, huntOptions.panel, huntTable)
+                JSplitPane(JSplitPane.VERTICAL_SPLIT, huntOptions.panel, huntTable)
 
         panel.topComponent = huntOptSplit
         panel.bottomComponent = reqResSplit
@@ -97,21 +97,21 @@ class MessageEditor(callbacks: IBurpExtenderCallbacks) : IMessageEditorControlle
 
 class HuntModel(private val huntOptions: HuntOptions) : AbstractTableModel() {
     private val columns =
-        listOf(
-            "ID",
-            "Added",
-            "Host",
-            "URL",
-            "Type",
-            "Param",
-            "Title",
-            "Method",
-            "Status",
-            "Length",
-            "MIME",
-            "Protocol",
-            "Comments"
-        )
+            listOf(
+                    "ID",
+                    "Added",
+                    "Host",
+                    "URL",
+                    "Type",
+                    "Param",
+                    "Title",
+                    "Method",
+                    "Status",
+                    "Length",
+                    "MIME",
+                    "Protocol",
+                    "Comments"
+            )
     var huntIssues: MutableList<HuntIssue> = ArrayList()
     var types: List<String> = listOf()
     var displayedHuntIssues: MutableList<HuntIssue> = ArrayList()
@@ -153,7 +153,7 @@ class HuntModel(private val huntOptions: HuntOptions) : AbstractTableModel() {
             1 -> huntIssue.dateTime
             2 -> huntIssue.host
             3 -> huntIssue.url.toString()
-            4 -> huntIssue.type
+            4 -> huntIssue.types
             5 -> huntIssue.parameter
             6 -> huntIssue.title
             7 -> huntIssue.method
@@ -206,11 +206,11 @@ class HuntModel(private val huntOptions: HuntOptions) : AbstractTableModel() {
     }
 
     private fun updateTypes() {
-        val newTypes = displayedHuntIssues.map { it.type }.toSet().toList()
+        val shortToName = HuntData().shortToName
+        val newTypes = displayedHuntIssues.flatMap { it.types }.mapNotNull { shortToName[it] }.toSet().toList()
         types = newTypes
         huntOptions.updateTypes()
     }
-
 }
 
 
