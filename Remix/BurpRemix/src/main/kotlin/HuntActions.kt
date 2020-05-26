@@ -94,9 +94,11 @@ class HuntActions(
                             panel.model.refreshHunt()
                         }
                         details -> {
-                            val details = HuntData().namesDetails[selectedHuntIssue.type]
-                                ?.replace("%PARAM%", "'${selectedHuntIssue.parameter}'")
-                            JOptionPane.showMessageDialog(null, details)
+                            selectedHuntIssue.types.forEach { type ->
+                                val details = HuntData().namesDetails[type]
+                                        ?.replace("%PARAM%", "'${selectedHuntIssue.parameter}'")?.replace("%URL%", "'${selectedHuntIssue.url}'")
+                                JOptionPane.showMessageDialog(null, details)
+                            }
                         }
                     }
                 }
