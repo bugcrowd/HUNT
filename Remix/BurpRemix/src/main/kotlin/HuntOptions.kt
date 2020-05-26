@@ -5,8 +5,8 @@ import javax.swing.*
 
 
 class HuntOptions(
-    private val huntPanel: HuntPanel,
-    private val callbacks: IBurpExtenderCallbacks
+        private val huntPanel: HuntPanel,
+        private val callbacks: IBurpExtenderCallbacks
 ) {
     val panel = JSplitPane(JSplitPane.HORIZONTAL_SPLIT)
     private val loadPanel = JPanel(FlowLayout(FlowLayout.RIGHT))
@@ -54,18 +54,18 @@ class HuntOptions(
             filteredHuntIssues = filterTypes(filteredHuntIssues)
             if (searchText.isNotEmpty()) {
                 filteredHuntIssues = filteredHuntIssues
-                    .filter {
-                        it.comments.toLowerCase().contains(searchText) ||
-                                it.url.toString().toLowerCase().contains(searchText) ||
-                                callbacks.helpers.bytesToString(it.requestResponse.request).toLowerCase().contains(
-                                    searchText
-                                ) ||
-                                callbacks.helpers.bytesToString(
-                                    it.requestResponse.response ?: ByteArray(0)
-                                ).toLowerCase().contains(
-                                    searchText
-                                )
-                    }.toMutableList()
+                        .filter {
+                            it.comments.toLowerCase().contains(searchText) ||
+                                    it.url.toString().toLowerCase().contains(searchText) ||
+                                    callbacks.helpers.bytesToString(it.requestResponse.request).toLowerCase().contains(
+                                            searchText
+                                    ) ||
+                                    callbacks.helpers.bytesToString(
+                                            it.requestResponse.response ?: ByteArray(0)
+                                    ).toLowerCase().contains(
+                                            searchText
+                                    )
+                        }.toMutableList()
             }
             huntPanel.model.refreshHunt(filteredHuntIssues)
             if (selectedType != "All") {
@@ -79,9 +79,9 @@ class HuntOptions(
         return if (selectedType != "All") {
             val type = typeComboBox.selectedItem
             huntIssues
-                .filter {
-                    it.type == type
-                }.toMutableList()
+                    .filter {
+                        it.types.contains(HuntData().nameToShortName[type])
+                    }.toMutableList()
         } else {
             huntIssues
         }
