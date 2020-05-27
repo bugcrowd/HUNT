@@ -13,13 +13,13 @@ class HuntListener(private val callbacks: IBurpExtenderCallbacks, private val hu
             if (!messageIsRequest && (callbacks.isInScope(helpers.analyzeRequest(messageInfo).url)) && (toolFlag == IBurpExtenderCallbacks.TOOL_PROXY || toolFlag == IBurpExtenderCallbacks.TOOL_SPIDER)) {
                 val request = helpers.analyzeRequest(messageInfo) ?: return
                 val parameters = request.parameters
-                val types = mutableSetOf<String>()
                 val huntIssues =
-                        parameters.asSequence().map { param -> Pair(param, checkParameterName(param.name.toLowerCase())) }.filterNotNull().map {
+                    parameters.asSequence().map { param -> checkParameterName(param.name.toLowerCase()) }
+                        .filterNotNull().filter { !it.second.isNullOrEmpty() }.map {
                             makeHuntRequest(
-                                    requestResponse = messageInfo,
-                                    parameter = it.first.name,
-                                    type = it.second
+                                requestResponse = messageInfo,
+                                parameter = it.first,
+                                types = it.second
                             )
                         }.toList()
 
@@ -29,17 +29,18 @@ class HuntListener(private val callbacks: IBurpExtenderCallbacks, private val hu
         }
     }
 
-    private fun checkParameterName(param: String) = HuntData().huntParams.asSequence().filter { it.params.contains(param) }.map { it.name }.toSet()
+    private fun checkParameterName(param: String) =
+        Pair(param, HuntData().huntParams.asSequence().filter { it.params.contains(param) }.map { it.name }.toSet())
 
     private fun makeHuntRequest(
-            requestResponse: IHttpRequestResponse,
-            parameter: String,
-            type: Set<String>
+        requestResponse: IHttpRequestResponse,
+        parameter: String,
+        types: Set<String>
     ): HuntIssue {
         val now = LocalDateTime.now()
         val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
         val dateTime = now.format(dateFormatter) ?: ""
-        val typeNames = type.map { HuntData().nameToShortName[it] ?: it }.toSet()
+        val typeNames = types.map { HuntData().nameToShortName[it] ?: it }.toSet()
         val requestInfo = callbacks.helpers.analyzeRequest(requestResponse)
         val response = if (requestResponse.response != null) {
             callbacks.helpers.analyzeResponse(requestResponse.response)
