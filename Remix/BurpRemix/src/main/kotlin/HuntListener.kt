@@ -50,20 +50,20 @@ class HuntListener(private val callbacks: IBurpExtenderCallbacks, private val hu
 
 
         return HuntIssue(
-                requestResponse = callbacks.saveBuffersToTempFiles(requestResponse),
-                dateTime = dateTime,
-                host = requestInfo.url.host,
-                url = requestInfo.url,
-                types = type,
-                parameter = parameter,
-                method = requestInfo?.method ?: "",
-                statusCode = response?.statusCode?.toString() ?: "",
-                title = getTitle(requestResponse.response),
-                length = requestResponse.response?.size?.toString() ?: "",
-                mimeType = response?.inferredMimeType ?: "",
-                protocol = requestInfo?.url?.protocol ?: "",
-                file = requestInfo?.url?.file ?: "",
-                comments = requestResponse.comment ?: ""
+            requestResponse = callbacks.saveBuffersToTempFiles(requestResponse),
+            dateTime = dateTime,
+            host = requestInfo.url.host,
+            url = requestInfo.url,
+            types = typeNames,
+            parameter = parameter,
+            method = requestInfo?.method ?: "",
+            statusCode = response?.statusCode?.toString() ?: "",
+            title = getTitle(requestResponse.response),
+            length = requestResponse.response?.size?.toString() ?: "",
+            mimeType = response?.inferredMimeType ?: "",
+            protocol = requestInfo?.url?.protocol ?: "",
+            file = requestInfo?.url?.file ?: "",
+            comments = requestResponse.comment ?: ""
         )
     }
 
@@ -77,20 +77,20 @@ class HuntListener(private val callbacks: IBurpExtenderCallbacks, private val hu
 }
 
 data class HuntIssue(
-        val requestResponse: IHttpRequestResponsePersisted,
-        val dateTime: String,
-        val host: String,
-        val url: URL,
-        val types: Set<String>,
-        val parameter: String,
-        val method: String,
-        val statusCode: String,
-        val title: String,
-        val length: String,
-        val mimeType: String,
-        val protocol: String,
-        val file: String,
-        var comments: String
+    val requestResponse: IHttpRequestResponsePersisted,
+    val dateTime: String,
+    val host: String,
+    val url: URL,
+    val types: Set<String>,
+    val parameter: String,
+    val method: String,
+    val statusCode: String,
+    val title: String,
+    val length: String,
+    val mimeType: String,
+    val protocol: String,
+    val file: String,
+    var comments: String
 )
 
 

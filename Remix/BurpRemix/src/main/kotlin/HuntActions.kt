@@ -10,8 +10,8 @@ import javax.swing.JOptionPane
 import javax.swing.JPopupMenu
 
 class HuntActions(
-        private val panel: HuntPanel,
-        private val callbacks: IBurpExtenderCallbacks
+    private val panel: HuntPanel,
+    private val callbacks: IBurpExtenderCallbacks
 ) : ActionListener {
     private val table = panel.table
     private val actionsMenu = JPopupMenu()
@@ -68,24 +68,22 @@ class HuntActions(
                     val url = selectedHuntIssue.url
                     when (source) {
                         sendToRepeater -> {
-                            var title = selectedHuntIssue.types.first()
-                            if (title.length > 10) {
-                                title = title.substring(0, 9) + "+"
-                            } else if (title.isBlank()) {
-                                title = selectedHuntIssue.types.first()
+                            var label = selectedHuntIssue.types.first()
+                            if (label.length > 10) {
+                                label = label.substring(0, 9) + "+"
                             }
                             callbacks.sendToRepeater(
-                                    url.host,
-                                    url.port,
-                                    https,
-                                    selectedHuntIssue.requestResponse.request,
-                                    title
+                                url.host,
+                                url.port,
+                                https,
+                                selectedHuntIssue.requestResponse.request,
+                                label
                             )
                         }
                         sendToIntruder -> {
                             callbacks.sendToIntruder(
-                                    url.host, url.port, https,
-                                    selectedHuntIssue.requestResponse.request, null
+                                url.host, url.port, https,
+                                selectedHuntIssue.requestResponse.request, null
                             )
                         }
                         comments -> {
@@ -96,7 +94,8 @@ class HuntActions(
                         details -> {
                             selectedHuntIssue.types.forEach { type ->
                                 val details = HuntData().namesDetails[type]
-                                        ?.replace("%PARAM%", "'${selectedHuntIssue.parameter}'")?.replace("%URL%", "'${selectedHuntIssue.url}'")
+                                    ?.replace("%PARAM%", "'${selectedHuntIssue.parameter}'")
+                                    ?.replace("%URL%", "'${selectedHuntIssue.url}'")
                                 JOptionPane.showMessageDialog(null, details)
                             }
                         }
