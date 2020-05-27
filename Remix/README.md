@@ -9,7 +9,7 @@ The [Burp Suite](https://portswigger.net/burp) extension works in both the Commu
 * Passively scan for potentially vulnerable parameters 
 
 #### Screenshot
-![HUNT Remix](/Remix/images/huntremix.png)
+![HUNT Remix](/Remix/images/huntrmxburp.png)
 
 ## ToDo
 - [ ] OWASP ZAP Plugin
