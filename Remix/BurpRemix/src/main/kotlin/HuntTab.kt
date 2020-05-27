@@ -31,13 +31,13 @@ class HuntPanel(callbacks: IBurpExtenderCallbacks) {
     init {
         HuntActions(this, callbacks)
         table.autoResizeMode = JTable.AUTO_RESIZE_ALL_COLUMNS
-        table.columnModel.getColumn(0).preferredWidth = 30 // ID
-        table.columnModel.getColumn(1).preferredWidth = 145 // date
+        table.columnModel.getColumn(0).preferredWidth = 50 // ID
+        table.columnModel.getColumn(1).preferredWidth = 160 // date
         table.columnModel.getColumn(2).preferredWidth = 125 // host
         table.columnModel.getColumn(3).preferredWidth = 250 // url
-        table.columnModel.getColumn(4).preferredWidth = 200 // type
+        table.columnModel.getColumn(4).preferredWidth = 150 // type
         table.columnModel.getColumn(5).preferredWidth = 75 // parameter
-        table.columnModel.getColumn(6).preferredWidth = 100 // title
+        table.columnModel.getColumn(6).preferredWidth = 150 // title
         table.columnModel.getColumn(7).preferredWidth = 50 // method
         table.columnModel.getColumn(8).preferredWidth = 50 // status
         table.columnModel.getColumn(9).preferredWidth = 50 // length
@@ -153,7 +153,7 @@ class HuntModel(private val huntOptions: HuntOptions) : AbstractTableModel() {
             1 -> huntIssue.dateTime
             2 -> huntIssue.host
             3 -> huntIssue.url.toString()
-            4 -> huntIssue.types
+            4 -> huntIssue.types.joinToString()
             5 -> huntIssue.parameter
             6 -> huntIssue.title
             7 -> huntIssue.method
