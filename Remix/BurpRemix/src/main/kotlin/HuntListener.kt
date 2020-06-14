@@ -10,7 +10,11 @@ class HuntListener(private val callbacks: IBurpExtenderCallbacks, private val hu
 
     override fun processHttpMessage(toolFlag: Int, messageIsRequest: Boolean, messageInfo: IHttpRequestResponse?) {
         messageInfo?.let {
-            if (!messageIsRequest && (callbacks.isInScope(helpers.analyzeRequest(messageInfo).url)) && (toolFlag == IBurpExtenderCallbacks.TOOL_PROXY || toolFlag == IBurpExtenderCallbacks.TOOL_SPIDER)) {
+            val request = helpers.analyzeRequest(messageInfo) ?: return
+            if (!messageIsRequest && callbacks.isInScope(request.url)
+                && (toolFlag == IBurpExtenderCallbacks.TOOL_PROXY || toolFlag == IBurpExtenderCallbacks.TOOL_SPIDER)
+                && (request.method != "OPTIONS" || request.method != "HEAD")
+            ) {
                 val request = helpers.analyzeRequest(messageInfo) ?: return
                 val parameters = request.parameters
                 val huntIssues =
