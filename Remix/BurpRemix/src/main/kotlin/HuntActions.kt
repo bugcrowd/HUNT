@@ -18,8 +18,8 @@ class HuntActions(
     private val sendToRepeater = JMenuItem("Send request(s) to Repeater")
     private val sendToIntruder = JMenuItem("Send request(s) to Intruder")
     private val copyURLs = JMenuItem("Copy URL(s)")
-    private val deleteMenu = JMenuItem("Delete Hunt Issue(s)")
-    private val clearMenu = JMenuItem("Clear Hunt Issues")
+    private val deleteMenu = JMenuItem("Delete HUNT Issue(s)")
+    private val clearMenu = JMenuItem("Clear HUNT Issues")
     private val comments = JMenuItem("Add comment")
     private val details = JMenuItem("Details")
 

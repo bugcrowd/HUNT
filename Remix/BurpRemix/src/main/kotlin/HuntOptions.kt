@@ -15,8 +15,8 @@ class HuntOptions(
     private val typeComboBox = JComboBox(arrayOf<String>())
 
     init {
-        val clearButton = JButton("Clear Hunt Issues")
-        val filterLabel = JLabel("Filter Hunt Issues:")
+        val clearButton = JButton("Clear Issues")
+        val filterLabel = JLabel("Filter HUNT Issues:")
         val filterButton = JButton("Filter")
         val resetButton = JButton("Reset")
         val typeLabel = JLabel("Types:")
