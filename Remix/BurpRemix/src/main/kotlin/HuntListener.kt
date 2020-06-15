@@ -10,7 +10,11 @@ class HuntListener(private val callbacks: IBurpExtenderCallbacks, private val hu
 
     override fun processHttpMessage(toolFlag: Int, messageIsRequest: Boolean, messageInfo: IHttpRequestResponse?) {
         messageInfo?.let {
-            if (!messageIsRequest && (callbacks.isInScope(helpers.analyzeRequest(messageInfo).url)) && (toolFlag == IBurpExtenderCallbacks.TOOL_PROXY || toolFlag == IBurpExtenderCallbacks.TOOL_SPIDER)) {
+            val request = helpers.analyzeRequest(messageInfo) ?: return
+            if (!messageIsRequest && callbacks.isInScope(request.url)
+                && (toolFlag == IBurpExtenderCallbacks.TOOL_PROXY || toolFlag == IBurpExtenderCallbacks.TOOL_SPIDER)
+                && (request.method != "OPTIONS" || request.method != "HEAD")
+            ) {
                 val request = helpers.analyzeRequest(messageInfo) ?: return
                 val parameters = request.parameters
                 val huntIssues =
@@ -57,9 +61,9 @@ class HuntListener(private val callbacks: IBurpExtenderCallbacks, private val hu
             types = typeNames,
             parameter = parameter,
             method = requestInfo?.method ?: "",
-            statusCode = response?.statusCode?.toString() ?: "",
+            statusCode = (response?.statusCode ?: 0).toInt(),
             title = getTitle(requestResponse.response),
-            length = requestResponse.response?.size?.toString() ?: "",
+            length = requestResponse.response?.size ?: 0,
             mimeType = response?.inferredMimeType ?: "",
             protocol = requestInfo?.url?.protocol ?: "",
             file = requestInfo?.url?.file ?: "",
@@ -84,9 +88,9 @@ data class HuntIssue(
     val types: Set<String>,
     val parameter: String,
     val method: String,
-    val statusCode: String,
+    val statusCode: Int,
     val title: String,
-    val length: String,
+    val length: Int,
     val mimeType: String,
     val protocol: String,
     val file: String,
