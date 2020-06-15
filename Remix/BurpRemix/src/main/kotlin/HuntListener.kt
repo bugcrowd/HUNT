@@ -28,8 +28,11 @@ class HuntListener(private val callbacks: IBurpExtenderCallbacks, private val hu
                         }.toList()
 
                 huntTab.huntTable.addHuntIssue(huntIssues)
+                if (toolFlag == IBurpExtenderCallbacks.TOOL_PROXY) {
+                    messageInfo.highlight = "cyan"
+                    messageInfo.comment = "HUNT: ${huntIssues.map { it.types }.flatten().toSet().joinToString()}"
+                }
             }
-
         }
     }
 
