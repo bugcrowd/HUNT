@@ -61,7 +61,7 @@ class HuntListener(private val callbacks: IBurpExtenderCallbacks, private val hu
             types = typeNames,
             parameter = parameter,
             method = requestInfo?.method ?: "",
-            statusCode = (response?.statusCode ?: 0).toInt(),
+            statusCode = response?.statusCode ?: 0,
             title = getTitle(requestResponse.response),
             length = requestResponse.response?.size ?: 0,
             mimeType = response?.inferredMimeType ?: "",

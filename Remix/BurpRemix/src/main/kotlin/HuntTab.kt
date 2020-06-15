@@ -135,7 +135,7 @@ class HuntModel(private val huntOptions: HuntOptions) : AbstractTableModel() {
             5 -> String::class.java
             6 -> String::class.java
             7 -> String::class.java
-            8 -> Integer::class.java
+            8 -> Short::class.java
             9 -> Integer::class.java
             10 -> String::class.java
             11 -> String::class.java
