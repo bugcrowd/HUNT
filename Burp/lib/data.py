@@ -1,3 +1,4 @@
+from __future__ import print_function
 import json
 import os
 
@@ -20,7 +21,7 @@ class Data():
                 data = json.load(data_file)
                 self.checklist = data["checklist"]
         except Exception as e:
-            print e
+            print(e)
 
     def get_checklist(self):
         return self.checklist
@@ -32,7 +33,7 @@ class Data():
             with open(file_name) as data_file:
                 self.issues = json.load(data_file)
         except Exception as e:
-            print e
+            print(e)
 
     def get_issues(self):
         return self.issues

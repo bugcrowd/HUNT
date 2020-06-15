@@ -1,3 +1,4 @@
+from __future__ import print_function
 import json
 import re
 import os
@@ -21,7 +22,7 @@ class Issues:
             with open(data_file) as data:
                 self.json = json.load(data)
         except Exception as e:
-            print e
+            print(e)
 
     def get_json(self):
         return self.json

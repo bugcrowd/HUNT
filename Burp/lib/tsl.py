@@ -1,3 +1,4 @@
+from __future__ import print_function
 import re
 from javax.swing.event import TreeSelectionListener
 
@@ -46,8 +47,8 @@ class TSL(TreeSelectionListener):
             elif is_settings:
                 pane.setRightComponent(self.settings)
             else:
-                print "No description for " + issue_name + " " + issue_param
+                print("No description for " + issue_name + " " + issue_param)
         else:
-            print "Cannot set a pane for " + issue_name + " " + issue_param
+            print("Cannot set a pane for " + issue_name + " " + issue_param)
 
 

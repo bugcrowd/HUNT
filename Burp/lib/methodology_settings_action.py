@@ -1,3 +1,4 @@
+from __future__ import print_function
 import json
 from java.awt.event import ActionListener
 from javax.swing import JFileChooser
@@ -85,6 +86,6 @@ class SettingsAction(ActionListener):
             with open(save_file, 'w') as out_file:
                 json.dump(data.get_checklist(), out_file, indent=2, sort_keys=True)
         except Exception as e:
-            print e
+            print(e)
 
 
