@@ -15,8 +15,8 @@ class HuntListener(private val callbacks: IBurpExtenderCallbacks, private val hu
                 && (toolFlag == IBurpExtenderCallbacks.TOOL_PROXY || toolFlag == IBurpExtenderCallbacks.TOOL_SPIDER)
                 && (request.method != "OPTIONS" || request.method != "HEAD")
             ) {
-                val request = helpers.analyzeRequest(messageInfo) ?: return
-                val parameters = request.parameters
+                val requestInfo = helpers.analyzeRequest(messageInfo) ?: return
+                val parameters = requestInfo.parameters
                 val huntIssues =
                     parameters.asSequence().map { param -> checkParameterName(param.name.toLowerCase()) }
                         .filterNotNull().filter { !it.second.isNullOrEmpty() }.map {
