@@ -88,7 +88,7 @@ data class HuntIssue(
     val types: Set<String>,
     val parameter: String,
     val method: String,
-    val statusCode: Int,
+    val statusCode: Short,
     val title: String,
     val length: Int,
     val mimeType: String,
