@@ -1,9 +1,12 @@
 package burp
 
-import javax.swing.JScrollPane
-import javax.swing.JSplitPane
-import javax.swing.JTable
-import javax.swing.ListSelectionModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.swing.Swing
+import kotlinx.coroutines.withContext
+import java.awt.FlowLayout
+import javax.swing.*
 import javax.swing.table.AbstractTableModel
 import javax.swing.table.TableRowSorter
 
@@ -16,7 +19,7 @@ class HuntTab(callbacks: IBurpExtenderCallbacks) : ITab {
     override fun getUiComponent() = huntTable.panel
 }
 
-class HuntPanel(callbacks: IBurpExtenderCallbacks) {
+class HuntPanel(private val callbacks: IBurpExtenderCallbacks) {
     private val huntOptions = HuntOptions(this, callbacks)
     val model = HuntModel(huntOptions)
     val table = JTable(model)
@@ -60,16 +63,25 @@ class HuntPanel(callbacks: IBurpExtenderCallbacks) {
             }
         }
 
+        val repeatPanel = JPanel(FlowLayout(FlowLayout.LEFT))
+
+        val repeatButton = JButton("Repeat Request")
+        repeatButton.addActionListener { repeatRequest() }
+        repeatPanel.add(repeatButton)
+
         val huntTable = JScrollPane(table)
         val reqResSplit =
             JSplitPane(JSplitPane.HORIZONTAL_SPLIT, requestViewer?.component, responseViewer?.component)
         reqResSplit.resizeWeight = 0.5
 
+        val repeatReqSplit =
+            JSplitPane(JSplitPane.VERTICAL_SPLIT, repeatPanel, reqResSplit)
+
         val huntOptSplit =
             JSplitPane(JSplitPane.VERTICAL_SPLIT, huntOptions.panel, huntTable)
 
         panel.topComponent = huntOptSplit
-        panel.bottomComponent = reqResSplit
+        panel.bottomComponent = repeatReqSplit
         panel.resizeWeight = 0.5
         callbacks.customizeUiComponent(panel)
     }
@@ -80,7 +92,25 @@ class HuntPanel(callbacks: IBurpExtenderCallbacks) {
             model.filterOrRefresh()
         }
     }
+
+    private fun repeatRequest() {
+        table.selectionModel.clearSelection()
+        
+        GlobalScope.launch(Dispatchers.IO) {
+            val requestResponse = try {
+                callbacks.makeHttpRequest(messageEditor.httpService, requestViewer?.message)
+            } catch (e: java.lang.RuntimeException) {
+                RequestResponse(requestViewer?.message, null, messageEditor.httpService)
+            }
+            withContext(Dispatchers.Swing) {
+                SwingUtilities.invokeLater {
+                    responseViewer?.setMessage(requestResponse?.response ?: ByteArray(0), false)
+                }
+            }
+        }
+    }
 }
+
 
 class MessageEditor(callbacks: IBurpExtenderCallbacks) : IMessageEditorController {
     var requestResponse: IHttpRequestResponse? = null
@@ -213,4 +243,33 @@ class HuntModel(private val huntOptions: HuntOptions) : AbstractTableModel() {
     }
 }
 
+class RequestResponse(private var req: ByteArray?, private var res: ByteArray?, private var service: IHttpService?) :
+    IHttpRequestResponse {
+
+    override fun getComment(): String? = null
+
+    override fun setComment(comment: String?) {}
+
+    override fun getRequest(): ByteArray? = req
+
+    override fun getHighlight(): String? = null
+
+    override fun getHttpService(): IHttpService? = service
+
+    override fun getResponse(): ByteArray? = res
+
+    override fun setResponse(message: ByteArray?) {
+        res = message
+    }
+
+    override fun setRequest(message: ByteArray?) {
+        req = message
+    }
+
+    override fun setHttpService(httpService: IHttpService?) {
+        service = httpService
+    }
+
+    override fun setHighlight(color: String?) {}
+}
 
