@@ -8,13 +8,20 @@ The [Burp Suite](https://portswigger.net/burp) extension works in both the Commu
 
 ## ZAP Extension
 
+The [OWASP Zed Attack Proxy (ZAP)](https://www.zaproxy.org) add-on works on that latest ZAP version (2.9.0).
+
 ## Features
 
 - Passively scan for potentially vulnerable parameters
 
-## Screenshot
+## Screenshots
+
+### Burp Suite
 
 ![HUNT v2 Burp](/Remix/images/huntrmxburp.png)
+
+### ZAP
+
 ![HUNT v2 ZAP](/Remix/images/huntrmxzap.png)
 
 ## ToDo
