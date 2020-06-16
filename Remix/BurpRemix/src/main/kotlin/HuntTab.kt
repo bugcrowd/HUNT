@@ -14,7 +14,7 @@ import javax.swing.table.TableRowSorter
 class HuntTab(callbacks: IBurpExtenderCallbacks) : ITab {
     val huntTable = HuntPanel(callbacks)
 
-    override fun getTabCaption() = "HUNT RMX"
+    override fun getTabCaption() = "HUNT"
 
     override fun getUiComponent() = huntTable.panel
 }
@@ -95,7 +95,7 @@ class HuntPanel(private val callbacks: IBurpExtenderCallbacks) {
 
     private fun repeatRequest() {
         table.selectionModel.clearSelection()
-        
+
         GlobalScope.launch(Dispatchers.IO) {
             val requestResponse = try {
                 callbacks.makeHttpRequest(messageEditor.httpService, requestViewer?.message)
