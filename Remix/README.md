@@ -59,7 +59,7 @@ Extension JAR will be located at: `build/libs/hunt-x.x.x.jar`
 
 #### Option 1: Download add-on
 
-You can find the latest release (ZAP file) [here](https://github.com/TypeError/reflect/releases).
+You can find the latest release (ZAP file) [here](https://github.com/bugcrowd/HUNT/releases).
 
 #### Option 2: Build the add-on
 
@@ -74,7 +74,7 @@ Add-on ZAP file will be located at: `./build/zapAddOn/bin`
 1. Open OWASP ZAP
 2. File
 3. Load Add-on file
-4. Select reflect `.zap` file
+4. Select HUNT `.zap` file
 
 ## Usage
 
