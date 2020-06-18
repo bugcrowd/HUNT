@@ -45,6 +45,7 @@ class HuntPanel : AbstractPanel() {
                 val selectedRow = table.convertRowIndexToModel(table.selectedRow)
                 val requestResponse = displayedHuntIssues[selectedRow].requestResponse
                 View.getSingleton().displayMessage(requestResponse)
+                displayedHuntIssues[selectedRow].highlighter.highlight()
             }
         }
 

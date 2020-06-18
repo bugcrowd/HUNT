@@ -54,7 +54,9 @@ class HuntListener(private val huntPanel: HuntPanel) : HttpSenderListener {
             title = getTitle(requestResponse.responseBody.toString()),
             length = requestResponse.responseHeader.contentLength,
             mimeType = requestResponse.responseHeader.getHeaderValues(HttpHeader.CONTENT_TYPE).toString(),
-            protocol = requestResponse.requestHeader.uri.scheme
+            protocol = requestResponse.requestHeader.uri.scheme,
+            highlighter = HuntHighlight(requestResponse, parameter)
+
         )
     }
 
@@ -83,7 +85,8 @@ data class HuntIssue(
     val length: Int,
     val mimeType: String,
     val protocol: String,
-    var comments: String = ""
+    var comments: String = "",
+    val highlighter: HuntHighlight
 )
 
 
