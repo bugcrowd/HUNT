@@ -1,3 +1,4 @@
+from __future__ import print_function
 from burp import IBurpExtender
 from burp import IContextMenuFactory
 from burp import IExtensionStateListener
@@ -59,7 +60,7 @@ class BurpExtender(IBurpExtender, IExtensionStateListener, IScannerCheck, ITab, 
         return self.view.get_pane()
 
     def extensionUnloaded(self):
-        print "HUNT Scanner plugin unloaded"
+        print("HUNT Scanner plugin unloaded")
         return
 
 if __name__ in ('__main__', 'main'):

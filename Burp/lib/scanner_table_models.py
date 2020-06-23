@@ -1,3 +1,4 @@
+from __future__ import print_function
 from java.lang import Object
 from java.lang import Thread
 from scanner_table_model import ScannerTableModel
@@ -37,7 +38,7 @@ class ScannerTableModels:
         try:
             scanner_table_model.addRow(row)
         except Exception as e:
-            print e
+            print(e)
             #print "Error inserting row: " + key + " " + scanner_issue.getHttpService().getHost() + " " + str(scanner_issue.getPath() + " " + scanner_issue_id)
 
         # Wait for ScannerTableModel to update as to not get an ArrayOutOfBoundsException.
