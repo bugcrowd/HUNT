@@ -114,7 +114,7 @@ Hunt scanner is included into community scripts for ZAP Proxy.
 4. Click into the ``` Scripts ``` tab (next to the  ``` Sites ``` tab)
 5. Look for ``` Hunt.py ``` should appear under ```passive rules```
 6. Right click in the script under ```passive rules``` and enable it and save it
-7. Browse sites and recieve alerts from the sites included in contexts!
+7. Browse sites and receive alerts from the sites included in contexts!
 
 ## License
 Licensed with the Apache 2.0 License [here](https://github.com/bugcrowd/HUNT/blob/master/license)
