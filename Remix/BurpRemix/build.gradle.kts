@@ -2,7 +2,7 @@ plugins {
     kotlin("jvm") version "1.3.72"
 }
 
-version = "0.1.0"
+version = "2.2"
 
 repositories {
     mavenCentral()
@@ -22,5 +22,6 @@ tasks {
 }
 
 tasks.withType<Jar> {
+    setProperty("archiveBaseName", "hunt")
     from(configurations.compileClasspath.get().map { if (it.isDirectory) it else zipTree(it) })
 }
