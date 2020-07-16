@@ -3,6 +3,7 @@ package org.zaproxy.zap.extension.hunt
 import org.parosproxy.paros.extension.AbstractPanel
 import org.parosproxy.paros.view.View
 import java.awt.BorderLayout
+import java.lang.IndexOutOfBoundsException
 import javax.swing.JScrollPane
 import javax.swing.JSplitPane
 import javax.swing.JTable
@@ -87,6 +88,10 @@ class HuntModel(private val huntOptions: HuntOptions) : AbstractTableModel() {
     var displayedHuntIssues: MutableList<HuntIssue> = ArrayList()
         private set
 
+    companion object {
+        private const val COMMENTS = 12
+    }
+
     override fun getRowCount(): Int = displayedHuntIssues.size
 
     override fun getColumnCount(): Int = columns.size
@@ -98,19 +103,10 @@ class HuntModel(private val huntOptions: HuntOptions) : AbstractTableModel() {
     override fun getColumnClass(columnIndex: Int): Class<*> {
         return when (columnIndex) {
             0 -> java.lang.Integer::class.java
-            1 -> String::class.java
-            2 -> String::class.java
-            3 -> String::class.java
-            4 -> String::class.java
-            5 -> String::class.java
-            6 -> String::class.java
-            7 -> String::class.java
-            8 -> Integer::class.java
-            9 -> Integer::class.java
-            10 -> String::class.java
-            11 -> String::class.java
-            12 -> String::class.java
-            else -> throw RuntimeException()
+            in 1..7 -> String::class.java
+            in 8..9 -> Integer::class.java
+            in 10..12 -> String::class.java
+            else -> throw IndexOutOfBoundsException("$columnIndex is out of bounds")
         }
     }
 
@@ -136,13 +132,7 @@ class HuntModel(private val huntOptions: HuntOptions) : AbstractTableModel() {
         }
     }
 
-
-    override fun isCellEditable(rowIndex: Int, columnIndex: Int): Boolean {
-        return when (columnIndex) {
-            12 -> true
-            else -> false
-        }
-    }
+    override fun isCellEditable(rowIndex: Int, columnIndex: Int) = columnIndex == COMMENTS
 
     override fun setValueAt(value: Any?, rowIndex: Int, colIndex: Int) {
         val huntIssue: HuntIssue = huntIssues[rowIndex]

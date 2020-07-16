@@ -269,7 +269,7 @@ class HuntData {
     )
 
     private val issues =
-        mutableListOf(
+        listOf(
             insecureDirectObjectReference,
             osCommandInjection,
             fileInclusionPathTraversal,
@@ -291,10 +291,10 @@ data class HuntDetail(
     val name: String,
     val shortName: String?,
     val params: Set<String>,
-    val checkLocation: HuntLocation,
-    var enabled: Boolean = true,
     val detail: String,
-    val level: String
+    val level: String,
+    val checkLocation: HuntLocation,
+    var enabled: Boolean = true
 )
 
 data class HuntParams(val name: String, val params: Set<String>)

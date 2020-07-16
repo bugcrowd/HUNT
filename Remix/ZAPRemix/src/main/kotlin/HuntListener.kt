@@ -66,8 +66,7 @@ class HuntListener(private val huntPanel: HuntPanel) : HttpSenderListener {
         return title.removePrefix("<title>").removeSuffix("</title>")
     }
 
-
-    override fun getListenerOrder(): Int = 0
+    override fun getListenerOrder() = 0
 
     override fun onHttpRequestSend(msg: HttpMessage?, initiator: Int, sender: HttpSender?) {}
 }
