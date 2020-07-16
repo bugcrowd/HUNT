@@ -147,6 +147,10 @@ class HuntModel(private val huntOptions: HuntOptions) : AbstractTableModel() {
     var displayedHuntIssues: MutableList<HuntIssue> = ArrayList()
         private set
 
+    companion object {
+        private const val COMMENTS = 12
+    }
+
     override fun getRowCount(): Int = displayedHuntIssues.size
 
     override fun getColumnCount(): Int = columns.size
@@ -158,19 +162,11 @@ class HuntModel(private val huntOptions: HuntOptions) : AbstractTableModel() {
     override fun getColumnClass(columnIndex: Int): Class<*> {
         return when (columnIndex) {
             0 -> java.lang.Integer::class.java
-            1 -> String::class.java
-            2 -> String::class.java
-            3 -> String::class.java
-            4 -> String::class.java
-            5 -> String::class.java
-            6 -> String::class.java
-            7 -> String::class.java
+            in 1..7 -> String::class.java
             8 -> Short::class.java
             9 -> Integer::class.java
-            10 -> String::class.java
-            11 -> String::class.java
-            12 -> String::class.java
-            else -> throw RuntimeException()
+            in 10..12 -> String::class.java
+            else -> throw IndexOutOfBoundsException("$columnIndex is out of bounds.")
         }
     }
 
@@ -196,13 +192,7 @@ class HuntModel(private val huntOptions: HuntOptions) : AbstractTableModel() {
         }
     }
 
-
-    override fun isCellEditable(rowIndex: Int, columnIndex: Int): Boolean {
-        return when (columnIndex) {
-            12 -> true
-            else -> false
-        }
-    }
+    override fun isCellEditable(rowIndex: Int, columnIndex: Int) = columnIndex == COMMENTS
 
     override fun setValueAt(value: Any?, rowIndex: Int, colIndex: Int) {
         val huntIssue: HuntIssue = huntIssues[rowIndex]
@@ -250,13 +240,13 @@ class RequestResponse(private var req: ByteArray?, private var res: ByteArray?, 
 
     override fun setComment(comment: String?) {}
 
-    override fun getRequest(): ByteArray? = req
+    override fun getRequest() = req
 
     override fun getHighlight(): String? = null
 
     override fun getHttpService(): IHttpService? = service
 
-    override fun getResponse(): ByteArray? = res
+    override fun getResponse() = res
 
     override fun setResponse(message: ByteArray?) {
         res = message
