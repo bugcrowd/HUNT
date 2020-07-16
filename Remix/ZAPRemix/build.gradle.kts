@@ -3,16 +3,16 @@ plugins {
     id("org.zaproxy.add-on") version "0.4.0"
 }
 
-version = "2.2.0"
+version = "2.2.1"
 description = "HUNT Scanner"
 
 zapAddOn {
-    addOnName.set("HUNT")
+    addOnName.set("HUNT Scanner")
     addOnStatus.set(org.zaproxy.gradle.addon.AddOnStatus.ALPHA)
     zapVersion.set("2.9.0")
 
     manifest {
-        author.set("Caleb Kinney")
+        author.set("Bugcrowd")
     }
 }
 
