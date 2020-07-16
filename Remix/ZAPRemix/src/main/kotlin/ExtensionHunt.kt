@@ -6,8 +6,8 @@ import org.parosproxy.paros.network.HttpSender
 import java.awt.EventQueue
 
 class ExtensionHunt : ExtensionAdaptor(NAME) {
-    private val huntPanel = HuntPanel()
-    private val huntListener = HuntListener(huntPanel)
+    private var huntPanel: HuntPanel? = null
+    private var huntListener: HuntListener? = null
 
     companion object {
         const val NAME = "HUNT"
@@ -16,8 +16,12 @@ class ExtensionHunt : ExtensionAdaptor(NAME) {
     override fun hook(extensionHook: ExtensionHook?) {
         super.hook(extensionHook)
         if (view != null) {
-            HttpSender.addListener(huntListener)
-            extensionHook?.hookView?.addStatusPanel(huntPanel)
+            huntPanel = HuntPanel()
+            huntPanel?.let { panel ->
+                huntListener = HuntListener(panel)
+                HttpSender.addListener(huntListener)
+                extensionHook?.hookView?.addStatusPanel(panel)
+            }
         }
     }
 
@@ -36,7 +40,7 @@ class ExtensionHunt : ExtensionAdaptor(NAME) {
 
         if (view != null) {
             EventQueue.invokeLater {
-                huntPanel.setTabFocus()
+                huntPanel?.setTabFocus()
             }
         }
     }
