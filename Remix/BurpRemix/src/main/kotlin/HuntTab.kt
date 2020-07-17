@@ -12,11 +12,11 @@ import javax.swing.table.TableRowSorter
 
 
 class HuntTab(callbacks: IBurpExtenderCallbacks) : ITab {
-    val huntTable = HuntPanel(callbacks)
+    val huntPanel = HuntPanel(callbacks)
 
     override fun getTabCaption() = "HUNT"
 
-    override fun getUiComponent() = huntTable.panel
+    override fun getUiComponent() = huntPanel.panel
 }
 
 class HuntPanel(private val callbacks: IBurpExtenderCallbacks) {
