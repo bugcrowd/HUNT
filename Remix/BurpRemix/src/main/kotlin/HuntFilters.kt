@@ -22,12 +22,19 @@ class HuntFilters(
         val resetButton = JButton("Reset")
         val typeLabel = JLabel("Types:")
         val optionsButton = JButton("Options")
+        val importProxyHistory = JButton("Import Proxy History")
+
         typeComboBox.prototypeDisplayValue = "File Inclusion and Path Traversal  "
         clearButton.addActionListener { clearHuntIssues() }
         filterBar.addActionListener { filterHuntIssues() }
         filterButton.addActionListener { filterHuntIssues() }
         resetButton.addActionListener { resetFilter() }
         optionsButton.addActionListener { huntOptions.optionFrame.isVisible = true }
+        importProxyHistory.addActionListener {
+            SwingUtilities.invokeLater {
+                HuntUtils(callbacks, huntPanel).importProxyHistory()
+            }
+        }
         filterPanel.add(filterLabel)
         filterPanel.add(filterBar)
         filterPanel.add(typeLabel)
@@ -36,6 +43,7 @@ class HuntFilters(
         filterPanel.add(resetButton)
         loadPanel.add(clearButton)
         loadPanel.add(optionsButton)
+        loadPanel.add(importProxyHistory)
         panel.leftComponent = filterPanel
         panel.rightComponent = loadPanel
         panel.dividerSize = 0

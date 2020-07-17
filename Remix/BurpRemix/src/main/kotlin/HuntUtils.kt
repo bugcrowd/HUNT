@@ -93,7 +93,13 @@ class HuntUtils(
     }
 
     private fun checkIfDuplicate(huntIssue: HuntIssue): Boolean {
-        return huntTab.huntTable.huntIssues.any { it.url.host == huntIssue.url.host && it.url.path == huntIssue.url.path && it.parameter == huntIssue.parameter }
+        return huntPanel.huntIssues.any { it.url.host == huntIssue.url.host && it.url.path == huntIssue.url.path && it.parameter == huntIssue.parameter }
+    }
+
+    fun importProxyHistory() {
+        callbacks.proxyHistory.forEach {
+            huntScan(it, duplicates = false)
+        }
     }
 }
 

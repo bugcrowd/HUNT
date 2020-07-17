@@ -1,5 +1,7 @@
 package burp
 
+import javax.swing.SwingUtilities
+
 class BurpExtender : IBurpExtender {
     override fun registerExtenderCallbacks(callbacks: IBurpExtenderCallbacks) {
         val tab = HuntTab(callbacks)
@@ -12,7 +14,13 @@ class BurpExtender : IBurpExtender {
                 write("\nRemixed by: Caleb (cak) Kinney (derail.io)".toByteArray())
             }
             setExtensionName("HUNT")
-            addSuiteTab(tab)
+        }
+
+        SwingUtilities.invokeLater {
+            callbacks.addSuiteTab(tab)
+            if ((callbacks.loadExtensionSetting(HuntOptions.IMPORT_PROXY_ON_START) ?: "false").toBoolean()) {
+                HuntUtils(callbacks, tab.huntPanel).importProxyHistory()
+            }
         }
     }
 }

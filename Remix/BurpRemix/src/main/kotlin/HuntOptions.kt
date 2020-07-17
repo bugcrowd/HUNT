@@ -10,11 +10,16 @@ class HuntOptions(callbacks: IBurpExtenderCallbacks) {
     val optionFrame = JFrame("HUNT Options")
     val fetchHistoryOnStart = JCheckBox("Fetch proxy history on start")
     val noDuplicateIssues = JCheckBox("Do not add duplicate issues")
+    val highlightProxyHistory = JCheckBox("Highlight proxy history")
+
 
     init {
         val optionsPanel = JPanel()
         fetchHistoryOnStart.isSelected = (callbacks.loadExtensionSetting(IMPORT_PROXY_ON_START) ?: "false").toBoolean()
         noDuplicateIssues.isSelected = (callbacks.loadExtensionSetting(NO_DUP_ISSUES) ?: "true").toBoolean()
+        highlightProxyHistory.isSelected =
+            (callbacks.loadExtensionSetting(HIGHLIGHT_PROXY_HISTORY) ?: "false").toBoolean()
+
         fetchHistoryOnStart.addActionListener {
             callbacks.saveExtensionSetting(
                 IMPORT_PROXY_ON_START,
@@ -27,9 +32,17 @@ class HuntOptions(callbacks: IBurpExtenderCallbacks) {
                 noDuplicateIssues.isSelected.toString()
             )
         }
+
+        highlightProxyHistory.addActionListener {
+            callbacks.saveExtensionSetting(
+                HIGHLIGHT_PROXY_HISTORY,
+                highlightProxyHistory.isSelected.toString()
+            )
+        }
         optionsPanel.layout = BoxLayout(optionsPanel, BoxLayout.Y_AXIS)
         optionsPanel.add(fetchHistoryOnStart)
         optionsPanel.add(noDuplicateIssues)
+        optionsPanel.add(highlightProxyHistory)
         optionFrame.defaultCloseOperation = JFrame.DISPOSE_ON_CLOSE
         optionFrame.contentPane.add(optionsPanel, BorderLayout.CENTER)
         optionFrame.setLocationRelativeTo(null)
@@ -39,5 +52,6 @@ class HuntOptions(callbacks: IBurpExtenderCallbacks) {
     companion object {
         const val IMPORT_PROXY_ON_START = "import proxy on start"
         const val NO_DUP_ISSUES = "no dup issues"
+        const val HIGHLIGHT_PROXY_HISTORY = "highlight proxy history"
     }
 }
