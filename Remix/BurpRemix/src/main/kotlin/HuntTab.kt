@@ -20,9 +20,10 @@ class HuntTab(callbacks: IBurpExtenderCallbacks) : ITab {
 }
 
 class HuntPanel(private val callbacks: IBurpExtenderCallbacks) {
-    private val huntOptions = HuntOptions(this, callbacks)
-    val model = HuntModel(huntOptions)
+    val huntFilters = HuntFilters(this, callbacks)
+    val model = HuntModel(huntFilters)
     val table = JTable(model)
+    val huntIssues = model.huntIssues
 
     private val messageEditor = MessageEditor(callbacks)
     val requestViewer: IMessageEditor? = messageEditor.requestViewer
@@ -78,7 +79,7 @@ class HuntPanel(private val callbacks: IBurpExtenderCallbacks) {
             JSplitPane(JSplitPane.VERTICAL_SPLIT, repeatPanel, reqResSplit)
 
         val huntOptSplit =
-            JSplitPane(JSplitPane.VERTICAL_SPLIT, huntOptions.panel, huntTable)
+            JSplitPane(JSplitPane.VERTICAL_SPLIT, huntFilters.panel, huntTable)
 
         panel.topComponent = huntOptSplit
         panel.bottomComponent = repeatReqSplit
@@ -125,7 +126,7 @@ class MessageEditor(callbacks: IBurpExtenderCallbacks) : IMessageEditorControlle
     override fun getHttpService(): IHttpService? = requestResponse?.httpService
 }
 
-class HuntModel(private val huntOptions: HuntOptions) : AbstractTableModel() {
+class HuntModel(private val huntFilters: HuntFilters) : AbstractTableModel() {
     private val columns =
         listOf(
             "ID",
@@ -214,7 +215,7 @@ class HuntModel(private val huntOptions: HuntOptions) : AbstractTableModel() {
     }
 
     fun filterOrRefresh() {
-        if (!huntOptions.filtered()) {
+        if (!huntFilters.filtered()) {
             refreshHunt()
         }
     }
@@ -229,7 +230,7 @@ class HuntModel(private val huntOptions: HuntOptions) : AbstractTableModel() {
         val shortToName = HuntData().shortToName
         val newTypes = displayedHuntIssues.flatMap { it.types }.mapNotNull { shortToName[it] }.toSet().toList()
         types = newTypes
-        huntOptions.updateTypes()
+        huntFilters.updateTypes()
     }
 }
 
