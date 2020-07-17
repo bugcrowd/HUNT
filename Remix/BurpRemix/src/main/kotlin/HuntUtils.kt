@@ -6,25 +6,36 @@ import java.time.format.DateTimeFormatter
 
 class HuntUtils(
     private val callbacks: IBurpExtenderCallbacks,
-    private val toolFlag: Int,
-    private val huntTab: HuntTab
+    private val huntPanel: HuntPanel
 ) {
     private val helpers: IExtensionHelpers = callbacks.helpers
 
-    fun huntScan(messageInfo: IHttpRequestResponse) {
+    fun huntScan(
+        messageInfo: IHttpRequestResponse,
+        toolFlag: Int = IBurpExtenderCallbacks.TOOL_PROXY,
+        duplicates: Boolean = true
+    ) {
+        val request = helpers.analyzeRequest(messageInfo) ?: return
 
-        val noDuplicates = huntTab.huntTable.huntFilters.huntOptions.noDuplicateIssues.isSelected
+        if (callbacks.isInScope(request.url)
+            && (toolFlag == IBurpExtenderCallbacks.TOOL_PROXY || toolFlag == IBurpExtenderCallbacks.TOOL_SPIDER)
+            && (request.method != "OPTIONS" || request.method != "HEAD")
+        ) {
 
-        val huntIssues = huntScannerIssues(messageInfo)?.filterNot {
-            noDuplicates && checkIfDuplicate(it)
-        } ?: return
+            val noDuplicates = !duplicates || huntPanel.huntFilters.huntOptions.noDuplicateIssues.isSelected
+            val highlightProxyHistory = huntPanel.huntFilters.huntOptions.highlightProxyHistory.isSelected
 
-        if (huntIssues.isNotEmpty()) {
-            huntTab.huntTable.addHuntIssue(huntIssues)
-            if (toolFlag == IBurpExtenderCallbacks.TOOL_PROXY) {
-                messageInfo.highlight = "cyan"
-                messageInfo.comment =
-                    "HUNT: ${huntIssues.map { issue -> issue.types }.flatten().toSet().joinToString()}"
+            val huntIssues = huntScannerIssues(messageInfo)?.filterNot {
+                noDuplicates && checkIfDuplicate(it)
+            } ?: return
+
+            if (huntIssues.isNotEmpty()) {
+                huntPanel.addHuntIssue(huntIssues)
+                if (toolFlag == IBurpExtenderCallbacks.TOOL_PROXY && highlightProxyHistory) {
+                    messageInfo.highlight = "cyan"
+                    messageInfo.comment =
+                        "HUNT: ${huntIssues.map { issue -> issue.types }.flatten().toSet().joinToString()}"
+                }
             }
         }
     }
