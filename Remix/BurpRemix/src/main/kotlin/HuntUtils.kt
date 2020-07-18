@@ -104,7 +104,11 @@ class HuntUtils(
     }
 
     private fun checkIfDuplicate(huntIssue: HuntIssue): Boolean {
-        return huntPanel.huntIssues.any { it.url.host == huntIssue.url.host && it.url.path == huntIssue.url.path && it.parameter == huntIssue.parameter }
+        return if (huntPanel.huntFilters.huntOptions.ignoreHostDuplicates.isSelected) {
+            huntPanel.huntIssues.any { it.url.path == huntIssue.url.path && it.parameter == huntIssue.parameter }
+        } else {
+            huntPanel.huntIssues.any { it.url.host == huntIssue.url.host && it.url.path == huntIssue.url.path && it.parameter == huntIssue.parameter }
+        }
     }
 
     fun importProxyHistory() {
