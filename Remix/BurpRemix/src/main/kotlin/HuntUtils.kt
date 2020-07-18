@@ -5,21 +5,21 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 class HuntUtils(
-    private val callbacks: IBurpExtenderCallbacks,
-    private val huntPanel: HuntPanel
+        private val callbacks: IBurpExtenderCallbacks,
+        private val huntPanel: HuntPanel
 ) {
     private val helpers: IExtensionHelpers = callbacks.helpers
 
     fun huntScan(
-        messageInfo: IHttpRequestResponse,
-        toolFlag: Int = IBurpExtenderCallbacks.TOOL_PROXY,
-        duplicates: Boolean = true
+            messageInfo: IHttpRequestResponse,
+            toolFlag: Int = IBurpExtenderCallbacks.TOOL_PROXY,
+            duplicates: Boolean = true
     ) {
         val request = helpers.analyzeRequest(messageInfo) ?: return
 
         if (callbacks.isInScope(request.url)
-            && (toolFlag == IBurpExtenderCallbacks.TOOL_PROXY || toolFlag == IBurpExtenderCallbacks.TOOL_SPIDER)
-            && (request.method != "OPTIONS" || request.method != "HEAD")
+                && (toolFlag == IBurpExtenderCallbacks.TOOL_PROXY || toolFlag == IBurpExtenderCallbacks.TOOL_SPIDER)
+                && (request.method != "OPTIONS" || request.method != "HEAD")
         ) {
 
             val noDuplicates = !duplicates || huntPanel.huntFilters.huntOptions.noDuplicateIssues.isSelected
@@ -34,7 +34,7 @@ class HuntUtils(
                 if (toolFlag == IBurpExtenderCallbacks.TOOL_PROXY && highlightProxyHistory) {
                     messageInfo.highlight = "cyan"
                     messageInfo.comment =
-                        "HUNT: ${huntIssues.map { issue -> issue.types }.flatten().toSet().joinToString()}"
+                            "HUNT: ${huntIssues.map { issue -> issue.types }.flatten().toSet().joinToString()}"
                 }
             }
         }
@@ -45,24 +45,24 @@ class HuntUtils(
         val parameters = requestInfo.parameters.map { it.name.toLowerCase() }.sorted()
 
         return parameters.asSequence().map { param -> checkParameterName(param) }
-            .filterNotNull().filter { !it.second.isNullOrEmpty() }.map {
-                makeHuntRequest(
-                    requestResponse = messageInfo,
-                    parameter = it.first,
-                    types = it.second,
-                    allParameters = parameters
-                )
-            }.toList()
+                .filterNotNull().filter { !it.second.isNullOrEmpty() }.map {
+                    makeHuntRequest(
+                            requestResponse = messageInfo,
+                            parameter = it.first,
+                            types = it.second,
+                            allParameters = parameters
+                    )
+                }.toList()
     }
 
     private fun checkParameterName(param: String) =
-        Pair(param, HuntData().huntParams.asSequence().filter { it.params.contains(param) }.map { it.name }.toSet())
+            Pair(param, HuntData().huntParams.asSequence().filter { it.params.contains(param) }.map { it.name }.toSet())
 
     private fun makeHuntRequest(
-        requestResponse: IHttpRequestResponse,
-        parameter: String,
-        types: Set<String>,
-        allParameters: List<String>
+            requestResponse: IHttpRequestResponse,
+            parameter: String,
+            types: Set<String>,
+            allParameters: List<String>
     ): HuntIssue {
         val now = LocalDateTime.now()
         val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
@@ -77,21 +77,21 @@ class HuntUtils(
 
 
         return HuntIssue(
-            requestResponse = callbacks.saveBuffersToTempFiles(requestResponse),
-            dateTime = dateTime,
-            host = requestInfo.url.host,
-            url = requestInfo.url,
-            types = typeNames,
-            parameter = parameter,
-            method = requestInfo?.method ?: "",
-            statusCode = response?.statusCode ?: 0,
-            title = getTitle(requestResponse.response),
-            length = requestResponse.response?.size ?: 0,
-            mimeType = response?.inferredMimeType ?: "",
-            protocol = requestInfo?.url?.protocol ?: "",
-            file = requestInfo?.url?.file ?: "",
-            comments = requestResponse.comment ?: "",
-            allParameters = allParameters
+                requestResponse = callbacks.saveBuffersToTempFiles(requestResponse),
+                dateTime = dateTime,
+                host = requestInfo.url.host,
+                url = requestInfo.url,
+                types = typeNames,
+                parameter = parameter,
+                method = requestInfo?.method ?: "",
+                statusCode = response?.statusCode ?: 0,
+                title = getTitle(requestResponse.response),
+                length = requestResponse.response?.size ?: 0,
+                mimeType = response?.inferredMimeType ?: "",
+                protocol = requestInfo?.url?.protocol ?: "",
+                file = requestInfo?.url?.file ?: "",
+                comments = requestResponse.comment ?: "",
+                allParameters = allParameters
         )
     }
 
@@ -119,19 +119,19 @@ class HuntUtils(
 }
 
 data class HuntIssue(
-    val requestResponse: IHttpRequestResponsePersisted,
-    val dateTime: String,
-    val host: String,
-    val url: URL,
-    val types: Set<String>,
-    val parameter: String,
-    val method: String,
-    val statusCode: Short,
-    val title: String,
-    val length: Int,
-    val mimeType: String,
-    val protocol: String,
-    val file: String,
-    var comments: String,
-    val allParameters: List<String>
+        val requestResponse: IHttpRequestResponsePersisted,
+        val dateTime: String,
+        val host: String,
+        val url: URL,
+        val types: Set<String>,
+        val parameter: String,
+        val method: String,
+        val statusCode: Short,
+        val title: String,
+        val length: Int,
+        val mimeType: String,
+        val protocol: String,
+        val file: String,
+        var comments: String,
+        val allParameters: List<String>
 )
