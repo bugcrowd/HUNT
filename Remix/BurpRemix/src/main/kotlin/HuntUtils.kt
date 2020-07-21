@@ -12,8 +12,7 @@ class HuntUtils(
 
     fun huntScan(
             messageInfo: IHttpRequestResponse,
-            toolFlag: Int = IBurpExtenderCallbacks.TOOL_PROXY,
-            duplicates: Boolean = true
+            toolFlag: Int = IBurpExtenderCallbacks.TOOL_PROXY
     ) {
         val request = helpers.analyzeRequest(messageInfo) ?: return
 
@@ -22,7 +21,7 @@ class HuntUtils(
                 && (request.method != "OPTIONS" || request.method != "HEAD")
         ) {
 
-            val noDuplicates = !duplicates || huntPanel.huntFilters.huntOptions.noDuplicateIssues.isSelected
+            val noDuplicates = huntPanel.huntFilters.huntOptions.noDuplicateIssues.isSelected
             val highlightProxyHistory = huntPanel.huntFilters.huntOptions.highlightProxyHistory.isSelected
 
             val huntIssues = huntScannerIssues(messageInfo)?.filterNot {
@@ -112,8 +111,9 @@ class HuntUtils(
     }
 
     fun importProxyHistory() {
+        val duplicates = huntPanel.huntFilters.huntOptions.noDuplicateIssues.isSelected
         callbacks.proxyHistory.forEach {
-            huntScan(it, duplicates = false)
+            huntScan(it)
         }
     }
 }
