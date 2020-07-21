@@ -9,7 +9,7 @@ import javax.swing.JPanel
 class HuntOptions(callbacks: IBurpExtenderCallbacks) {
     val optionFrame = JFrame("HUNT Options")
     private val fetchHistoryOnStart = JCheckBox("Fetch proxy history on start")
-    val noDuplicateIssues = JCheckBox("Do not add duplicate issues")
+    val noDuplicateIssues = JCheckBox("Ignore duplicate issues")
     val ignoreHostDuplicates = JCheckBox("Ignore host when considering duplicate issues")
     val highlightProxyHistory = JCheckBox("Highlight proxy history")
 
