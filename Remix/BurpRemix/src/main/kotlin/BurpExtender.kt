@@ -18,7 +18,7 @@ class BurpExtender : IBurpExtender {
 
         SwingUtilities.invokeLater {
             callbacks.addSuiteTab(tab)
-            if ((callbacks.loadExtensionSetting(HuntOptions.IMPORT_PROXY_ON_START) ?: "false").toBoolean()) {
+            if ((callbacks.loadExtensionSetting(HuntOptions.IMPORT_PROXY_ON_START) ?: "true").toBoolean()) {
                 HuntUtils(callbacks, tab.huntPanel).importProxyHistory()
             }
         }
