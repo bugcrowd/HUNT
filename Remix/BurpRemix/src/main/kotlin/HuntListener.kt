@@ -4,7 +4,9 @@ class HuntListener(private val callbacks: IBurpExtenderCallbacks, private val hu
 
     override fun processHttpMessage(toolFlag: Int, messageIsRequest: Boolean, messageInfo: IHttpRequestResponse?) {
         messageInfo?.let { req ->
-            HuntUtils(callbacks, huntTab.huntPanel).huntScan(req, toolFlag = toolFlag)
+            if (!messageIsRequest) {
+                HuntUtils(callbacks, huntTab.huntPanel).huntScan(req, toolFlag = toolFlag)
+            }
         }
     }
 }
