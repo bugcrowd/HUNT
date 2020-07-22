@@ -9,6 +9,7 @@ class HuntUtils(
         private val huntPanel: HuntPanel
 ) {
     private val helpers: IExtensionHelpers = callbacks.helpers
+    private val huntOptions = huntPanel.huntFilters.huntOptions
 
     fun huntScan(
             messageInfo: IHttpRequestResponse,
@@ -21,10 +22,10 @@ class HuntUtils(
                 && (request.method != "OPTIONS" || request.method != "HEAD")
         ) {
 
-            val noDuplicates = huntPanel.huntFilters.huntOptions.noDuplicateIssues.isSelected
-            val highlightProxyHistory = huntPanel.huntFilters.huntOptions.highlightProxyHistory.isSelected
+            val noDuplicates = huntOptions.noDuplicateIssues.isSelected
+            val highlightProxyHistory = huntOptions.highlightProxyHistory.isSelected
 
-            val huntIssues = huntScannerIssues(messageInfo)?.filterNot {
+            val huntIssues = huntScannerIssues(request, messageInfo)?.filterNot {
                 noDuplicates && checkIfDuplicate(it)
             } ?: return
 
@@ -103,7 +104,7 @@ class HuntUtils(
     }
 
     private fun checkIfDuplicate(huntIssue: HuntIssue): Boolean {
-        return if (huntPanel.huntFilters.huntOptions.ignoreHostDuplicates.isSelected) {
+        return if (huntOptions.ignoreHostDuplicates.isSelected) {
             huntPanel.huntIssues.any { it.url.path == huntIssue.url.path && it.parameter == huntIssue.parameter }
         } else {
             huntPanel.huntIssues.any { it.url.host == huntIssue.url.host && it.url.path == huntIssue.url.path && it.parameter == huntIssue.parameter }
