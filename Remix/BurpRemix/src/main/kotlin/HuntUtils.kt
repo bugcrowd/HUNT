@@ -112,7 +112,6 @@ class HuntUtils(
     }
 
     fun importProxyHistory() {
-        val duplicates = huntPanel.huntFilters.huntOptions.noDuplicateIssues.isSelected
         callbacks.proxyHistory.forEach {
             huntScan(it)
         }
