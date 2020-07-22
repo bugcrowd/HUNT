@@ -40,8 +40,7 @@ class HuntUtils(
         }
     }
 
-    private fun huntScannerIssues(messageInfo: IHttpRequestResponse): List<HuntIssue>? {
-        val requestInfo = helpers.analyzeRequest(messageInfo) ?: return null
+    private fun huntScannerIssues(requestInfo: IRequestInfo, messageInfo: IHttpRequestResponse): List<HuntIssue>? {
         val parameters = requestInfo.parameters.map { it.name.toLowerCase() }.sorted()
 
         return parameters.asSequence().map { param -> checkParameterName(param) }
