@@ -4,7 +4,7 @@ apply plugin: 'kotlin'
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
-version = "2.2"
+version = "2.3"
 
 buildscript {
 

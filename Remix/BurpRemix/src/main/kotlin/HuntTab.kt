@@ -12,17 +12,18 @@ import javax.swing.table.TableRowSorter
 
 
 class HuntTab(callbacks: IBurpExtenderCallbacks) : ITab {
-    val huntTable = HuntPanel(callbacks)
+    val huntPanel = HuntPanel(callbacks)
 
     override fun getTabCaption() = "HUNT"
 
-    override fun getUiComponent() = huntTable.panel
+    override fun getUiComponent() = huntPanel.panel
 }
 
 class HuntPanel(private val callbacks: IBurpExtenderCallbacks) {
-    private val huntOptions = HuntOptions(this, callbacks)
-    val model = HuntModel(huntOptions)
+    val huntFilters = HuntFilters(this, callbacks)
+    val model = HuntModel(huntFilters)
     val table = JTable(model)
+    val huntIssues = model.huntIssues
 
     private val messageEditor = MessageEditor(callbacks)
     val requestViewer: IMessageEditor? = messageEditor.requestViewer
@@ -78,7 +79,7 @@ class HuntPanel(private val callbacks: IBurpExtenderCallbacks) {
             JSplitPane(JSplitPane.VERTICAL_SPLIT, repeatPanel, reqResSplit)
 
         val huntOptSplit =
-            JSplitPane(JSplitPane.VERTICAL_SPLIT, huntOptions.panel, huntTable)
+            JSplitPane(JSplitPane.VERTICAL_SPLIT, huntFilters.panel, huntTable)
 
         panel.topComponent = huntOptSplit
         panel.bottomComponent = repeatReqSplit
@@ -125,7 +126,7 @@ class MessageEditor(callbacks: IBurpExtenderCallbacks) : IMessageEditorControlle
     override fun getHttpService(): IHttpService? = requestResponse?.httpService
 }
 
-class HuntModel(private val huntOptions: HuntOptions) : AbstractTableModel() {
+class HuntModel(private val huntFilters: HuntFilters) : AbstractTableModel() {
     private val columns =
         listOf(
             "ID",
@@ -147,6 +148,10 @@ class HuntModel(private val huntOptions: HuntOptions) : AbstractTableModel() {
     var displayedHuntIssues: MutableList<HuntIssue> = ArrayList()
         private set
 
+    companion object {
+        private const val COMMENTS = 12
+    }
+
     override fun getRowCount(): Int = displayedHuntIssues.size
 
     override fun getColumnCount(): Int = columns.size
@@ -158,19 +163,11 @@ class HuntModel(private val huntOptions: HuntOptions) : AbstractTableModel() {
     override fun getColumnClass(columnIndex: Int): Class<*> {
         return when (columnIndex) {
             0 -> java.lang.Integer::class.java
-            1 -> String::class.java
-            2 -> String::class.java
-            3 -> String::class.java
-            4 -> String::class.java
-            5 -> String::class.java
-            6 -> String::class.java
-            7 -> String::class.java
+            in 1..7 -> String::class.java
             8 -> Short::class.java
             9 -> Integer::class.java
-            10 -> String::class.java
-            11 -> String::class.java
-            12 -> String::class.java
-            else -> throw RuntimeException()
+            in 10..12 -> String::class.java
+            else -> throw IndexOutOfBoundsException("$columnIndex is out of bounds.")
         }
     }
 
@@ -196,13 +193,7 @@ class HuntModel(private val huntOptions: HuntOptions) : AbstractTableModel() {
         }
     }
 
-
-    override fun isCellEditable(rowIndex: Int, columnIndex: Int): Boolean {
-        return when (columnIndex) {
-            12 -> true
-            else -> false
-        }
-    }
+    override fun isCellEditable(rowIndex: Int, columnIndex: Int) = columnIndex == COMMENTS
 
     override fun setValueAt(value: Any?, rowIndex: Int, colIndex: Int) {
         val huntIssue: HuntIssue = huntIssues[rowIndex]
@@ -224,7 +215,7 @@ class HuntModel(private val huntOptions: HuntOptions) : AbstractTableModel() {
     }
 
     fun filterOrRefresh() {
-        if (!huntOptions.filtered()) {
+        if (!huntFilters.filtered()) {
             refreshHunt()
         }
     }
@@ -239,7 +230,7 @@ class HuntModel(private val huntOptions: HuntOptions) : AbstractTableModel() {
         val shortToName = HuntData().shortToName
         val newTypes = displayedHuntIssues.flatMap { it.types }.mapNotNull { shortToName[it] }.toSet().toList()
         types = newTypes
-        huntOptions.updateTypes()
+        huntFilters.updateTypes()
     }
 }
 
@@ -250,13 +241,13 @@ class RequestResponse(private var req: ByteArray?, private var res: ByteArray?, 
 
     override fun setComment(comment: String?) {}
 
-    override fun getRequest(): ByteArray? = req
+    override fun getRequest() = req
 
     override fun getHighlight(): String? = null
 
     override fun getHttpService(): IHttpService? = service
 
-    override fun getResponse(): ByteArray? = res
+    override fun getResponse() = res
 
     override fun setResponse(message: ByteArray?) {
         res = message
