@@ -68,7 +68,7 @@ This extension allows testers to send requests and responses to a Burp Suite tab
 # Installing HUNT Suite for Burp Suite Pro/Free
 
 ## Getting Started
-1. Download the [latest standalone](http://www.jython.org/downloads.html) Jython `jar`.
+1. Download the [latest standalone](https://www.jython.org/download) Jython `jar`.
 2. Navigate to *Extender -> Options*. 
   ![Adding Jython](/images/jython.png)
   * Locate the section called *Python Environment*.
