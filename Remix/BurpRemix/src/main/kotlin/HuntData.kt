@@ -23,7 +23,7 @@ class HuntData {
             checkLocation = HuntLocation.REQUEST,
             enabled = true,
             detail = """
-                    HUNT located the <b>%PARAM%</b> parameter on %URL% inside of your application traffic.
+                    HUNT located the %PARAM% parameter on %URL% inside of your application traffic.
                     The %PARAM% parameter is most often susceptible to Insecure Direct Object Reference Vulnerabilities.
                     Direct object reference vulnerabilities occur when there are insufficient authorization checks performed against object identifiers used in requests.  
                     This could occur when database keys, filenames, or other identifiers are used to directly access resources within an application. 
@@ -269,7 +269,7 @@ class HuntData {
     )
 
     private val issues =
-        mutableListOf(
+        listOf(
             insecureDirectObjectReference,
             osCommandInjection,
             fileInclusionPathTraversal,
@@ -291,9 +291,9 @@ data class HuntDetail(
     val name: String,
     val shortName: String?,
     val params: Set<String>,
+    val detail: String,
     val checkLocation: HuntLocation,
     var enabled: Boolean = true,
-    val detail: String,
     val level: String
 )
 

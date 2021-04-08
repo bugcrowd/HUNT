@@ -1,111 +1,67 @@
 package burp
 
-import java.awt.FlowLayout
-import javax.swing.*
+import java.awt.BorderLayout
+import javax.swing.BoxLayout
+import javax.swing.JCheckBox
+import javax.swing.JFrame
+import javax.swing.JPanel
 
+class HuntOptions(callbacks: IBurpExtenderCallbacks) {
+    val optionFrame = JFrame("HUNT Options")
+    private val fetchHistoryOnStart = JCheckBox("Fetch proxy history on start")
+    val noDuplicateIssues = JCheckBox("Ignore duplicate issues")
+    val ignoreHostDuplicates = JCheckBox("Ignore host when considering duplicate issues")
+    val highlightProxyHistory = JCheckBox("Highlight proxy history")
 
-class HuntOptions(
-        private val huntPanel: HuntPanel,
-        private val callbacks: IBurpExtenderCallbacks
-) {
-    val panel = JSplitPane(JSplitPane.HORIZONTAL_SPLIT)
-    private val loadPanel = JPanel(FlowLayout(FlowLayout.RIGHT))
-    private val filterBar = JTextField("", 20)
-    private val filterPanel = JPanel(FlowLayout(FlowLayout.LEFT))
-    private val typeComboBox = JComboBox(arrayOf<String>())
 
     init {
-        val clearButton = JButton("Clear Issues")
-        val filterLabel = JLabel("Filter HUNT Issues:")
-        val filterButton = JButton("Filter")
-        val resetButton = JButton("Reset")
-        val typeLabel = JLabel("Types:")
-        typeComboBox.prototypeDisplayValue = "File Inclusion and Path Traversal  "
-        clearButton.addActionListener { clearHuntIssues() }
-        filterBar.addActionListener { filterHuntIssues() }
-        filterButton.addActionListener { filterHuntIssues() }
-        resetButton.addActionListener { resetFilter() }
-        filterPanel.add(filterLabel)
-        filterPanel.add(filterBar)
-        filterPanel.add(typeLabel)
-        filterPanel.add(typeComboBox)
-        filterPanel.add(filterButton)
-        filterPanel.add(resetButton)
-        loadPanel.add(clearButton)
-        panel.leftComponent = filterPanel
-        panel.rightComponent = loadPanel
-        panel.dividerSize = 0
-    }
+        val optionsPanel = JPanel()
+        fetchHistoryOnStart.isSelected = (callbacks.loadExtensionSetting(IMPORT_PROXY_ON_START) ?: "true").toBoolean()
+        noDuplicateIssues.isSelected = (callbacks.loadExtensionSetting(NO_DUP_ISSUES) ?: "true").toBoolean()
+        ignoreHostDuplicates.isSelected = (callbacks.loadExtensionSetting(IGNORE_HOST_DUPLICATES)
+                ?: "false").toBoolean()
+        highlightProxyHistory.isSelected =
+                (callbacks.loadExtensionSetting(HIGHLIGHT_PROXY_HISTORY) ?: "false").toBoolean()
 
-    fun filtered(): Boolean {
-        return if (typeComboBox.selectedItem != "All" || filterBar.text.isNotEmpty()) {
-            filterHuntIssues()
-            true
-        } else {
-            false
+        fetchHistoryOnStart.addActionListener {
+            callbacks.saveExtensionSetting(
+                    IMPORT_PROXY_ON_START,
+                    fetchHistoryOnStart.isSelected.toString()
+            )
         }
-    }
-
-    private fun filterHuntIssues() {
-        val selectedType = typeComboBox.selectedItem ?: "All"
-        SwingUtilities.invokeLater {
-            val searchText = filterBar.text.toLowerCase()
-            var filteredHuntIssues = this.huntPanel.model.huntIssues
-            filteredHuntIssues = filterTypes(filteredHuntIssues)
-            if (searchText.isNotEmpty()) {
-                filteredHuntIssues = filteredHuntIssues
-                        .filter {
-                            it.comments.toLowerCase().contains(searchText) ||
-                                    it.url.toString().toLowerCase().contains(searchText) ||
-                                    callbacks.helpers.bytesToString(it.requestResponse.request).toLowerCase().contains(
-                                            searchText
-                                    ) ||
-                                    callbacks.helpers.bytesToString(
-                                            it.requestResponse.response ?: ByteArray(0)
-                                    ).toLowerCase().contains(
-                                            searchText
-                                    )
-                        }.toMutableList()
-            }
-            huntPanel.model.refreshHunt(filteredHuntIssues)
-            if (selectedType != "All") {
-                typeComboBox.selectedItem = selectedType
-            }
+        noDuplicateIssues.addActionListener {
+            callbacks.saveExtensionSetting(
+                    NO_DUP_ISSUES,
+                    noDuplicateIssues.isSelected.toString()
+            )
         }
-    }
-
-    private fun filterTypes(huntIssues: MutableList<HuntIssue>): MutableList<HuntIssue> {
-        val selectedType = typeComboBox.selectedItem ?: "All"
-        return if (selectedType != "All") {
-            val type = typeComboBox.selectedItem
-            huntIssues
-                    .filter {
-                        it.types.contains(HuntData().nameToShortName[type])
-                    }.toMutableList()
-        } else {
-            huntIssues
+        ignoreHostDuplicates.addActionListener {
+            callbacks.saveExtensionSetting(
+                    IGNORE_HOST_DUPLICATES,
+                    ignoreHostDuplicates.isSelected.toString()
+            )
         }
-    }
-
-    private fun resetFilter() {
-        filterBar.text = ""
-        huntPanel.model.refreshHunt()
-        updateTypes()
-        huntPanel.requestViewer?.setMessage(ByteArray(0), true)
-        huntPanel.responseViewer?.setMessage(ByteArray(0), false)
-    }
-
-    private fun clearHuntIssues() {
-        huntPanel.model.clearHunt()
-        huntPanel.requestViewer?.setMessage(ByteArray(0), true)
-        huntPanel.responseViewer?.setMessage(ByteArray(0), false)
-    }
-
-    fun updateTypes() {
-        typeComboBox.removeAllItems()
-        typeComboBox.addItem("All")
-        for (type in huntPanel.model.types.sorted()) {
-            typeComboBox.addItem(type)
+        highlightProxyHistory.addActionListener {
+            callbacks.saveExtensionSetting(
+                    HIGHLIGHT_PROXY_HISTORY,
+                    highlightProxyHistory.isSelected.toString()
+            )
         }
+        optionsPanel.layout = BoxLayout(optionsPanel, BoxLayout.Y_AXIS)
+        optionsPanel.add(fetchHistoryOnStart)
+        optionsPanel.add(noDuplicateIssues)
+        optionsPanel.add(ignoreHostDuplicates)
+        optionsPanel.add(highlightProxyHistory)
+        optionFrame.defaultCloseOperation = JFrame.DISPOSE_ON_CLOSE
+        optionFrame.contentPane.add(optionsPanel, BorderLayout.CENTER)
+        optionFrame.setLocationRelativeTo(null)
+        optionFrame.pack()
+    }
+
+    companion object {
+        const val IMPORT_PROXY_ON_START = "import proxy on start"
+        const val NO_DUP_ISSUES = "no dup issues"
+        const val HIGHLIGHT_PROXY_HISTORY = "highlight proxy history"
+        const val IGNORE_HOST_DUPLICATES = "ignore host on duplicates"
     }
 }

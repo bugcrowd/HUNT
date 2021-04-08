@@ -27,6 +27,21 @@ The [OWASP Zed Attack Proxy (ZAP)](https://www.zaproxy.org) add-on works on that
 ## ToDo
 
 - [x] OWASP ZAP Plugin
+=======
+
+The [Burp Suite](https://portswigger.net/burp) extension works in both the Community (Free) and Professional versions.
+
+## Features:
+
+- Passively scan for potentially vulnerable parameters
+
+#### Screenshot
+
+![HUNT Remix](/Remix/images/huntrmxburp.png)
+
+## ToDo
+
+- [ ] OWASP ZAP Plugin
 - [ ] Ability to add and modify rules
 - [ ] Identify reflected parameters
 
@@ -41,7 +56,7 @@ You can find the latest release (JAR file) [here](https://github.com/bugcrowd/HU
 #### Option 2: Build the extension
 
 ```sh
-gradle build jar
+gradle build fatJar
 ```
 
 Extension JAR will be located at: `build/libs/hunt-x.x.x.jar`
@@ -51,6 +66,7 @@ Extension JAR will be located at: `build/libs/hunt-x.x.x.jar`
 1. Open Burp Suite
 2. Go to Extender tab
 3. Burp Extensions -> Add
+
 4. Load hunt-x.x.x.jar
 
 ## Install the HUNT v2 ZAP add-on
@@ -80,11 +96,19 @@ Add-on ZAP file will be located at: `./build/zapAddOn/bin`
 
 ### Passive scanning
 
+=======
+4. Load HUNT-x.x.jar
+
+### Usage
+
+#### Passive scanning
+
 1. Set scope
 2. Manually navigate or spider the application
 3. Requests will vulnerable parameters be added to the `HUNT` tab.
 4. Select and right click on request to view details about the vulnerable parameter.
 
 ## Credits
+
 
 HUNT v2 (Remix) was created by [cak](https://github.com/cak) [[projects](https://derail.io)] utilizing the research from [JP Villanueva](https://github.com/swagnetow), [Jason Haddix](https://github.com/jhaddix) and team at [Bugcrowd](https://www.bugcrowd.com).
