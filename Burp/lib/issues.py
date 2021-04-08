@@ -95,7 +95,7 @@ class Issues:
         response = urllib2.urlopen(url)
 
         # Wait a second for response to come back
-        Thread.sleep(1000)
+        Thread.sleep(1000)  # noqa: F821 Jython defines Thread
 
         data = json.load(response)
 
