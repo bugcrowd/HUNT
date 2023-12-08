@@ -3,8 +3,8 @@
 ![HUNT Logo](/images/logo.png)
 
 ### What is HUNT Suite?
-* HUNT Suite is a collection of Burp Suite Pro/Free and OWASP ZAP extensions.
-* Identifies common parameters vulnerable to certain vulnerability classes (Burp Suite Pro and OWASP ZAP). 
+* HUNT Suite is a collection of Burp Suite Pro/Free and ZAP extensions.
+* Identifies common parameters vulnerable to certain vulnerability classes (Burp Suite Pro and ZAP). 
 * Organize testing methodologies (Burp Suite Pro and Free).
 
 ### HUNT Parameter Scanner - Vulnerability Classes
@@ -105,7 +105,7 @@ HUNT Parameter Scanner leverages the passive scanning API within Burp. Here are 
 * On Sequencer responses
 * On Spider responses
 
-# HUNT Scanner for OWASP ZAP (Alpha - Contributed by Ricardo Lobo @_sbzo)
+# HUNT Scanner for ZAP (Alpha - Contributed by Ricardo Lobo @_sbzo)
 Hunt scanner is included into community scripts for ZAP Proxy.
 
 1. Find the "Manage Addons" icon, ensure you have ``` Python Scripting ``` and ``` Community Scripts ``` installed.
