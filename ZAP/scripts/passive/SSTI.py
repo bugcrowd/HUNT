@@ -1,7 +1,7 @@
 import re
 from org.zaproxy.zap.extension.script import ScriptVars
 
-''' find posible Server Side Template Injection using Hunt Methodology'''
+''' find possible Server Side Template Injection using Hunt Methodology'''
 
 def scan(ps, msg, src):
     # Test the request and/or response here

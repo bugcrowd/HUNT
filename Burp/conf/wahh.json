@@ -99,7 +99,7 @@
             "bugs": [],
             "notes": ""
           },
-          "Client-side input controls - Lenght limits": {
+          "Client-side input controls - Length limits": {
             "description": "",
             "resources": [],
             "bugs": [],
@@ -271,7 +271,7 @@
             "bugs": [],
             "notes": ""
           },
-          "Token handling - Test maping of tokens to sessions": {
+          "Token handling - Test mapping of tokens to sessions": {
             "description": "",
             "resources": [],
             "bugs": [],
