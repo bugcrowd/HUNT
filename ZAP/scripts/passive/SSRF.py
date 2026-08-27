@@ -1,7 +1,7 @@
 import re
 from org.zaproxy.zap.extension.script import ScriptVars
 
-''' find posible SSRF using Hunt Methodology'''
+''' find possible SSRF using Hunt Methodology'''
 
 def scan(ps, msg, src):
     # Test the request and/or response here
