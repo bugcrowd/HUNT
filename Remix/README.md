@@ -6,9 +6,9 @@ A complete rewrite of the HUNT scanner.
 
 The [Burp Suite](https://portswigger.net/burp) extension works in both the Community (Free) and Professional versions.
 
-## ZAP Extension
+## ZAP Add-on
 
-The [OWASP Zed Attack Proxy (ZAP)](https://www.zaproxy.org) add-on works on that latest ZAP version (2.9.0).
+The [Zed Attack Proxy (ZAP)](https://www.zaproxy.org) add-on works on the latest versions of ZAP since 2.9.0.
 
 ## Features
 
@@ -26,7 +26,7 @@ The [OWASP Zed Attack Proxy (ZAP)](https://www.zaproxy.org) add-on works on that
 
 ## ToDo
 
-- [x] OWASP ZAP Plugin
+- [x] ZAP Add-on
 =======
 
 The [Burp Suite](https://portswigger.net/burp) extension works in both the Community (Free) and Professional versions.
@@ -41,7 +41,6 @@ The [Burp Suite](https://portswigger.net/burp) extension works in both the Commu
 
 ## ToDo
 
-- [ ] OWASP ZAP Plugin
 - [ ] Ability to add and modify rules
 - [ ] Identify reflected parameters
 
@@ -87,7 +86,7 @@ Add-on ZAP file will be located at: `./build/zapAddOn/bin`
 
 ### Load the add-on
 
-1. Open OWASP ZAP
+1. Open ZAP
 2. File
 3. Load Add-on file
 4. Select HUNT `.zap` file
